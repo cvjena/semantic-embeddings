@@ -15,11 +15,19 @@ except ImportError:
 
 
 
+DATASETS = ['CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC']
+
+
+
 def get_data_generator(dataset, data_root, classes = None):
     
     dataset = dataset.lower()
     if dataset == 'cifar-100':
-        return CifarGenerator(data_root)
+        return CifarGenerator(data_root, classes, True)
+    elif dataset.startswith('cifar-100-a'):
+        return CifarGenerator(data_root, np.arange(50), dataset.endswith('-consec'))
+    elif dataset.startswith('cifar-100-b'):
+        return CifarGenerator(data_root, np.arange(50, 100), dataset.endswith('-consec'))
     elif dataset == 'ilsvrc':
         return ILSVRCGenerator(data_root, classes)
     else:
@@ -29,7 +37,7 @@ def get_data_generator(dataset, data_root, classes = None):
 
 class CifarGenerator(object):
 
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, classes = None, reenumerate = False):
         
         super(CifarGenerator, self).__init__()
         self.root_dir = root_dir
@@ -44,7 +52,24 @@ class CifarGenerator(object):
             dump = pickle.load(pf, encoding='bytes')
             self.X_test, self.y_test = dump[b'data'].astype(np.float32), dump[b'fine_labels']
             del dump
+        
+        # Restrict labels to the given classes and re-enumerate them
+        if classes is not None:
+            
+            sel_train = np.array([lbl in classes for lbl in self.y_train])
+            sel_test = np.array([lbl in classes for lbl in self.y_test])
+            self.X_train = self.X_train[sel_train]
+            self.y_train = [lbl for lbl, sel in zip(self.y_train, sel_train) if sel]
+            self.X_test = self.X_test[sel_test]
+            self.y_test = [lbl for lbl, sel in zip(self.y_test, sel_test) if sel]
+            
+            self.classes = classes
+            if reenumerate:
+                self.class_indices = dict(zip(self.classes, range(len(self.classes))))
+                self.y_train = [self.class_indices[lbl] for lbl in self.y_train]
+                self.y_test = [self.class_indices[lbl] for lbl in self.y_test]
 
+        # Reshape data to images
         self.X_train = self.X_train.reshape(-1, 3, 32, 32).transpose((0, 2, 3, 1))
         self.X_test = self.X_test.reshape(-1, 3, 32, 32).transpose((0, 2, 3, 1))
 

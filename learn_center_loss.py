@@ -9,7 +9,7 @@ import keras
 from keras import backend as K
 
 import utils
-from datasets import get_data_generator
+from datasets import DATASETS, get_data_generator
 
 
 
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser(description = 'Learns image embeddings using softmax + center loss (Wen et al.).', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     arggroup = parser.add_argument_group('Data parameters')
-    arggroup.add_argument('--dataset', type = str, required = True, choices = ['CIFAR-100','ILSVRC'], help = 'Training dataset.')
+    arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup = parser.add_argument_group('Center loss parameters')
     arggroup.add_argument('--embed_dim', type = int, default = 99, help = 'Dimensionality of learned image embeddings.')

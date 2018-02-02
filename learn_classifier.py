@@ -9,7 +9,7 @@ import keras
 from keras import backend as K
 
 import utils
-from datasets import get_data_generator
+from datasets import DATASETS, get_data_generator
 
 
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser(description = 'Learns an image classifier.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument_group('Data parameters')
-    parser.add_argument('--dataset', type = str, required = True, choices = ['CIFAR-100','ILSVRC'], help = 'Training dataset.')
+    parser.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
     parser.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup = parser.add_argument_group('Training parameters')
     arggroup.add_argument('--architecture', type = str, default = 'simple', choices = utils.ARCHITECTURES, help = 'Type of network architecture.')
@@ -40,6 +40,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--gpus', type = int, default = 1, help = 'Number of GPUs to be used.')
     arggroup = parser.add_argument_group('Output parameters')
     arggroup.add_argument('--model_dump', type = str, default = None, help = 'Filename where the learned model should be written to.')
+    arggroup.add_argument('--feature_dump', type = str, default = None, help = 'Filename where learned features for test images should be written to.')
     arggroup.add_argument('--log_dir', type = str, default = None, help = 'Tensorboard log directory.')
     arggroup.add_argument('--no_progress', action = 'store_true', default = False, help = 'Do not display training progress, but just the final performance.')
     arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGD')
@@ -116,3 +117,10 @@ if __name__ == '__main__':
     # Save model
     if args.model_dump:
         model.save(args.model_dump)
+
+    # Save test image features
+    if args.feature_dump:
+        feat_model = keras.models.Model(model.inputs, model.layers[-2].output if not isinstance(model.layers[-2], keras.layers.BatchNormalization) else model.layers[-3].output)
+        pred_features = feat_model.predict_generator(data_generator.flow_test(args.val_batch_size, False), data_generator.num_test // args.val_batch_size)
+        with open(args.feature_dump,'wb') as dump_file:
+            pickle.dump({ 'feat' : dict(enumerate(pred_features)) }, dump_file)
