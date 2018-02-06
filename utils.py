@@ -27,7 +27,7 @@ def mean_distance(y_true, y_pred):
     return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
 
 
-def nn_accuracy(embedding):
+def nn_accuracy(embedding, dot_prod_sim = False):
 
     def nn_accuracy(y_true, y_pred):
 
@@ -40,7 +40,25 @@ def nn_accuracy(embedding):
 
         return K.cast(K.less(K.abs(true_dist - K.min(dist, axis = -1)), 1e-6), K.floatx())
     
-    return nn_accuracy
+    def max_sim_acc(y_true, y_pred):
+
+        centroids = K.constant(embedding.T)
+        sim = K.dot(y_pred, centroids)
+        true_sim = K.sum(y_pred * y_true, axis = -1)
+        return K.cast(K.less(K.abs(K.max(sim, axis = -1) - true_sim), 1e-6), K.floatx())
+    
+    return max_sim_acc if dot_prod_sim else nn_accuracy
+
+
+def devise_ranking_loss(embedding, margin = 0.1):
+    
+    def _loss(y_true, y_pred):
+        embedding_t = K.constant(embedding.T)
+        true_sim = K.sum(y_true * y_pred, axis = -1)
+        other_sim = K.dot(y_pred, embedding_t)
+        return K.sum(K.relu(margin - true_sim[:,None] + other_sim), axis = -1) - margin
+    
+    return _loss
 
 
 def build_simplenet(output_dim, filters, activation = 'relu', regularizer = keras.regularizers.l2(0.0005), final_activation = None, name = None):
