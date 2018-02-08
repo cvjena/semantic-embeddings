@@ -1,3 +1,7 @@
+import numpy as np
+
+
+
 class ClassHierarchy(object):
     """ Represents a class taxonomy and can be used to find Lowest Common Subsumers or to compute class similarities. """
     
@@ -129,7 +133,7 @@ class ClassHierarchy(object):
             hypernym_depths = self.all_hypernym_depths(a, use_min_depth)
             common_hypernyms = set(hypernym_depths.keys()) & set(self.all_hypernym_depths(b, use_min_depth).keys())
 
-            self._lcs_cache[(a,b)] = max(common_hypernyms, key = lambda hyp: hypernym_depths[hyp], default = None)
+            self._lcs_cache[(a,b)] = self._lcs_cache[(b,a)] = max(common_hypernyms, key = lambda hyp: hypernym_depths[hyp], default = None)
         
         return self._lcs_cache[(a,b)]
     
@@ -185,7 +189,7 @@ class ClassHierarchy(object):
             ds = self.depth(lcs)
             d1 = ds + self.shortest_path_length(a, lcs)
             d2 = ds + self.shortest_path_length(b, lcs)
-            self._wup_cache[(a,b)] = (2.0 * ds) / (d1 + d2)
+            self._wup_cache[(a,b)] = self._wup_cache[(b,a)] = (2.0 * ds) / (d1 + d2)
         
         return self._wup_cache[(a,b)]
     
@@ -200,6 +204,93 @@ class ClassHierarchy(object):
         """
         
         return self.heights[self.lcs(a, b)] / self.max_height
+    
+    
+    def hierarchical_precision(self, retrieved, labels, ks = [1, 10, 50, 100], compute_ahp = False, ignore_qids = True, all_ids = None):
+        """ Computes average hierarchical precision for lists of retrieved images at several cut-off points.
+        
+        Hierarchical precision is a generalization of Precision@K which takes class similarities into account and is defined as the sum
+        of similarities between the class of the query image and the class of the retrieved image over the top `k` retrieval results, divided
+        by the maximum possible sum of top-k class similarities (Deng, Berg, Fei-Fei; CVPR 2011).
+        
+        Class similarity can either be measured by `(2 * depth(lcs(a,b))/(depth(a)+depth(b))` (Wu-Palmer similarity, "WUP") or
+        `1.0 - height(lcs(a,b))/height(root)`, where `lcs(a,b)` is the lowest common subsumer of the classes `a` and `b`.
+        
+        Parameters:
+        retrieved - Dictionary mapping query image IDs to ranked lists of IDs of retrieved images.
+        labels - Dictionary mapping image IDs to class labels.
+        ks - Cut-off points `k` which hierarchical precision is to be computed for.
+        compute_ahp - If set to `True`, two additional metrics named "AHP (WUP)" and "AHP (LCS_HEIGHT)" will be computed, giving the area under the entire
+                      hierarchical precision curve, normalized so that the optimum is 1.0.
+        ignore_qids - If set to `True`, query ids appearing in the retrieved ranking will be ignored.
+        all_ids - Optionally, a list with the IDs of all images in the database. IDs missing in retrieval results will be appended to the end in arbitrary order.
+        
+        Returns: tuple with 2 items:
+            1. dictionary with averages of hierarchical precisions over all queries
+            2. dictionary mapping hierarchical precision metric names to dictionaries mapping query IDs to values
+            Hierarchical precision metric names have the format "P@K (T)", where "K" is the cut-off point and "T" is either "WUP" or "LCS_HEIGHT".
+        """
+        
+        if isinstance(ks, int):
+            ks = [ks]
+        kmax = max(ks)
+        
+        prec = { 'P@{} ({})'.format(k, type) : {} for k in ks for type in ('WUP', 'LCS_HEIGHT') }
+        if compute_ahp:
+            prec['AHP (WUP)'] = {}
+            prec['AHP (LCS_HEIGHT)'] = {}
+        
+        best_wup_cum = {}
+        best_lcs_cum = {}
+        
+        for qid, ret in retrieved.items():
+            
+            lbl = labels[qid]
+            
+            # Append missing images to the end of the ranking for proper determination of the optimal ranking
+            if all_ids and (len(ret) < len(all_ids)) and ((lbl not in best_wup_cum) or (lbl not in best_lcs_cum)):
+                sret = set(ret)
+                ret = ret + [id for id in all_ids if id not in sret]
+            
+            # Compute WUP similarity and determine optimal ranking for this label
+            if (lbl not in best_wup_cum) or compute_ahp:
+                wup = [self.wup_similarity(lbl, labels[r]) for r in ret]
+                if lbl not in best_wup_cum:
+                    best_wup_cum[lbl] = np.cumsum(sorted(wup, reverse = True))
+            else:
+                wup = [self.wup_similarity(lbl, labels[r]) for r in ret[:kmax+1]]
+            
+            # Compute LCS height based similarity and determine optimal ranking for this label
+            if (lbl not in best_lcs_cum) or compute_ahp:
+                lcs = [1.0 - self.lcs_height(lbl, labels[r]) for r in ret]
+                if lbl not in best_lcs_cum:
+                    best_lcs_cum[lbl] = np.cumsum(sorted(lcs, reverse = True))
+            else:
+                lcs = [1.0 - self.lcs_height(lbl, labels[r]) for r in ret[:kmax+1]]
+            
+            # Remove query from retrieval list
+            cum_best_wup = best_wup_cum[lbl]
+            cum_best_lcs = best_lcs_cum[lbl]
+            if ignore_qids:
+                try:
+                    qid_ind = ret.index(qid)
+                    if qid_ind < len(wup):
+                        del wup[qid_ind]
+                        del lcs[qid_ind]
+                        cum_best_wup = np.concatenate((cum_best_wup[:qid_ind], cum_best_wup[qid_ind+1:] - 1.0))
+                        cum_best_lcs = np.concatenate((cum_best_lcs[:qid_ind], cum_best_lcs[qid_ind+1:] - 1.0))
+                except ValueError:
+                    pass
+            
+            # Compute hierarchical precision for several cut-off points
+            for k in ks:
+                prec['P@{} (WUP)'.format(k)][qid]        = sum(wup[:k]) / cum_best_wup[k-1]
+                prec['P@{} (LCS_HEIGHT)'.format(k)][qid] = sum(lcs[:k]) / cum_best_lcs[k-1]
+            if compute_ahp:
+                prec['AHP (WUP)'][qid]        = np.mean(np.cumsum(wup) / cum_best_wup) - (wup[0] / cum_best_wup[0] + wup[-1] / cum_best_wup[-1]) / (2 * len(wup))
+                prec['AHP (LCS_HEIGHT)'][qid] = np.mean(np.cumsum(lcs) / cum_best_lcs) - (lcs[0] / cum_best_lcs[0] + lcs[-1] / cum_best_lcs[-1]) / (2 * len(lcs))
+        
+        return { metric : sum(values.values()) / len(values) for metric, values in prec.items() }, prec
     
     
     def save(self, filename, is_a_relations = False):

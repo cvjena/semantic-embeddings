@@ -56,6 +56,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--no_progress', action = 'store_true', default = False, help = 'Do not display training progress, but just the final performance.')
     arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGD')
     arggroup.add_argument('--sgd_patience', type = int, default = None, help = 'Patience of learning rate reduction in epochs.')
+    arggroup.add_argument('--sgd_lr', type = float, default = 0.1, help = 'Initial learning rate.')
     arggroup.add_argument('--sgd_min_lr', type = float, default = None, help = 'Minimum learning rate.')
     arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGDR')
     arggroup.add_argument('--sgdr_base_len', type = int, default = None, help = 'Length of first cycle in epochs.')
@@ -121,12 +122,12 @@ if __name__ == '__main__':
     else:
         decay = 0.0
     if args.cls_weight > 0:
-        par_model.compile(optimizer = keras.optimizers.SGD(lr=0.1, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
+        par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
                           loss = { 'embedding' : utils.squared_distance, 'prob' : 'categorical_crossentropy' },
                           loss_weights = { 'embedding' : 1.0, 'prob' : args.cls_weight },
                           metrics = { 'embedding' : utils.nn_accuracy(embedding), 'prob' : 'accuracy' })
     else:
-        par_model.compile(optimizer = keras.optimizers.SGD(lr=0.1, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
+        par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
                           loss = utils.squared_distance,
                           metrics = [utils.nn_accuracy(embedding)])
 

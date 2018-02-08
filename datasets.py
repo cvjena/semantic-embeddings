@@ -82,16 +82,30 @@ class CifarGenerator(object):
         self.test_image_generator.fit(self.X_train)
     
     
-    def flow_train(self, batch_size = 32, include_labels = True, shuffle = True):
+    def flow_train(self, batch_size = 32, include_labels = True, shuffle = True, augment = True):
         
-        return self.image_generator.flow(self.X_train, self.y_train if include_labels else None,
-                                         batch_size=batch_size, shuffle=shuffle)
+        image_generator = self.image_generator if augment else self.test_image_generator
+        return image_generator.flow(self.X_train, self.y_train if include_labels else None,
+                                    batch_size=batch_size, shuffle=shuffle)
     
     
-    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False):
+    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, augment = False):
         
-        return self.test_image_generator.flow(self.X_test, self.y_test if include_labels else None,
-                                              batch_size=batch_size, shuffle=shuffle)
+        image_generator = self.image_generator if augment else self.test_image_generator
+        return image_generator.flow(self.X_test, self.y_test if include_labels else None,
+                                    batch_size=batch_size, shuffle=shuffle)
+    
+    
+    @property
+    def labels_train(self):
+        
+        return self.y_train
+    
+    
+    @property
+    def labels_test(self):
+        
+        return self.y_test
     
     
     @property
@@ -134,15 +148,15 @@ class ILSVRCGenerator(object):
         # Search for images
         self.train_img_files = []
         self.test_img_files = []
-        self.train_labels = []
-        self.test_labels = []
+        self._train_labels = []
+        self._test_labels = []
         for lbl, subdir in enumerate(self.classes):
             cls_files = list_pictures(os.path.join(self.train_dir, subdir), 'JPE?G|jpe?g')
             self.train_img_files += cls_files
-            self.train_labels += [lbl] * len(cls_files)
+            self._train_labels += [lbl] * len(cls_files)
             cls_files = list_pictures(os.path.join(self.test_dir, subdir), 'JPE?G|jpe?g')
             self.test_img_files += cls_files
-            self.test_labels += [lbl] * len(cls_files)
+            self._test_labels += [lbl] * len(cls_files)
         print('Found {} training and {} validation images from {} classes.'.format(self.num_train, self.num_test, self.num_classes))
         
         # Compute mean and standard deviation
@@ -165,18 +179,18 @@ class ILSVRCGenerator(object):
         warnings.filterwarnings('ignore', '.*[Cc]orrupt EXIF data.*', UserWarning)
     
     
-    def flow_train(self, batch_size = 32, include_labels = True, shuffle = True, target_size = None):
+    def flow_train(self, batch_size = 32, include_labels = True, shuffle = True, target_size = None, augment = True):
         
-        return self._flow(self.train_img_files, self.train_labels if include_labels else None,
+        return self._flow(self.train_img_files, self._train_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=True, vflip=False, cropsize=(224,224), randcrop=True)
+                          normalize=True, hflip=augment, vflip=False, cropsize=(224,224), randcrop=augment)
     
     
-    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = None):
+    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = None, augment = False):
         
-        return self._flow(self.test_img_files, self.test_labels if include_labels else None,
+        return self._flow(self.test_img_files, self._test_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=False, vflip=False, cropsize=(224,224), randcrop=False)
+                          normalize=True, hflip=augment, vflip=False, cropsize=(224,224), randcrop=augment)
     
     
     def _flow(self, filenames, labels = None, batch_size = 32, shuffle = False, cropsize = None, randcrop = False, data_format = None, **kwargs):
@@ -256,6 +270,18 @@ class ILSVRCGenerator(object):
             img = img[:,::-1,:] if data_format == 'channels_first' else img[::-1,:,:]
         
         return img
+    
+    
+    @property
+    def train_labels(self):
+        
+        return self._train_labels
+    
+    
+    @property
+    def test_labels(self):
+        
+        return self._test_labels
     
     
     @property
