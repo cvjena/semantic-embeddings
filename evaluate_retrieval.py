@@ -162,7 +162,7 @@ if __name__ == '__main__':
     # Perform image retrieval using all images in the dataset as queries
     ks = list(range(1, args.plot_max + 1))
     for k in [1, 10, 50, 100]:
-        if ks[-1] < k:
+        if (len(ks) == 0) or (ks[-1] < k):
             ks.append(k)
     perf = OrderedDict()
     for i, feat_dump in tqdm(enumerate(args.feat), total = len(args.feat)):

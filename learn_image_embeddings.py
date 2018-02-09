@@ -32,7 +32,7 @@ def gen_inputs(gen, embedding, num_classes = None):
 if __name__ == '__main__':
 
     # Parse arguments
-    parser = argparse.ArgumentParser(description = 'Learns to map Cifar-100 images onto class embeddings.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description = 'Learns to map images onto class embeddings.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     arggroup = parser.add_argument_group('Data parameters')
     arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')

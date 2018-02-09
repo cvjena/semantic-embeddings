@@ -26,8 +26,8 @@ def train_and_predict(data, model, layer = None, normalize = False, augmentation
     
     # Extract features
     sys.stderr.write('Extracting features...\n')
-    X_train = model.predict_generator(data.flow_train(100, False, shuffle = False, augment = augmentation_epochs > 1), augmentation_epochs * (data.num_train // 100), verbose = 1)
-    X_test = model.predict_generator(data.flow_test(100, False, shuffle = False, augment = False), data.num_test // 100, verbose = 1)
+    X_train = model.predict_generator(data.flow_train(1000, False, shuffle = False, augment = augmentation_epochs > 1), augmentation_epochs * (data.num_train // 1000), verbose = 1)
+    X_test = model.predict_generator(data.flow_test(1000, False, shuffle = False, augment = False), data.num_test // 1000, verbose = 1)
     if normalize:
         X_train /= np.linalg.norm(X_train, axis = -1, keepdims = True)
         X_test /= np.linalg.norm(X_test, axis = -1, keepdims = True)
@@ -44,6 +44,19 @@ def train_and_predict(data, model, layer = None, normalize = False, augmentation
     # Predict test classes
     sys.stderr.write('\nPredicting and evaluating...\n')
     return svm.predict(X_test)
+
+
+def extract_predictions(data, model, layer = None, custom_objects = {}):
+    
+    # Load model
+    if isinstance(model, str):
+        model = keras.models.load_model(model, custom_objects = custom_objects, compile = False)
+    if layer is not None:
+        model = keras.models.Model(model.inputs[0], model.layers[layer].output if isinstance(layer, int) else model.get_layer(layer).output)
+    
+    # Extract predictions
+    sys.stderr.write('Predicting and evaluating...\n')
+    return model.predict_generator(data.flow_test(1000, False, shuffle = False, augment = False), data.num_test // 1000, verbose = 1).argmax(axis = -1)
 
 
 def evaluate(y_pred, y_true, hierarchy, ind2label = None):
@@ -103,6 +116,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--layer', type = str, action = 'append', required = True, help = 'Name or index of the layer to extract features from.')
     arggroup.add_argument('--label', type = str, action = 'append', help = 'Label for the corresponding features.')
     arggroup.add_argument('--norm', type = str2bool, action = 'append', help = 'Whether to L2-normalize the corresponding features or not (defaults to False).')
+    arggroup.add_argument('--prob_features', type = str2bool, action = 'append', help = 'Whether to use the extracted features as class probabilities instead of training an SVM.')
     args = parser.parse_args()
     
     # Load dataset
@@ -131,8 +145,10 @@ if __name__ == '__main__':
         else:
             layer = None
         normalize = args.norm[i] if (args.norm is not None) and (i < len(args.norm)) else False
+        prob_features = args.prob_features[i] if (args.prob_features is not None) and (i < len(args.prob_features)) else False
         sys.stderr.write('-- {} --\n'.format(model_name))
-        perf[model_name] = evaluate(train_and_predict(data_generator, model, layer, normalize, args.augmentation_epochs, args.C, custom_objects), data_generator.labels_test, hierarchy, embed_labels)
+        pred = extract_predictions(data_generator, model, layer, custom_objects) if prob_features else train_and_predict(data_generator, model, layer, normalize, args.augmentation_epochs, args.C, custom_objects)
+        perf[model_name] = evaluate(pred, data_generator.labels_test, hierarchy, embed_labels)
     
     # Show results
     print_performance(perf)
