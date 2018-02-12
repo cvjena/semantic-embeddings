@@ -119,7 +119,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
     elif architecture == 'wrn-28-10':
         
         return wrn.create_wide_residual_network((32, 32, 3), nb_classes = num_outputs, N = 4, k = 10, verbose = 0,
-                                                final_activation = 'softmax' if classification else None)
+                                                final_activation = 'softmax' if classification else None, name = name)
         
     elif architecture == 'densenet-100-12':
         

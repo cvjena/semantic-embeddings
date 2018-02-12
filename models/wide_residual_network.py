@@ -57,7 +57,7 @@ def conv_block(input, base, k=1, dropout=0.0):
     return m
 
 
-def create_wide_residual_network(input_dim, nb_classes=100, N=2, k=1, dropout=0.0, final_activation='softmax', verbose=1):
+def create_wide_residual_network(input_dim, nb_classes=100, N=2, k=1, dropout=0.0, final_activation='softmax', verbose=1, name=None):
     """
     Creates a Wide Residual Network with specified parameters
 
@@ -95,7 +95,7 @@ def create_wide_residual_network(input_dim, nb_classes=100, N=2, k=1, dropout=0.
 
     x = Dense(nb_classes, activation=final_activation, name = 'prob' if final_activation == 'softmax' else 'embedding')(x)
 
-    model = Model(ip, x)
+    model = Model(ip, x, name=name)
 
     if verbose: print("Wide Residual Network-%d-%d created." % (nb_conv, k))
     return model

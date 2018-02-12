@@ -18,7 +18,7 @@ def build_ensemble(architecture, num_classes, embeddings):
     input_ = keras.layers.Input((32,32,3))
     
     cls_network = utils.build_network(num_classes, architecture, classification = True)
-    cls_network = keras.models.Model(cls_network.inputs, [cls_network.layers[-3].output, cls_network.output], name = 'cnn0')
+    cls_network = keras.models.Model(cls_network.inputs, [cls_network.layers[-3 if architecture.lower() == 'simple' else -2].output, cls_network.output], name = 'cnn0')
     embed_networks = [utils.build_network(emb.shape[1], architecture, classification = False, name = 'cnn{}'.format(i+1)) for i, emb in enumerate(embeddings)]
     
     cls_feat, cls_prob = cls_network(input_)
