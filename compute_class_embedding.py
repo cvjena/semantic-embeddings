@@ -205,6 +205,38 @@ def intersect_spheres(c1, c2, r1, r2, compute_radius = True, return_base = True)
 
 
 
+def mds(class_dist, num_dim = None):
+    """
+    Finds an embedding of `n` classes in a `d`-dimensional space, so that their Euclidean distances corresponds
+    to pre-defined ones, using classical multidimensional scaling (MDS).
+    
+    class_dist - `n-by-n` matrix specifying the desired distance between each pair of classes.
+                 The distances in this matrix *must* define a proper metric that fulfills the triangle inequality.
+                 Otherwise, a `RuntimeError` will be raised.
+    num_dim - Optionally, the maximum target dimensionality `d` for the embeddings. If not given, it will be determined
+              automatically based on the eigenvalues, but this might not be accurate due to limited machine precision.
+    
+    Returns: `n-by-d` matrix with rows being the locations of the corresponding classes in the embedding space.
+    """
+
+    H = np.eye(class_dist.shape[0], dtype=class_dist.dtype) - np.ones(class_dist.shape, dtype=class_dist.dtype) / class_dist.shape[0]
+    B = np.dot(H, np.dot(class_dist ** 2, H)) / -2
+
+    eigval, eigvec = np.linalg.eigh(B)
+    nonzero_eigvals = (eigval > np.finfo(class_dist.dtype).eps)
+    eigval = eigval[nonzero_eigvals]
+    eigvec = eigvec[:,nonzero_eigvals]
+    
+    if num_dim is not None:
+        sort_ind = np.argsort(eigval)[::-1]
+        eigval = eigval[sort_ind[:num_dim]]
+        eigvec = eigvec[:,sort_ind[:num_dim]]
+
+    embedding = eigvec * np.sqrt(eigval[None,:])
+    return embedding
+
+
+
 if __name__ == '__main__':
     
     # Parse arguments
@@ -213,6 +245,7 @@ if __name__ == '__main__':
     parser.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the classes to compute embeddings for (as first words per line). If not given, all leaf nodes in the hierarchy will be considered as target classes.')
     parser.add_argument('--out', type = str, required = True, help = 'Filename of the resulting pickle dump (containing keys "embedding", "ind2label", and "label2ind").')
     parser.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
+    parser.add_argument('--method', type = str, default = 'spheres', choices = ['spheres', 'mds'], help = 'Whether to use consecutive hypersphere intersections or multidimensional scaling.')
     args = parser.parse_args()
     id_type = str if args.str_ids else int
     
@@ -237,12 +270,17 @@ if __name__ == '__main__':
     
     # Compute class embeddings
     start_time = time.time()
-    embedding = hierarchical_class_embedding(sem_class_dist)
+    if args.method == 'spheres':
+        embedding = hierarchical_class_embedding(sem_class_dist)
+    elif args.method == 'mds':
+        embedding = mds(sem_class_dist, len(unique_labels) - 1)
+    else:
+        raise ValueError('Unknown method: {}'.format(args.method))
     stop_time = time.time()
+    dist_error = np.abs(scipy.spatial.distance.squareform(scipy.spatial.distance.pdist(embedding)) - sem_class_dist)
     print('Computed semantic embeddings for {} classes in {} seconds.'.format(embedding.shape[0], stop_time - start_time))
-    print('Maximum deviation from target distances: {}'.format(np.abs(
-        scipy.spatial.distance.squareform(scipy.spatial.distance.pdist(embedding)) - sem_class_dist
-    ).max()))
+    print('Maximum deviation from target distances: {}'.format(dist_error.max()))
+    print('Average deviation from target distances: {}'.format(dist_error.mean()))
     
     # Store results
     with open(args.out, 'wb') as dump_file:
