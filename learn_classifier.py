@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
     # Parse arguments
     parser = argparse.ArgumentParser(description = 'Learns an image classifier.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument_group('Data parameters')
-    parser.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
-    parser.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
+    arggroup = parser.add_argument_group('Data parameters')
+    arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
+    arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup = parser.add_argument_group('Training parameters')
     arggroup.add_argument('--architecture', type = str, default = 'simple', choices = utils.ARCHITECTURES, help = 'Type of network architecture.')
     arggroup.add_argument('--lr_schedule', type = str, default = 'SGDR', choices = utils.LR_SCHEDULES, help = 'Type of learning rate schedule.')
