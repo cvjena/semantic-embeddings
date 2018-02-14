@@ -91,7 +91,7 @@ def plot_performance(perf, kmax = 100, prec_type = 'LCS_HEIGHT'):
     min_prec = 1.0
     for lbl, metrics in perf.items():
         precs = [metrics['P@{} ({})'.format(k, prec_type)] for k in range(1, kmax+1)]
-        plt.plot(np.arange(kmax), precs, label = lbl)
+        plt.plot(np.arange(1, kmax + 1), precs, label = lbl)
         min_prec = min(min_prec, min(precs))
     
     min_prec = np.floor(min_prec * 20) / 20
@@ -168,7 +168,7 @@ if __name__ == '__main__':
     for i, feat_dump in tqdm(enumerate(args.feat), total = len(args.feat)):
         feat_name = args.label[i] if (args.label is not None) and (i < len(args.label)) else os.path.splitext(os.path.basename(feat_dump))[0]
         normalize = args.norm[i] if (args.norm is not None) and (i < len(args.norm)) else False
-        perf[feat_name] = hierarchy.hierarchical_precision(pairwise_retrieval(feat_dump, normalize), data_generator.labels_test, ks, compute_ahp = True, all_ids = list(range(data_generator.num_test)))[0]
+        perf[feat_name] = hierarchy.hierarchical_precision(pairwise_retrieval(feat_dump, normalize), labels_test, ks, compute_ahp = True, all_ids = list(range(data_generator.num_test)))[0]
     
     # Show results
     print_performance(perf)
