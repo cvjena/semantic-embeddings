@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.svm import LinearSVC
+from scipy.spatial.distance import cdist
 import keras
 
 import sys, argparse, pickle, os.path
@@ -44,6 +45,28 @@ def train_and_predict(data, model, layer = None, normalize = False, augmentation
     # Predict test classes
     sys.stderr.write('\nPredicting and evaluating...\n')
     return svm.predict(X_test)
+
+
+def nn_classification(data, centroids, model, layer = None, custom_objects = {}):
+    
+    # Load class centroids
+    if isinstance(centroids, str):
+        with open(centroids, 'rb') as f:
+            centroids = pickle.load(f)['embedding']
+    
+    # Load model
+    if isinstance(model, str):
+        model = keras.models.load_model(model, custom_objects = custom_objects, compile = False)
+    if layer is not None:
+        model = keras.models.Model(model.inputs[0], model.layers[layer].output if isinstance(layer, int) else model.get_layer(layer).output)
+    
+    # Extract features
+    sys.stderr.write('Extracting features...\n')
+    feat = model.predict_generator(data.flow_test(1000, False, shuffle = False, augment = False), data.num_test // 1000, verbose = 1)
+    
+    # Classify
+    sys.stderr.write('Searching for nearest class centroids...\n')
+    return cdist(feat, centroids, 'sqeuclidean').argmin(axis = -1)
 
 
 def extract_predictions(data, model, layer = None, custom_objects = {}):
@@ -117,6 +140,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--label', type = str, action = 'append', help = 'Label for the corresponding features.')
     arggroup.add_argument('--norm', type = str2bool, action = 'append', help = 'Whether to L2-normalize the corresponding features or not (defaults to False).')
     arggroup.add_argument('--prob_features', type = str2bool, action = 'append', help = 'Whether to use the extracted features as class probabilities instead of training an SVM.')
+    arggroup.add_argument('--centroids', type = str, action = 'append', help = 'Optionally, a pickle dump containing a dictionary with an item "embedding" referring to a numpy array of class centroids for performing nearest-neighbor classification.')
     args = parser.parse_args()
     
     # Load dataset
@@ -146,8 +170,14 @@ if __name__ == '__main__':
             layer = None
         normalize = args.norm[i] if (args.norm is not None) and (i < len(args.norm)) else False
         prob_features = args.prob_features[i] if (args.prob_features is not None) and (i < len(args.prob_features)) else False
+        centroids = args.centroids[i] if (args.centroids is not None) and (i < len(args.centroids)) else ''
         sys.stderr.write('-- {} --\n'.format(model_name))
-        pred = extract_predictions(data_generator, model, layer, custom_objects) if prob_features else train_and_predict(data_generator, model, layer, normalize, args.augmentation_epochs, args.C, custom_objects)
+        if prob_features:
+            pred = extract_predictions(data_generator, model, layer, custom_objects)
+        elif centroids:
+            pred = nn_classification(data_generator, centroids, model, layer, custom_objects)
+        else:
+            pred = train_and_predict(data_generator, model, layer, normalize, args.augmentation_epochs, args.C, custom_objects)
         perf[model_name] = evaluate(pred, data_generator.labels_test, hierarchy, embed_labels)
     
     # Show results
