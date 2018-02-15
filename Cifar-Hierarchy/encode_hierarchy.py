@@ -113,7 +113,7 @@ if __name__ == '__main__':
         plot_hierarchy(hierarchy, 'hierarchy.svg')
     hierarchy, node_names = encode_class_names(hierarchy, [lbl.decode() for lbl in meta[b'fine_label_names']])
     
-    save_hierarchy(hierarchy, 'cifar.is-a.txt')
+    save_hierarchy(hierarchy, 'cifar.parent-child.txt')
     
     with open('class_names.txt', 'w') as f:
         for ind, name in enumerate(node_names):
