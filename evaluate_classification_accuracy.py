@@ -13,7 +13,7 @@ from learn_labelembedding import labelembed_loss
 
 
 
-METRICS = ['Accuracy', 'Hierarchical Accuracy']
+METRICS = ['Accuracy', 'Top-5 Accuracy', 'Hierarchical Accuracy']
 
 
 
@@ -44,7 +44,7 @@ def train_and_predict(data, model, layer = None, normalize = False, augmentation
     
     # Predict test classes
     sys.stderr.write('\nPredicting and evaluating...\n')
-    return svm.predict(X_test)
+    return svm.decision_function(X_test).argsort(axis = -1)[:,::-1]
 
 
 def nn_classification(data, centroids, model, layer = None, custom_objects = {}):
@@ -66,7 +66,7 @@ def nn_classification(data, centroids, model, layer = None, custom_objects = {})
     
     # Classify
     sys.stderr.write('Searching for nearest class centroids...\n')
-    return cdist(feat, centroids, 'sqeuclidean').argmin(axis = -1)
+    return cdist(feat, centroids, 'sqeuclidean').argsort(axis = -1)
 
 
 def extract_predictions(data, model, layer = None, custom_objects = {}):
@@ -79,12 +79,17 @@ def extract_predictions(data, model, layer = None, custom_objects = {}):
     
     # Extract predictions
     sys.stderr.write('Predicting and evaluating...\n')
-    return model.predict_generator(data.flow_test(1000, False, shuffle = False, augment = False), data.num_test // 1000, verbose = 1).argmax(axis = -1)
+    return model.predict_generator(data.flow_test(1000, False, shuffle = False, augment = False), data.num_test // 1000, verbose = 1).argsort(axis = -1)[:,::-1]
 
 
 def evaluate(y_pred, y_true, hierarchy, ind2label = None):
     
     perf = OrderedDict()
+    y_true = np.asarray(y_true)
+    if y_pred.ndim == 2:
+        perf['Top-5 Accuracy'] = np.mean(np.any(y_pred[:,:5] == y_true[:,None], axis = -1))
+        y_pred = y_pred[:,0]
+    
     perf['Accuracy'] = np.mean(y_pred == y_true)
     
     perf['Hierarchical Accuracy'] = 0.0
@@ -106,7 +111,7 @@ def print_performance(perf, metrics = METRICS):
 
     # Print result rows
     for lbl, results in perf.items():
-        print('{:{}s} | {}'.format(lbl, max_name_len, ' | '.join('{:>{}.4f}'.format(results[metric], max(len(metric), 6)) for metric in METRICS)))
+        print('{:{}s} | {}'.format(lbl, max_name_len, ' | '.join('{:>{}.4f}'.format(results[metric], max(len(metric), 6)) if metric in results else '{:>{}s}'.format('--', max(len(metric), 6)) for metric in METRICS)))
 
     print()
 
