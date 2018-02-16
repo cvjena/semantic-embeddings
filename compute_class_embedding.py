@@ -241,16 +241,17 @@ if __name__ == '__main__':
     
     # Parse arguments
     parser = argparse.ArgumentParser(description = 'Computes (n-1)-dimensional embeddings of n classes so that their distance corresponds to 1 minus the height of their LCS in a given hierarchy.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--hierarchy', type = str, required = True, help = 'Path to a file containing parent-child relationships (one per line).')
+    parser.add_argument('--hierarchy', type = str, required = True, help = 'Path to a file containing parent-child or is-a relationships (one per line).')
+    parser.add_argument('--is_a', action = 'store_true', default = False, help = 'If given, --hierarchy is assumed to contain is-a instead of parent-child relationships.')
+    parser.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
     parser.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the classes to compute embeddings for (as first words per line). If not given, all leaf nodes in the hierarchy will be considered as target classes.')
     parser.add_argument('--out', type = str, required = True, help = 'Filename of the resulting pickle dump (containing keys "embedding", "ind2label", and "label2ind").')
-    parser.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
     parser.add_argument('--method', type = str, default = 'spheres', choices = ['spheres', 'mds'], help = 'Whether to use consecutive hypersphere intersections or multidimensional scaling.')
     args = parser.parse_args()
     id_type = str if args.str_ids else int
     
     # Read hierarchy
-    hierarchy = ClassHierarchy.from_file(args.hierarchy, id_type = id_type)
+    hierarchy = ClassHierarchy.from_file(args.hierarchy, is_a_relations = args.is_a, id_type = id_type)
     
     # Determine target classes
     if args.class_list is not None:
