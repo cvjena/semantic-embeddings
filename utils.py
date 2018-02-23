@@ -1,19 +1,19 @@
-import sys
-sys.path.append('models/DenseNet')
+import sys, os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'models', 'DenseNet'))
 
 import numpy as np
 
 import keras
 from keras import backend as K
 
-from models import cifar_resnet, vgg16, wide_residual_network as wrn
+from models import cifar_resnet, cifar_pyramidnet, vgg16, wide_residual_network as wrn
 import densenet
 from clr_callback import CyclicLR
 from sgdr_callback import SGDR
 
 
 
-ARCHITECTURES = ['simple', 'simple-mp', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'wrn-28-10', 'densenet-100-12', 'vgg16', 'resnet-50']
+ARCHITECTURES = ['simple', 'simple-mp', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'wrn-28-10', 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'vgg16', 'resnet-50']
 
 LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
 
@@ -125,6 +125,16 @@ def build_network(num_outputs, architecture, classification = False, name = None
         
         return densenet.DenseNet(growth_rate = 12, depth = 100, bottleneck = False,
                                  classes = num_outputs, activation = 'softmax' if classification else None, name = name)
+    
+    elif architecture == 'pyramidnet-272-200':
+        
+        return cifar_pyramidnet.PyramidNet(272, 200, bottleneck = True,
+                                           classes = num_outputs, top_activation = 'softmax' if classification else None, name = name)
+    
+    elif architecture == 'pyramidnet-110-270':
+        
+        return cifar_pyramidnet.PyramidNet(110, 270, bottleneck = False,
+                                           classes = num_outputs, top_activation = 'softmax' if classification else None, name = name)
         
     elif architecture == 'simple':
         
