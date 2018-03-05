@@ -122,6 +122,6 @@ if __name__ == '__main__':
     # Save test image features
     if args.feature_dump:
         feat_model = keras.models.Model(model.inputs, model.layers[-2].output if not isinstance(model.layers[-2], keras.layers.BatchNormalization) else model.layers[-3].output)
-        pred_features = feat_model.predict_generator(data_generator.flow_test(args.val_batch_size, False), data_generator.num_test // args.val_batch_size)
+        pred_features = feat_model.predict_generator(data_generator.flow_test(1, False), data_generator.num_test)
         with open(args.feature_dump,'wb') as dump_file:
             pickle.dump({ 'feat' : dict(enumerate(pred_features)) }, dump_file)

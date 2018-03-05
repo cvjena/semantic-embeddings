@@ -27,8 +27,8 @@ def train_and_predict(data, model, layer = None, normalize = False, augmentation
     
     # Extract features
     sys.stderr.write('Extracting features...\n')
-    X_train = model.predict_generator(data.flow_train(1000, False, shuffle = False, augment = augmentation_epochs > 1), augmentation_epochs * (data.num_train // 1000), verbose = 1)
-    X_test = model.predict_generator(data.flow_test(1000, False, shuffle = False, augment = False), data.num_test // 1000, verbose = 1)
+    X_train = model.predict_generator(data.flow_train(10, False, shuffle = False, augment = augmentation_epochs > 1), augmentation_epochs * (data.num_train // 10), verbose = 1)
+    X_test = model.predict_generator(data.flow_test(1, False, shuffle = False, augment = False), data.num_test, verbose = 1)
     if normalize:
         X_train /= np.linalg.norm(X_train, axis = -1, keepdims = True)
         X_test /= np.linalg.norm(X_test, axis = -1, keepdims = True)
@@ -62,7 +62,7 @@ def nn_classification(data, centroids, model, layer = None, custom_objects = {})
     
     # Extract features
     sys.stderr.write('Extracting features...\n')
-    feat = model.predict_generator(data.flow_test(1000, False, shuffle = False, augment = False), data.num_test // 1000, verbose = 1)
+    feat = model.predict_generator(data.flow_test(1, False, shuffle = False, augment = False), data.num_test, verbose = 1)
     
     # Classify
     sys.stderr.write('Searching for nearest class centroids...\n')
@@ -79,7 +79,7 @@ def extract_predictions(data, model, layer = None, custom_objects = {}):
     
     # Extract predictions
     sys.stderr.write('Predicting and evaluating...\n')
-    return model.predict_generator(data.flow_test(1000, False, shuffle = False, augment = False), data.num_test // 1000, verbose = 1).argsort(axis = -1)[:,::-1]
+    return model.predict_generator(data.flow_test(1, False, shuffle = False, augment = False), data.num_test, verbose = 1).argsort(axis = -1)[:,::-1]
 
 
 def evaluate(y_pred, y_true, hierarchy, ind2label = None):

@@ -159,6 +159,6 @@ if __name__ == '__main__':
 
     # Save test image embeddings
     if args.feature_dump:
-        pred_features = embed_model.predict_generator(data_generator.flow_test(args.val_batch_size, False), data_generator.num_test // args.val_batch_size)
+        pred_features = embed_model.predict_generator(data_generator.flow_test(1, False), data_generator.num_test)
         with open(args.feature_dump,'wb') as dump_file:
             pickle.dump({ 'feat' : dict(enumerate(pred_features)) }, dump_file)

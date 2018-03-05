@@ -248,7 +248,7 @@ class ClassHierarchy(object):
             lbl = labels[qid]
             
             # Append missing images to the end of the ranking for proper determination of the optimal ranking
-            if all_ids and (len(ret) < len(all_ids)) and ((lbl not in best_wup_cum) or (lbl not in best_lcs_cum)):
+            if all_ids and (len(ret) < len(all_ids)):
                 sret = set(ret)
                 ret = ret + [id for id in all_ids if id not in sret]
             
