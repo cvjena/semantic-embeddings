@@ -144,7 +144,10 @@ if __name__ == '__main__':
 
     # Save model
     if args.model_dump:
-        model.save(args.model_dump)
+        try:
+            model.save(args.model_dump)
+        except Exception as e:
+            print('An error occurred while saving the model: {}'.format(e))
 
     # Save test image embeddings
     if args.feature_dump:

@@ -168,7 +168,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
 
 def get_custom_objects(architecture):
     
-    if architecture in ('resnet-32', 'resnet-110', 'resnet-110-fc'):
+    if architecture in ('resnet-32', 'resnet-110', 'resnet-110-fc', 'pyramidnet-272-200', 'pyramidnet-110-270'):
         return { 'ChannelPadding' : cifar_resnet.ChannelPadding }
     else:
         return {}
