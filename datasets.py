@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import PIL.Image
 import os
 import warnings
 
@@ -15,7 +16,7 @@ except ImportError:
 
 
 
-DATASETS = ['CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC']
+DATASETS = ['CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC', 'NAB', 'NAB-cropped', 'NAB-cropped-sq']
 
 
 
@@ -30,6 +31,12 @@ def get_data_generator(dataset, data_root, classes = None):
         return CifarGenerator(data_root, np.arange(50, 100), dataset.endswith('-consec'))
     elif dataset == 'ilsvrc':
         return ILSVRCGenerator(data_root, classes)
+    elif dataset == 'nab':
+        return NABGenerator(data_root, classes, 'images')
+    elif dataset == 'nab-cropped':
+        return NABGenerator(data_root, classes, 'images_cropped', mean = [121.29065134, 121.44002115, 109.69898554], std = [50.45762169, 42.66789459, 40.12496913])
+    elif dataset == 'nab-cropped-sq':
+        return NABGenerator(data_root, classes, 'images_cropped_sq', mean = [124.31297374, 127.28434878, 115.89100229], std = [42.16245978, 30.43073297, 25.00008084])
     else:
         raise ValueError('Unknown dataset: {}'.format(dataset))
 
@@ -127,39 +134,30 @@ class CifarGenerator(object):
 
 
 
-class ILSVRCGenerator(object):
+class FileDatasetGenerator(object):
 
-    def __init__(self, root_dir, classes = None, mean = [122.65435242, 116.6545058, 103.99789959], std = [72.39054456, 74.6065602, 75.43971812]):
+    def __init__(self, root_dir, classes = None, cropsize = (224, 224), randzoom_range = None, randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 }):
         
-        super(ILSVRCGenerator, self).__init__()
+        super(FileDatasetGenerator, self).__init__()
+        
         self.root_dir = root_dir
-        self.train_dir = os.path.join(root_dir, 'ILSVRC2012_img_train')
-        self.test_dir = os.path.join(root_dir, 'ILSVRC2012_img_val')
+        self.cropsize = cropsize
+        self.randzoom_range = randzoom_range
+        self.randerase_prob = randerase_prob
+        self.randerase_params = randerase_params
         
-        # Search for classes
-        if classes is None:
-            classes = []
-            for subdir in sorted(os.listdir(self.train_dir)):
-                if os.path.isdir(os.path.join(self.train_dir, subdir)):
-                    classes.append(subdir)
-        self.classes = classes
-        self.class_indices = dict(zip(self.classes, range(len(self.classes))))
-        
-        # Search for images
+        self.classes = []
         self.train_img_files = []
         self.test_img_files = []
         self._train_labels = []
         self._test_labels = []
-        for lbl, subdir in enumerate(self.classes):
-            cls_files = list_pictures(os.path.join(self.train_dir, subdir), 'JPE?G|jpe?g')
-            self.train_img_files += cls_files
-            self._train_labels += [lbl] * len(cls_files)
-            cls_files = list_pictures(os.path.join(self.test_dir, subdir), 'JPE?G|jpe?g')
-            self.test_img_files += cls_files
-            self._test_labels += [lbl] * len(cls_files)
-        print('Found {} training and {} validation images from {} classes.'.format(self.num_train, self.num_test, self.num_classes))
         
-        # Compute mean and standard deviation
+        warnings.filterwarnings('ignore', '.*[Cc]orrupt EXIF data.*', UserWarning)
+    
+    
+    def _compute_stats(self, mean = None, std = None):
+        """ Computes channel-wise mean and standard deviation of all images in the dataset. """
+        
         if mean is None:
             mean = 0
             for fn in tqdm(self.train_img_files, desc = 'Computing channel mean'):
@@ -174,23 +172,20 @@ class ILSVRCGenerator(object):
             std = np.sqrt(std / (len(self.train_img_files) - 1))
             print('Channel-wise standard deviation: {}'.format(std))
         self.std = np.asarray(std, dtype=np.float32)
-        
-        # Suppress warnings about corrupt EXIF data
-        warnings.filterwarnings('ignore', '.*[Cc]orrupt EXIF data.*', UserWarning)
     
     
     def flow_train(self, batch_size = 32, include_labels = True, shuffle = True, target_size = None, augment = True):
         
         return self._flow(self.train_img_files, self._train_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, cropsize=(224,224), randcrop=augment)
+                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
     
     
     def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = None, augment = False):
         
         return self._flow(self.test_img_files, self._test_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, cropsize=(224,224), randcrop=augment)
+                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
     
     
     def _flow(self, filenames, labels = None, batch_size = 32, shuffle = False, cropsize = None, randcrop = False, data_format = None, **kwargs):
@@ -252,34 +247,59 @@ class ILSVRCGenerator(object):
                 yield X
     
     
-    def _load_and_transform(self, filename, target_size = None, normalize = True, hflip = False, vflip = False, data_format = None):
+    def _load_and_transform(self, filename, target_size = None, normalize = True, hflip = False, vflip = False, randzoom = False, randerase = False, data_format = None):
         
         if data_format is None:
             data_format = K.image_data_format()
         
-        img = img_to_array(load_img(filename, target_size=target_size))
+        # Load and resize image
+        img = load_img(filename)
+        if (target_size is not None) or (randzoom and (self.randzoom_range is not None)):
+            if target_size is None:
+                target_size = img.size
+            if randzoom and (self.randzoom_range is not None):
+                target_size = np.round(np.array(target_size) * np.random.uniform(self.randzoom_range[0], self.randzoom_range[1])).astype(int).tolist()
+            if isinstance(target_size, int):
+                target_size = (target_size, round(img.size[1] * (target_size / img.size[0]))) if img.size[0] < img.size[1] else (round(img.size[0] * (target_size / img.size[1])), target_size)
+            img = img.resize(target_size, PIL.Image.BILINEAR)
+        img = img_to_array(img)
         
+        # Normalize image
         if normalize:
             img -= self.mean[:,None,None] if data_format == 'channels_first' else self.mean[None,None,:]
             img /= self.std[:,None,None] if data_format == 'channels_first' else self.std[None,None,:]
         
-        if hflip and (np.random.randn() < 0.5):
+        # Random Flipping
+        if hflip and (np.random.random() < 0.5):
             img = img[:,:,::-1] if data_format == 'channels_first' else img[:,::-1,:]
         
-        if vflip and (np.random.randn() < 0.5):
+        if vflip and (np.random.random() < 0.5):
             img = img[:,::-1,:] if data_format == 'channels_first' else img[::-1,:,:]
+        
+        # Random erasing
+        if randerase and (self.randerase_prob > 0) and (np.random.random() < self.randerase_prob):
+            while True:
+                se = np.random.uniform(self.randerase_params['sl'], self.randerase_params['sh']) * (img.shape[0] * img.shape[1])
+                re = np.random.uniform(self.randerase_params['r1'], self.randerase_params['r2'])
+                he, we = int(np.sqrt(se * re)), int(np.sqrt(se / re))
+                if (he < img.shape[0]) and (we < img.shape[1]):
+                    break
+            xe, ye = np.random.randint(0, img.shape[1] - we), np.random.randint(0, img.shape[0] - he)
+            img[ye:ye+he,xe:xe+we,:] = (np.random.uniform(0., 255., (he, we, img.shape[-1])) \
+                                       - (self.mean[:,None,None] if data_format == 'channels_first' else self.mean[None,None,:])) \
+                                       / (self.std[:,None,None] if data_format == 'channels_first' else self.std[None,None,:])
         
         return img
     
     
     @property
-    def train_labels(self):
+    def labels_train(self):
         
         return self._train_labels
     
     
     @property
-    def test_labels(self):
+    def labels_test(self):
         
         return self._test_labels
     
@@ -300,3 +320,90 @@ class ILSVRCGenerator(object):
     def num_test(self):
         
         return len(self.test_img_files)
+
+
+
+class ILSVRCGenerator(FileDatasetGenerator):
+
+    def __init__(self, root_dir, classes = None, mean = [122.65435242, 116.6545058, 103.99789959], std = [72.39054456, 74.6065602, 75.43971812]):
+        
+        super(ILSVRCGenerator, self).__init__(root_dir, classes)
+        self.train_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_train')
+        self.test_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_val')
+        
+        # Search for classes
+        if classes is None:
+            classes = []
+            for subdir in sorted(os.listdir(self.train_dir)):
+                if os.path.isdir(os.path.join(self.train_dir, subdir)):
+                    classes.append(subdir)
+        self.classes = classes
+        self.class_indices = dict(zip(self.classes, range(len(self.classes))))
+        
+        # Search for images
+        for lbl, subdir in enumerate(self.classes):
+            cls_files = list_pictures(os.path.join(self.train_dir, subdir), 'JPE?G|jpe?g')
+            self.train_img_files += cls_files
+            self._train_labels += [lbl] * len(cls_files)
+            cls_files = list_pictures(os.path.join(self.test_dir, subdir), 'JPE?G|jpe?g')
+            self.test_img_files += cls_files
+            self._test_labels += [lbl] * len(cls_files)
+        print('Found {} training and {} validation images from {} classes.'.format(self.num_train, self.num_test, self.num_classes))
+        
+        # Compute mean and standard deviation
+        self._compute_stats(mean, std)
+
+
+
+class NABGenerator(FileDatasetGenerator):
+
+    def __init__(self, root_dir, classes = None, img_dir = 'images',
+                 cropsize = (224, 224), randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
+                 mean = [125.30513277, 129.66606421, 118.45121113], std = [43.17212284, 31.89603679, 24.2052268]):
+        
+        super(NABGenerator, self).__init__(root_dir, classes = classes, cropsize = cropsize, randzoom_range = randzoom_range, randerase_prob = randerase_prob, randerase_params = randerase_params)
+        self.imgs_dir = os.path.join(root_dir, img_dir)
+        self.img_list_file = os.path.join(root_dir, 'images.txt')
+        self.label_file = os.path.join(root_dir, 'image_class_labels.txt')
+        self.split_file = os.path.join(root_dir, 'train_test_split.txt')
+        
+        # Read train/test split information
+        with open(self.split_file) as f:
+            is_train = { img_id : (flag != '0') for l in f if l.strip() != '' for img_id, flag in [l.strip().split()] }
+        
+        # Read labels
+        with open(self.label_file) as f:
+            img_labels = { img_id : int(lbl) for l in f if l.strip() != '' for img_id, lbl in [l.strip().split()] }
+        self.classes = classes if classes is not None else sorted(set(img_labels.values()))
+        self.class_indices = dict(zip(self.classes, range(len(self.classes))))
+        
+        # Search for images
+        with open(self.img_list_file) as f:
+            for l in f:
+                if l.strip() != '':
+                    img_id, fn = l.strip().split()
+                    if img_labels[img_id] in self.class_indices:
+                        if is_train[img_id]:
+                            self.train_img_files.append(os.path.join(self.imgs_dir, fn))
+                            self._train_labels.append(self.class_indices[img_labels[img_id]])
+                        else:
+                            self.test_img_files.append(os.path.join(self.imgs_dir, fn))
+                            self._test_labels.append(self.class_indices[img_labels[img_id]])
+        print('Found {} training and {} validation images from {} classes.'.format(self.num_train, self.num_test, self.num_classes))
+        
+        # Compute mean and standard deviation
+        self._compute_stats(mean, std)
+    
+    
+    def flow_train(self, batch_size = 32, include_labels = True, shuffle = True, target_size = 256, augment = True):
+        
+        return self._flow(self.train_img_files, self._train_labels if include_labels else None,
+                          batch_size=batch_size, shuffle=shuffle, target_size=target_size,
+                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
+    
+    
+    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = 256, augment = False):
+        
+        return self._flow(self.test_img_files, self._test_labels if include_labels else None,
+                          batch_size=batch_size, shuffle=shuffle, target_size=target_size,
+                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)

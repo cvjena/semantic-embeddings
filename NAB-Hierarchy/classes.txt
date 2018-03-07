@@ -1,0 +1,1011 @@
+0 Birds
+1 Ducks, Geese, and Swans
+2 Grouse, Quail, and Allies
+3 Loons
+4 Grebes
+5 Storks
+6 Frigatebirds, Boobies, Cormorants, Darters, and Allies
+7 Pelicans, Herons, Ibises, and Allies
+8 Hawks, Kites, Eagles, and Allies
+9 Caracaras and Falcons
+10 Cranes and Rails
+11 Plovers, Sandpipers, and Allies
+12 Skuas and Alcids
+13 Gulls, Terns, and Allies
+14 Pigeons and Doves
+15 Parrots
+16 Cuckoos
+17 Owls
+18 Nightjars
+19 Swifts and Hummingbirds
+20 Kingfishers and Allies
+21 Woodpeckers
+22 Perching Birds
+23 Black-bellied Plover
+24 Black-bellied Whistling-Duck
+25 Tyrant Flycatchers
+26 Semipalmated Plover
+27 Greater White-fronted Goose
+28 Black Vulture
+29 American White Pelican
+30 Killdeer
+31 Red-headed Woodpecker
+32 Shrikes
+33 Snow Goose
+34 Chimney Swift
+35 American Oystercatcher
+36 Ross's Goose
+37 Barn Owl
+38 Vireos
+39 Black Oystercatcher
+40 Turkey Vulture
+41 Brown Pelican
+42 Brant
+43 Scaled Quail
+44 Northern Gannet
+45 Rock Pigeon
+46 Black-necked Stilt
+47 Acorn Woodpecker
+48 Jays, Magpies, and Crows
+49 Pied-billed Grebe
+50 American Avocet
+51 Cackling Goose
+52 Vaux's Swift
+53 Osprey
+54 Crested Caracara
+55 Larks
+56 Spotted Sandpiper
+57 Canada Goose
+58 Great Blue Heron
+59 Solitary Sandpiper
+60 Mute Swan
+61 Purple Gallinule
+62 Western Screech-Owl
+63 Gila Woodpecker
+64 Swallows
+65 Greater Yellowlegs
+66 Swallow-tailed Kite
+67 Trumpeter Swan
+68 White-throated Swift
+69 Chickadees and Titmice
+70 Willet
+71 Great Egret
+72 Tundra Swan
+73 California Quail
+74 Red-throated Loon
+75 Brandt's Cormorant
+76 Band-tailed Pigeon
+77 Yellow-billed Cuckoo
+78 Lesser Yellowlegs
+79 Golden-fronted Woodpecker
+80 Verdin
+81 Wood Duck
+82 Whimbrel
+83 White-tailed Kite
+84 Horned Grebe
+85 Snowy Egret
+86 Long-billed Curlew
+87 Gadwall
+88 Eastern Screech-Owl
+89 Bushtits
+90 Broad-billed Hummingbird
+91 Marbled Godwit
+92 American Wigeon
+93 Mississippi Kite
+94 American Kestrel
+95 Red-bellied Woodpecker
+96 Nuthatches
+97 Ruddy Turnstone
+98 American Black Duck
+99 Little Blue Heron
+100 Black Turnstone
+101 Creepers
+102 Mallard
+103 Gambel's Quail
+104 Neotropic Cormorant
+105 Eurasian Collared-Dove
+106 Surfbird
+107 Ruby-throated Hummingbird
+108 Bald Eagle
+109 Mottled Duck
+110 Common Gallinule
+111 Great Horned Owl
+112 Yellow-bellied Sapsucker
+113 Wrens
+114 Sanderling
+115 Tricolored Heron
+116 Blue-winged Teal
+117 Semipalmated Sandpiper
+118 Red-necked Grebe
+119 Gnatcatchers
+120 Northern Harrier
+121 Western Sandpiper
+122 Cinnamon Teal
+123 Black-chinned Hummingbird
+124 Red-naped Sapsucker
+125 Dippers
+126 Least Sandpiper
+127 Reddish Egret
+128 Northern Shoveler
+129 Dunlin
+130 Northern Pintail
+131 Northern Bobwhite
+132 Pacific Loon
+133 Wood Stork
+134 Double-crested Cormorant
+135 Sharp-shinned Hawk
+136 Merlin
+137 White-winged Dove
+138 Monk Parakeet
+139 Black-billed Cuckoo
+140 Snowy Owl
+141 Common Nighthawk
+142 Belted Kingfisher
+143 Kinglets
+144 Black Guillemot
+145 Black-legged Kittiwake
+146 Short-billed Dowitcher
+147 Green-winged Teal
+148 Cattle Egret
+149 Wilson's Snipe
+150 Red-breasted Sapsucker
+151 Old World Warblers
+152 Anna's Hummingbird
+153 Canvasback
+154 American Woodcock
+155 Cooper's Hawk
+156 Thrushes
+157 Eared Grebe
+158 Wilson's Phalarope
+159 Redhead
+160 Green Heron
+161 Ring-necked Duck
+162 American Coot
+163 Northern Pygmy-Owl
+164 Ladder-backed Woodpecker
+165 Mockingbirds, Thrashers, and Allies
+166 Harris's Hawk
+167 Costa's Hummingbird
+168 Greater Scaup
+169 Ring-necked Pheasant
+170 Great Cormorant
+171 Mourning Dove
+172 Starlings and Allies
+173 Black-crowned Night-Heron
+174 Lesser Scaup
+175 Red-shouldered Hawk
+176 Peregrine Falcon
+177 Nuttall's Woodpecker
+178 Wagtails and Pipits
+179 Common Eider
+180 Calliope Hummingbird
+181 Harlequin Duck
+182 Burrowing Owl
+183 Waxwings
+184 Yellow-crowned Night-Heron
+185 Western Grebe
+186 Broad-winged Hawk
+187 Surf Scoter
+188 Downy Woodpecker
+189 Silky-Flycatchers
+190 Pigeon Guillemot
+191 Bonaparte's Gull
+192 White-winged Scoter
+193 Ruffed Grouse
+194 Common Loon
+195 Pelagic Cormorant
+196 Inca Dove
+197 Greater Roadrunner
+198 White Ibis
+199 Longspurs and Snow Buntings
+200 Broad-tailed Hummingbird
+201 Black Scoter
+202 Swainson's Hawk
+203 Long-tailed Duck
+204 Sandhill Crane
+205 Barred Owl
+206 Hairy Woodpecker
+207 Wood-Warblers
+208 Glossy Ibis
+209 Bufflehead
+210 Red-tailed Hawk
+211 Prairie Falcon
+212 New World Sparrows and Allies
+213 Rufous Hummingbird
+214 Common Goldeneye
+215 Clark's Grebe
+216 Northern Flicker
+217 Cardinals, Grosbeaks, and Allies
+218 Laughing Gull
+219 Barrow's Goldeneye
+220 Wild Turkey
+221 Anhinga
+222 Common Ground-Dove
+223 White-faced Ibis
+224 Rough-legged Hawk
+225 Hooded Merganser
+226 Northern Saw-whet Owl
+227 Blackbirds and Allies
+228 Allen's Hummingbird
+229 Common Merganser
+230 Pileated Woodpecker
+231 Finches and Allies
+232 Heermann's Gull
+233 Roseate Spoonbill
+234 Golden Eagle
+235 Red-breasted Merganser
+236 Old World Sparrows
+237 Mew Gull
+238 Ruddy Duck
+239 Western Gull
+240 Ring-billed Gull
+241 California Gull
+242 Herring Gull
+243 Glaucous-winged Gull
+244 Great Black-backed Gull
+245 Caspian Tern
+246 Black Tern
+247 Common Tern
+248 Forster's Tern
+249 Royal Tern
+250 Black Skimmer
+251 Ovenbird
+252 Green-tailed Towhee
+253 Louisiana Waterthrush
+254 Bobolink
+255 Gray-crowned Rosy-Finch
+256 Western Wood-Pewee
+257 Gray Jay
+258 Spotted Towhee
+259 Summer Tanager
+260 Northern Waterthrush
+261 Carolina Chickadee
+262 Eastern Bluebird
+263 White-eyed Vireo
+264 Purple Martin
+265 Cactus Wren
+266 Blue-winged Warbler
+267 Eastern Towhee
+268 Red-winged Blackbird
+269 Black Rosy-Finch
+270 Eastern Wood-Pewee
+271 Steller's Jay
+272 Black-and-white Warbler
+273 Rufous-crowned Sparrow
+274 Scarlet Tanager
+275 Gray Catbird
+276 Prothonotary Warbler
+277 Eastern Meadowlark
+278 Black-capped Chickadee
+279 Western Bluebird
+280 Brown-capped Rosy-Finch
+281 Least Flycatcher
+282 Canyon Towhee
+283 Tennessee Warbler
+284 Red-breasted Nuthatch
+285 Bell's Vireo
+286 Blue Jay
+287 Tree Swallow
+288 Canyon Wren
+289 Orange-crowned Warbler
+290 California Towhee
+291 Western Tanager
+292 Western Meadowlark
+293 Nashville Warbler
+294 Pine Grosbeak
+295 Common Eider (Adult male)
+296 Long-tailed Duck (Winter male)
+297 Ruddy Duck (Breeding male)
+298 Swainson's Hawk (Dark morph )
+299 Red-tailed Hawk (Light morph adult)
+300 Pacific-slope Flycatcher
+301 Florida Scrub-Jay
+302 Abert's Towhee
+303 Mountain Chickadee
+304 Mountain Bluebird
+305 MacGillivray's Warbler
+306 Yellow-headed Blackbird
+307 Yellow-throated Vireo
+308 Mourning Warbler
+309 American Tree Sparrow
+310 Northern Cardinal
+311 Purple Finch
+312 Cordilleran Flycatcher
+313 Snow Goose (White morph)
+314 Wood Duck (Breeding male)
+315 Gadwall (Breeding male)
+316 American Wigeon (Breeding male)
+317 Mallard (Breeding male)
+318 Blue-winged Teal  (Male)
+319 Cinnamon Teal (Male)
+320 Northern Shoveler (Breeding male)
+321 Northern Pintail (Breeding male)
+322 Green-winged Teal (Male)
+323 Canvasback (Breeding male)
+324 Redhead (Breeding male)
+325 Ring-necked Duck (Breeding male)
+326 Greater Scaup (Breeding male)
+327 Lesser Scaup (Breeding male)
+328 Harlequin Duck (Male)
+329 Surf Scoter (Male)
+330 White-winged Scoter (Male)
+331 Black Scoter (Male)
+332 Bufflehead (Breeding male)
+333 Common Goldeneye (Breeding male)
+334 Barrow's Goldeneye (Breeding male)
+335 Hooded Merganser (Breeding male)
+336 Common Merganser (Breeding male)
+337 Red-breasted Merganser (Breeding male)
+338 California Quail (Male)
+339 Gambel's Quail (Male)
+340 Ring-necked Pheasant (Male)
+341 Red-throated Loon (Breeding)
+342 Pacific Loon (Breeding)
+343 Common Loon (Breeding)
+344 Horned Grebe (Breeding)
+345 Red-necked Grebe (Breeding)
+346 Eared Grebe (Breeding)
+347 Northern Gannet (Adult, Subadult)
+348 Double-crested Cormorant (Immature)
+349 Great Cormorant (Adult)
+350 Little Blue Heron (Adult)
+351 Reddish Egret (Dark morph)
+352 Black-crowned Night-Heron (Adult)
+353 Yellow-crowned Night-Heron (Adult)
+354 White Ibis (Adult)
+355 Bald Eagle (Adult, subadult)
+356 Northern Harrier (Adult male)
+357 Sharp-shinned Hawk (Adult )
+358 Cooper's Hawk (Adult)
+359 Red-shouldered Hawk (Adult )
+360 Broad-winged Hawk (Adult)
+361 Rough-legged Hawk (Dark morph)
+362 Golden Eagle (Adult)
+363 American Kestrel (Adult male)
+364 Peregrine Falcon (Adult)
+365 Purple Gallinule (Adult)
+366 Common Gallinule (Adult)
+367 Black-bellied Plover (Breeding)
+368 Spotted Sandpiper (Breeding)
+369 Sanderling (Breeding)
+370 Dunlin (Breeding)
+371 Wilson's Phalarope (Breeding)
+372 Broad-billed Hummingbird (Adult Male)
+373 Ruby-throated Hummingbird (Adult Male)
+374 Black-chinned Hummingbird (Adult Male)
+375 Anna's Hummingbird (Adult Male)
+376 Costa's Hummingbird (Adult Male)
+377 Calliope Hummingbird (Adult Male)
+378 Broad-tailed Hummingbird (Adult Male)
+379 Rufous Hummingbird (Adult Male)
+380 Allen's Hummingbird (Adult Male)
+381 Red-headed Woodpecker (Adult)
+382 Northern Flicker (Yellow-shafted)
+383 Loggerhead Shrike
+384 Western Scrub-Jay
+385 Violet-green Swallow
+386 Carolina Wren
+387 Blue-gray Gnatcatcher
+388 Golden-crowned Kinglet
+389 Northern Mockingbird
+390 Bohemian Waxwing
+391 Common Yellowthroat
+392 Black Guillemot (Breeding)
+393 Pigeon Guillemot (Breeding)
+394 Black-legged Kittiwake (Adult)
+395 Laughing Gull (Breeding)
+396 Heermann's Gull (Adult)
+397 Ring-billed Gull (Adult)
+398 Western Gull (Adult)
+399 California Gull (Adult)
+400 Herring Gull (Adult)
+401 Glaucous-winged Gull (Adult)
+402 Great Black-backed Gull (Adult)
+403 Chipping Sparrow
+404 Rusty Blackbird
+405 Hooded Warbler
+406 Chestnut-backed Chickadee
+407 Townsend's Solitaire
+408 Cassin's Finch
+409 Black Phoebe
+410 Clay-colored Sparrow
+411 Pyrrhuloxia
+412 American Redstart
+413 White-breasted Nuthatch
+414 Plumbeous Vireo
+415 Mexican Jay
+416 Brewer's Blackbird
+417 Cape May Warbler
+418 Brewer's Sparrow
+419 House Finch
+420 Eastern Phoebe
+421 Northern Rough-winged Swallow
+422 Bewick's Wren
+423 Northern Parula
+424 Boreal Chickadee
+425 Veery
+426 Field Sparrow
+427 Rose-breasted Grosbeak
+428 Clark's Nutcracker
+429 Common Grackle
+430 Magnolia Warbler
+431 Vesper Sparrow
+432 Horned Lark
+433 Verdin
+434 Bushtit
+435 Brown Creeper
+436 American Dipper
+437 Wrentit
+438 Brown Thrasher
+439 European Starling
+440 American Pipit
+441 Phainopepla
+442 Snow Bunting
+443 Bay-breasted Warbler
+444 Red Crossbill
+445 House Sparrow
+446 Bonaparte's Gull
+447 Mew Gull
+448 Caspian Tern
+449 Black Tern
+450 Common Tern
+451 Forster's Tern
+452 Royal Tern
+453 Black Skimmer
+454 Greater White-fronted Goose
+455 Brant
+456 Cackling Goose
+457 Canada Goose
+458 Mute Swan
+459 Trumpeter Swan
+460 Tundra Swan
+461 American Black Duck
+462 Mottled Duck
+463 Common Eider (Female/juvenile)
+464 Long-tailed Duck (Summer male)
+465 Ruddy Duck (Winter male)
+466 Scaled Quail
+467 Northern Bobwhite
+468 Ruffed Grouse
+469 Wild Turkey
+470 Pied-billed Grebe
+471 Western Grebe
+472 Clark's Grebe
+473 Wood Stork
+474 Brandt's Cormorant
+475 Neotropic Cormorant
+476 Pelagic Cormorant
+477 Anhinga
+478 American White Pelican
+479 Brown Pelican
+480 Great Blue Heron
+481 Great Egret
+482 Snowy Egret
+483 Tricolored Heron
+484 Cattle Egret
+485 Green Heron
+486 Glossy Ibis
+487 White-faced Ibis
+488 Roseate Spoonbill
+489 Black Vulture
+490 Turkey Vulture
+491 Osprey
+492 Swallow-tailed Kite
+493 White-tailed Kite
+494 Mississippi Kite
+495 Harris's Hawk
+496 Swainson's Hawk (Light morph )
+497 Red-tailed Hawk (Dark morph)
+498 Crested Caracara
+499 Merlin
+500 Prairie Falcon
+501 American Coot
+502 Sandhill Crane
+503 Semipalmated Plover
+504 Killdeer
+505 American Oystercatcher
+506 Black Oystercatcher
+507 Black-necked Stilt
+508 American Avocet
+509 Solitary Sandpiper
+510 Greater Yellowlegs
+511 Willet
+512 Lesser Yellowlegs
+513 Whimbrel
+514 Long-billed Curlew
+515 Marbled Godwit
+516 Ruddy Turnstone
+517 Black Turnstone
+518 Surfbird
+519 Semipalmated Sandpiper
+520 Western Sandpiper
+521 Least Sandpiper
+522 Short-billed Dowitcher
+523 Wilson's Snipe
+524 American Woodcock
+525 Rock Pigeon
+526 Band-tailed Pigeon
+527 Eurasian Collared-Dove
+528 White-winged Dove
+529 Mourning Dove
+530 Inca Dove
+531 Common Ground-Dove
+532 Monk Parakeet
+533 Yellow-billed Cuckoo
+534 Black-billed Cuckoo
+535 Greater Roadrunner
+536 Barn Owl
+537 Western Screech-Owl
+538 Eastern Screech-Owl
+539 Great Horned Owl
+540 Snowy Owl
+541 Northern Pygmy-Owl
+542 Burrowing Owl
+543 Barred Owl
+544 Northern Saw-whet Owl
+545 Common Nighthawk
+546 Chimney Swift
+547 Vaux's Swift
+548 White-throated Swift
+549 Belted Kingfisher
+550 Acorn Woodpecker
+551 Gila Woodpecker
+552 Golden-fronted Woodpecker
+553 Red-bellied Woodpecker
+554 Yellow-bellied Sapsucker
+555 Red-naped Sapsucker
+556 Red-breasted Sapsucker
+557 Ladder-backed Woodpecker
+558 Nuttall's Woodpecker
+559 Downy Woodpecker
+560 Hairy Woodpecker
+561 Pileated Woodpecker
+562 Say's Phoebe
+563 Cassin's Vireo
+564 Blackburnian Warbler
+565 Boat-tailed Grackle
+566 Black-billed Magpie
+567 Lark Sparrow
+568 Black-headed Grosbeak
+569 Bridled Titmouse
+570 Swainson's Thrush
+571 Bank Swallow
+572 House Wren
+573 Yellow Warbler
+574 White-winged Crossbill
+575 Vermilion Flycatcher
+576 Lark Bunting
+577 Chestnut-sided Warbler
+578 Great-tailed Grackle
+579 Pygmy Nuthatch
+580 Blue-headed Vireo
+581 Yellow-billed Magpie
+582 Blackpoll Warbler
+583 Savannah Sparrow
+584 Blue Grosbeak
+585 Common Redpoll
+586 Ash-throated Flycatcher
+587 Oak Titmouse
+588 Hermit Thrush
+589 Black-throated Blue Warbler
+590 Bronzed Cowbird
+591 Fox Sparrow
+592 Cliff Swallow
+593 Pacific Wren
+594 Black-tailed Gnatcatcher
+595 Ruby-crowned Kinglet
+596 Curve-billed Thrasher
+597 Cedar Waxwing
+598 Palm Warbler
+599 Black Guillemot (Nonbreeding, juvenile)
+600 Pigeon Guillemot (Nonbreeding, juvenile)
+601 Black-legged Kittiwake (Immature)
+602 Laughing Gull (Nonbreeding/Immature)
+603 Heermann's Gull (Immature)
+604 Ring-billed Gull (Immature)
+605 Western Gull (Immature)
+606 California Gull (Immature)
+607 Herring Gull (Immature)
+608 Glaucous-winged Gull (Immature)
+609 Great Black-backed Gull (Immature)
+610 Black-bellied Whistling-Duck
+611 Snow Goose (Blue morph)
+612 Ross's Goose
+613 Wood Duck (Female/Eclipse male)
+614 Gadwall (Female/Eclipse male)
+615 American Wigeon (Female/Eclipse male)
+616 Mallard (Female/Eclipse male)
+617 Blue-winged Teal  (Female/juvenile)
+618 Cinnamon Teal (Female/juvenile)
+619 Northern Shoveler (Female/Eclipse male)
+620 Northern Pintail (Female/Eclipse male)
+621 Green-winged Teal  (Female/juvenile)
+622 Canvasback (Female/Eclipse male)
+623 Redhead (Female/Eclipse male)
+624 Ring-necked Duck (Female/Eclipse male)
+625 Greater Scaup (Female/Eclipse male)
+626 Lesser Scaup (Female/Eclipse male)
+627 Harlequin Duck (Female/juvenile)
+628 Surf Scoter (Female/immature)
+629 White-winged Scoter (Female/juvenile)
+630 Black Scoter (Female/juvenile)
+631 Bufflehead (Female/immature male)
+632 Common Goldeneye (Female/Eclipse male)
+633 Barrow's Goldeneye (Female/Eclipse male)
+634 Hooded Merganser (Female/immature male)
+635 Common Merganser (Female/immature male)
+636 Red-breasted Merganser (Female/immature male)
+637 California Quail (Female/juvenile)
+638 Gambel's Quail (Female/juvenile)
+639 Ring-necked Pheasant (Female/juvenile)
+640 Red-throated Loon (Nonbreeding/juvenile)
+641 Pacific Loon (Nonbreeding/juvenile)
+642 Common Loon (Nonbreeding/juvenile)
+643 Horned Grebe (Nonbreeding/juvenile)
+644 Red-necked Grebe (Nonbreeding/juvenile)
+645 Eared Grebe (Nonbreeding/juvenile)
+646 Northern Gannet (Immature/Juvenile)
+647 Double-crested Cormorant (Adult)
+648 Great Cormorant (Immature)
+649 Little Blue Heron (Immature)
+650 Reddish Egret (White morph)
+651 Black-crowned Night-Heron (Immature)
+652 Yellow-crowned Night-Heron (Immature)
+653 White Ibis (Immature)
+654 Bald Eagle (Immature, juvenile)
+655 Northern Harrier (Female, immature)
+656 Sharp-shinned Hawk (Immature)
+657 Cooper's Hawk (Immature)
+658 Red-shouldered Hawk (Immature)
+659 Broad-winged Hawk (Immature)
+660 Rough-legged Hawk (Light morph)
+661 Golden Eagle (Immature)
+662 American Kestrel (Female, immature)
+663 Peregrine Falcon (Immature)
+664 Purple Gallinule (Immature)
+665 Common Gallinule (Immature)
+666 Black-bellied Plover (Nonbreeding/juvenile)
+667 Spotted Sandpiper (Nonbreeding/juvenile)
+668 Sanderling (Nonbreeding/juvenile)
+669 Dunlin (Nonbreeding/juvenile)
+670 Wilson's Phalarope (Nonbreeding, juvenile)
+671 Broad-billed Hummingbird (Female, immature)
+672 Ruby-throated Hummingbird (Female, immature)
+673 Black-chinned Hummingbird (Female, immature)
+674 Anna's Hummingbird (Female, immature)
+675 Costa's Hummingbird (Female, immature)
+676 Calliope Hummingbird (Female, immature)
+677 Broad-tailed Hummingbird (Female, immature)
+678 Rufous Hummingbird (Female, immature)
+679 Allen's Hummingbird (Female, immature)
+680 Red-headed Woodpecker (Immature)
+681 Northern Flicker (Red-shafted)
+682 Northern Shrike
+683 American Crow
+684 Great Crested Flycatcher
+685 Hoary Redpoll
+686 Song Sparrow
+687 Lazuli Bunting
+688 Pine Warbler
+689 Hutton's Vireo
+690 Brown-headed Cowbird
+691 Yellow-rumped Warbler
+692 Juniper Titmouse
+693 Wood Thrush
+694 Lincoln's Sparrow
+695 Northwestern Crow
+696 Common Eider (Immature/Eclipse male)
+697 Long-tailed Duck (Female/juvenile)
+698 Ruddy Duck (Female/juvenile)
+699 Swainson's Hawk (Immature)
+700 Red-tailed Hawk (Light morph immature)
+701 Cassin's Kingbird
+702 Yellow-throated Warbler
+703 Pine Siskin
+704 Orchard Oriole
+705 Swamp Sparrow
+706 Indigo Bunting
+707 Cave Swallow
+708 Winter Wren
+709 Prairie Warbler
+710 Fish Crow
+711 Brown-headed Nuthatch
+712 Warbling Vireo
+713 Black-throated Gray Warbler
+714 White-throated Sparrow
+715 Lesser Goldfinch
+716 Western Kingbird
+717 Tufted Titmouse
+718 American Robin
+719 Hooded Oriole
+720 California Thrasher
+721 Townsend's Warbler
+722 Harris's Sparrow
+723 Painted Bunting
+724 Hermit Warbler
+725 Chihuahuan Raven
+726 American Goldfinch
+727 Eastern Kingbird
+728 Bullock's Oriole
+729 White-crowned Sparrow
+730 Barn Swallow
+731 Marsh Wren
+732 Black-throated Green Warbler
+733 Red-eyed Vireo
+734 Black-crested Titmouse
+735 Varied Thrush
+736 Canada Warbler
+737 Golden-crowned Sparrow
+738 Dickcissel
+739 Common Raven
+740 Evening Grosbeak
+741 Scissor-tailed Flycatcher
+742 Baltimore Oriole
+743 Wilson's Warbler
+744 Dark-eyed Junco
+745 Yellow-breasted Chat
+746 Dark-eyed Junco (Slate-colored)
+747 Yellow-rumped Warbler (Breeding Myrtle)
+748 European Starling (Breeding Adult)
+749 Fox Sparrow (Red)
+750 Summer Tanager (Adult Male)
+751 Orchard Oriole (Adult Male)
+752 Purple Martin (Adult male)
+753 American Robin (Adult)
+754 Phainopepla (Female/juvenile)
+755 Snow Bunting (Breeding adult)
+756 Common Yellowthroat (Adult Male)
+757 American Redstart (Adult Male)
+758 Magnolia Warbler (Breeding male)
+759 Bay-breasted Warbler (Breeding male)
+760 Chestnut-sided Warbler (Breeding male)
+761 Blackpoll Warbler (Breeding male)
+762 Black-throated Blue Warbler (Adult Male)
+763 Lark Bunting (Breeding male)
+764 White-throated Sparrow (White-striped)
+765 Harris's Sparrow (Adult)
+766 White-crowned Sparrow (Adult)
+767 Golden-crowned Sparrow (Adult)
+768 Dark-eyed Junco (Oregon)
+769 Chipping Sparrow (Breeding)
+770 Scarlet Tanager (Breeding Male)
+771 Western Tanager (Breeding Male)
+772 Northern Cardinal (Adult Male)
+773 Rose-breasted Grosbeak (Adult Male)
+774 Black-headed Grosbeak (Adult Male)
+775 Blue Grosbeak (Adult Male)
+776 Lazuli Bunting (Adult Male)
+777 Indigo Bunting (Adult Male)
+778 Painted Bunting (Adult Male)
+779 Bobolink (Breeding male)
+780 Red-winged Blackbird (Male)
+781 Yellow-headed Blackbird (Adult Male)
+782 Brewer's Blackbird (Female/Juvenile)
+783 Brown-headed Cowbird (Male)
+784 Hooded Oriole (Adult male)
+785 Bullock's Oriole (Adult male)
+786 Baltimore Oriole (Adult male)
+787 Pine Grosbeak (Adult Male)
+788 Purple Finch (Adult Male)
+789 Cassin's Finch (Adult Male)
+790 House Finch (Adult Male)
+791 Red Crossbill (Adult Male)
+792 White-winged Crossbill (Adult Male)
+793 Lesser Goldfinch (Adult Male)
+794 American Goldfinch (Breeding Male)
+795 Evening Grosbeak (Adult Male)
+796 House Sparrow (Male)
+797 Vermilion Flycatcher (Adult male)
+798 Yellow-rumped Warbler (Winter/juvenile Myrtle)
+799 Northwestern Crow
+800 Fish Crow
+801 Chihuahuan Raven
+802 Common Raven
+803 Horned Lark
+804 Tree Swallow
+805 Violet-green Swallow
+806 Northern Rough-winged Swallow
+807 Bank Swallow
+808 Cliff Swallow
+809 Cave Swallow
+810 Barn Swallow
+811 Carolina Chickadee
+812 Black-capped Chickadee
+813 Mountain Chickadee
+814 Chestnut-backed Chickadee
+815 Boreal Chickadee
+816 Bridled Titmouse
+817 Oak Titmouse
+818 Juniper Titmouse
+819 Tufted Titmouse
+820 Black-crested Titmouse
+821 Verdin
+822 Bushtit
+823 Red-breasted Nuthatch
+824 White-breasted Nuthatch
+825 Pygmy Nuthatch
+826 Brown-headed Nuthatch
+827 Brown Creeper
+828 Cactus Wren
+829 Canyon Wren
+830 Carolina Wren
+831 Bewick's Wren
+832 House Wren
+833 Pacific Wren
+834 Winter Wren
+835 Marsh Wren
+836 Blue-gray Gnatcatcher
+837 Black-tailed Gnatcatcher
+838 American Dipper
+839 Golden-crowned Kinglet
+840 Ruby-crowned Kinglet
+841 Wrentit
+842 Eastern Bluebird
+843 Western Bluebird
+844 Mountain Bluebird
+845 Townsend's Solitaire
+846 Veery
+847 Swainson's Thrush
+848 Hermit Thrush
+849 Wood Thrush
+850 Varied Thrush
+851 Gray Catbird
+852 Northern Mockingbird
+853 Brown Thrasher
+854 Curve-billed Thrasher
+855 California Thrasher
+856 European Starling (Nonbreeding Adult)
+857 American Pipit
+858 Bohemian Waxwing
+859 Cedar Waxwing
+860 Ovenbird
+861 Louisiana Waterthrush
+862 Northern Waterthrush
+863 Blue-winged Warbler
+864 Black-and-white Warbler
+865 Prothonotary Warbler
+866 Tennessee Warbler
+867 Orange-crowned Warbler
+868 Nashville Warbler
+869 MacGillivray's Warbler
+870 Mourning Warbler
+871 Hooded Warbler
+872 Cape May Warbler
+873 Northern Parula
+874 Blackburnian Warbler
+875 Yellow Warbler
+876 Palm Warbler
+877 Pine Warbler
+878 Yellow-throated Warbler
+879 Prairie Warbler
+880 Black-throated Gray Warbler
+881 Townsend's Warbler
+882 Hermit Warbler
+883 Black-throated Green Warbler
+884 Canada Warbler
+885 Wilson's Warbler
+886 Yellow-breasted Chat
+887 Green-tailed Towhee
+888 Spotted Towhee
+889 Eastern Towhee
+890 Rufous-crowned Sparrow
+891 Canyon Towhee
+892 California Towhee
+893 Abert's Towhee
+894 American Tree Sparrow
+895 Clay-colored Sparrow
+896 Brewer's Sparrow
+897 Field Sparrow
+898 Vesper Sparrow
+899 Lark Sparrow
+900 Savannah Sparrow
+901 Fox Sparrow (Sooty)
+902 Song Sparrow
+903 Lincoln's Sparrow
+904 Swamp Sparrow
+905 Dark-eyed Junco (Pink-sided)
+906 Summer Tanager (Female)
+907 Pyrrhuloxia
+908 Dickcissel
+909 Eastern Meadowlark
+910 Western Meadowlark
+911 Rusty Blackbird
+912 Common Grackle
+913 Boat-tailed Grackle
+914 Great-tailed Grackle
+915 Bronzed Cowbird
+916 Orchard Oriole (Immature Male)
+917 Gray-crowned Rosy-Finch
+918 Black Rosy-Finch
+919 Brown-capped Rosy-Finch
+920 Common Redpoll
+921 Hoary Redpoll
+922 Pine Siskin
+923 Western Wood-Pewee
+924 Eastern Wood-Pewee
+925 Least Flycatcher
+926 Pacific-slope Flycatcher
+927 Cordilleran Flycatcher
+928 Black Phoebe
+929 Eastern Phoebe
+930 Say's Phoebe
+931 Ash-throated Flycatcher
+932 Great Crested Flycatcher
+933 Cassin's Kingbird
+934 Western Kingbird
+935 Eastern Kingbird
+936 Scissor-tailed Flycatcher
+937 Loggerhead Shrike
+938 Northern Shrike
+939 White-eyed Vireo
+940 Bell's Vireo
+941 Yellow-throated Vireo
+942 Plumbeous Vireo
+943 Cassin's Vireo
+944 Blue-headed Vireo
+945 Hutton's Vireo
+946 Warbling Vireo
+947 Red-eyed Vireo
+948 Gray Jay
+949 Steller's Jay
+950 Blue Jay
+951 Florida Scrub-Jay
+952 Western Scrub-Jay
+953 Mexican Jay
+954 Clark's Nutcracker
+955 Black-billed Magpie
+956 Yellow-billed Magpie
+957 American Crow
+958 Yellow-rumped Warbler (Breeding Audubon's)
+959 Purple Martin (Female/juvenile)
+960 American Robin (Juvenile)
+961 Phainopepla (Male)
+962 Snow Bunting (Nonbreeding)
+963 Common Yellowthroat (Female/immature male)
+964 American Redstart (Female/juvenile)
+965 Magnolia Warbler (Female/immature male)
+966 Bay-breasted Warbler (Female, Nonbreeding male, Immature)
+967 Chestnut-sided Warbler (Female/immature male)
+968 Blackpoll Warbler (Female/juvenile)
+969 Black-throated Blue Warbler (Female/Immature male)
+970 Lark Bunting (Female/Nonbreeding male)
+971 White-throated Sparrow (Tan-striped/immature)
+972 Harris's Sparrow (Immature)
+973 White-crowned Sparrow (Immature)
+974 Golden-crowned Sparrow (Immature)
+975 Dark-eyed Junco (White-winged)
+976 Chipping Sparrow (Immature/nonbreeding adult)
+977 Scarlet Tanager (Female/Nonbreeding Male)
+978 Western Tanager (Female/Nonbreeding Male)
+979 Northern Cardinal (Female/Juvenile)
+980 Rose-breasted Grosbeak (Female/immature male)
+981 Black-headed Grosbeak (Female/immature male)
+982 Blue Grosbeak (Female/juvenile)
+983 Lazuli Bunting (Female/juvenile)
+984 Indigo Bunting (Female/juvenile)
+985 Painted Bunting (Female/juvenile)
+986 Bobolink (Female/juvenile/nonbreeding male)
+987 Red-winged Blackbird (Female/juvenile)
+988 Yellow-headed Blackbird (Female/Immature Male)
+989 Brewer's Blackbird (Male)
+990 Brown-headed Cowbird (Female/Juvenile)
+991 Hooded Oriole (Female/Immature male)
+992 Bullock's Oriole (Female/Immature male)
+993 Baltimore Oriole (Female/Immature male)
+994 Pine Grosbeak (Female/juvenile)
+995 Purple Finch (Female/immature)
+996 Cassin's Finch (Female/immature)
+997 House Finch (Female/immature)
+998 Red Crossbill (Female/juvenile)
+999 White-winged Crossbill (Female/juvenile)
+1000 Lesser Goldfinch (Female/juvenile)
+1001 American Goldfinch (Female/Nonbreeding Male)
+1002 Evening Grosbeak (Female/Juvenile)
+1003 House Sparrow (Female/Juvenile)
+1004 Vermilion Flycatcher (Female, immature)
+1005 European Starling (Juvenile)
+1006 Fox Sparrow (Thick-billed/Slate-colored)
+1007 Summer Tanager (Immature Male)
+1008 Orchard Oriole (Female/Juvenile)
+1009 Yellow-rumped Warbler (Winter/juvenile Audubon's)
+1010 Dark-eyed Junco (Red-backed/Gray-headed)
