@@ -15,15 +15,17 @@ from datasets import DATASETS, get_data_generator
 
 def center_loss_model(base_model, centroids):
     
+    num_classes = centroids.shape[0] if isinstance(centroids, np.ndarray) else centroids
+    
     input_ = base_model.input
     embedding = base_model.output
     
     prob = keras.layers.Activation('relu')(embedding)
     prob = keras.layers.BatchNormalization()(prob)
-    prob = keras.layers.Dense(100, activation = 'softmax', name = 'prob')(prob)
+    prob = keras.layers.Dense(num_classes, activation = 'softmax', name = 'prob')(prob)
     
     cls_input_ = keras.layers.Input((1,), name = 'labels')
-    cls_embedding_layer = keras.layers.Embedding(centroids.shape[0] if isinstance(centroids, np.ndarray) else centroids, int(embedding.shape[-1]), name = 'cls_centroids')
+    cls_embedding_layer = keras.layers.Embedding(num_classes, int(embedding.shape[-1]), name = 'cls_centroids')
     cls_embedding = cls_embedding_layer(cls_input_)
     if isinstance(centroids, np.ndarray):
         cls_embedding_layer.set_weights([centroids])
@@ -144,7 +146,10 @@ if __name__ == '__main__':
 
     # Save model
     if args.model_dump:
-        model.save(args.model_dump)
+        try:
+            model.save(args.model_dump)
+        except Exception as e:
+            print('An error occurred while saving the model: {}'.format(e))
 
     # Save test image embeddings
     if args.feature_dump:
