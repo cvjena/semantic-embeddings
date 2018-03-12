@@ -15,12 +15,11 @@ from datasets import DATASETS, get_data_generator
 
 def build_ensemble(architecture, num_classes, embeddings):
     
-    input_ = keras.layers.Input((32,32,3))
-    
     cls_network = utils.build_network(num_classes, architecture, classification = True)
     cls_network = keras.models.Model(cls_network.inputs, [cls_network.layers[-3 if architecture.lower() == 'simple' else -2].output, cls_network.output], name = 'cnn0')
     embed_networks = [utils.build_network(emb.shape[1], architecture, classification = False, name = 'cnn{}'.format(i+1)) for i, emb in enumerate(embeddings)]
     
+    input_ = keras.layers.Input(cls_network.input.shape.as_list()[1:])
     cls_feat, cls_prob = cls_network(input_)
     outputs = [cls_prob] + [cnn(input_) for cnn in embed_networks]
     
@@ -129,7 +128,7 @@ if __name__ == '__main__':
               data_generator.num_train // args.batch_size,
               validation_data = gen_inputs(data_generator.flow_test(args.val_batch_size), embeddings),
               validation_steps = data_generator.num_test // args.val_batch_size,
-              epochs = num_epochs, callbacks = callbacks, verbose = not args.no_progress)
+              epochs = args.epochs if args.epochs else num_epochs, callbacks = callbacks, verbose = not args.no_progress)
 
     # Evaluate final performance
     print(par_model.evaluate_generator(gen_inputs(data_generator.flow_test(args.val_batch_size), embeddings), data_generator.num_test // args.val_batch_size))
