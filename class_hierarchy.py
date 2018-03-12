@@ -327,7 +327,7 @@ class ClassHierarchy(object):
             for l in f:
                 if l.strip() != '':
                     
-                    parent, child = [id_type(id) for id in l.split(maxsplit = 1)]
+                    parent, child = [id_type(id) for id in l.strip().split(maxsplit = 1)]
                     if is_a_relations:
                         parent, child = child, parent
                     

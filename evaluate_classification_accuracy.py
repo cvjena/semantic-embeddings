@@ -17,7 +17,7 @@ METRICS = ['Accuracy', 'Top-5 Accuracy', 'Hierarchical Accuracy']
 
 
 
-def train_and_predict(data, model, layer = None, normalize = False, augmentation_epochs = 1, C = 1.0, custom_objects = {}):
+def train_and_predict(data, model, layer = None, normalize = False, augmentation_epochs = 1, C = 1.0, custom_objects = {}, batch_size = 1):
     
     # Load model
     if isinstance(model, str):
@@ -28,7 +28,7 @@ def train_and_predict(data, model, layer = None, normalize = False, augmentation
     # Extract features
     sys.stderr.write('Extracting features...\n')
     X_train = model.predict_generator(data.flow_train(10, False, shuffle = False, augment = augmentation_epochs > 1), augmentation_epochs * (data.num_train // 10), verbose = 1)
-    X_test = model.predict_generator(data.flow_test(1, False, shuffle = False, augment = False), data.num_test, verbose = 1)
+    X_test = model.predict_generator(data.flow_test(batch_size, False, shuffle = False, augment = False), data.num_test // batch_size, verbose = 1)
     if normalize:
         X_train /= np.linalg.norm(X_train, axis = -1, keepdims = True)
         X_test /= np.linalg.norm(X_test, axis = -1, keepdims = True)
@@ -47,7 +47,7 @@ def train_and_predict(data, model, layer = None, normalize = False, augmentation
     return svm.decision_function(X_test).argsort(axis = -1)[:,::-1]
 
 
-def nn_classification(data, centroids, model, layer = None, custom_objects = {}):
+def nn_classification(data, centroids, model, layer = None, custom_objects = {}, batch_size = 1):
     
     # Load class centroids
     if isinstance(centroids, str):
@@ -62,14 +62,14 @@ def nn_classification(data, centroids, model, layer = None, custom_objects = {})
     
     # Extract features
     sys.stderr.write('Extracting features...\n')
-    feat = model.predict_generator(data.flow_test(1, False, shuffle = False, augment = False), data.num_test, verbose = 1)
+    feat = model.predict_generator(data.flow_test(batch_size, False, shuffle = False, augment = False), data.num_test // batch_size, verbose = 1)
     
     # Classify
     sys.stderr.write('Searching for nearest class centroids...\n')
     return cdist(feat, centroids, 'sqeuclidean').argsort(axis = -1)
 
 
-def extract_predictions(data, model, layer = None, custom_objects = {}):
+def extract_predictions(data, model, layer = None, custom_objects = {}, batch_size = 1):
     
     # Load model
     if isinstance(model, str):
@@ -79,7 +79,7 @@ def extract_predictions(data, model, layer = None, custom_objects = {}):
     
     # Extract predictions
     sys.stderr.write('Predicting and evaluating...\n')
-    return model.predict_generator(data.flow_test(1, False, shuffle = False, augment = False), data.num_test, verbose = 1).argsort(axis = -1)[:,::-1]
+    return model.predict_generator(data.flow_test(batch_size, False, shuffle = False, augment = False), data.num_test // batch_size, verbose = 1).argsort(axis = -1)[:,::-1]
 
 
 def evaluate(y_pred, y_true, hierarchy, ind2label = None):
@@ -139,6 +139,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--classes_from', type = str, default = None, help = 'Optionally, a path to a pickle dump containing a dictionary with item "ind2label" specifying the classes to be considered.')
     arggroup.add_argument('--augmentation_epochs', type = int, default = 1, help = 'Number of training image augmentations.')
     arggroup.add_argument('--C', type = float, default = 0.1, help = 'Weight of the error in SVM loss.')
+    arggroup.add_argument('--batch_size', type = int, default = 1, help = 'Batch size for feature extraction. Must divide the number of images evenly.')
     arggroup = parser.add_argument_group('Features')
     arggroup.add_argument('--architecture', type = str, default = 'simple', choices = utils.ARCHITECTURES, help = 'Type of network architecture.')
     arggroup.add_argument('--model', type = str, action = 'append', required = True, help = 'Path to a keras model dump used for extracting image features.')
@@ -179,11 +180,11 @@ if __name__ == '__main__':
         centroids = args.centroids[i] if (args.centroids is not None) and (i < len(args.centroids)) else ''
         sys.stderr.write('-- {} --\n'.format(model_name))
         if prob_features:
-            pred = extract_predictions(data_generator, model, layer, custom_objects)
+            pred = extract_predictions(data_generator, model, layer, custom_objects, args.batch_size)
         elif centroids:
-            pred = nn_classification(data_generator, centroids, model, layer, custom_objects)
+            pred = nn_classification(data_generator, centroids, model, layer, custom_objects, args.batch_size)
         else:
-            pred = train_and_predict(data_generator, model, layer, normalize, args.augmentation_epochs, args.C, custom_objects)
+            pred = train_and_predict(data_generator, model, layer, normalize, args.augmentation_epochs, args.C, custom_objects, args.batch_size)
         perf[model_name] = evaluate(pred, data_generator.labels_test, hierarchy, embed_labels)
     
     # Show results
