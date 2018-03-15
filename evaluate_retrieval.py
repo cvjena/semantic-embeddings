@@ -42,9 +42,12 @@ def pairwise_retrieval(features, normalize = False):
     else:
         sqnorm = np.sum(features ** 2, axis = -1)
         pdist = ne.evaluate('A + B - 2 * C', { 'A' : sqnorm[:,None], 'B' : sqnorm[None,:], 'C' : np.dot(features, features.T) })
+        del sqnorm
+    del features
     
     # Rank images
     ranking = np.argsort(pdist, axis = -1)
+    del pdist
     return { (ind2id[i] if ind2id is not None else i) : [ind2id[int(r)] if ind2id is not None else int(r) for r in ret] for i, ret in enumerate(ranking) }
 
 
