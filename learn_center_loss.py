@@ -62,7 +62,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--architecture', type = str, default = 'simple', choices = utils.ARCHITECTURES, help = 'Type of network architecture.')
     arggroup.add_argument('--lr_schedule', type = str, default = 'SGDR', choices = utils.LR_SCHEDULES, help = 'Type of learning rate schedule.')
     arggroup.add_argument('--clipgrad', type = float, default = 10.0, help = 'Gradient norm clipping.')
-    arggroup.add_argument('--max_decay', type = float, default = 0.25, help = 'Learning Rate decay at the end of training.')
+    arggroup.add_argument('--max_decay', type = float, default = 0.0, help = 'Learning Rate decay at the end of training.')
     arggroup.add_argument('--epochs', type = int, default = None, help = 'Number of training epochs.')
     arggroup.add_argument('--batch_size', type = int, default = 100, help = 'Batch size.')
     arggroup.add_argument('--val_batch_size', type = int, default = None, help = 'Validation batch size.')
