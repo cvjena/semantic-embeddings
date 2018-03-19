@@ -97,6 +97,21 @@ def build_simplenet(output_dim, filters, activation = 'relu', regularizer = kera
 
 
 def build_network(num_outputs, architecture, classification = False, name = None):
+    """ Constructs a CNN.
+    
+    # Arguments:
+    
+    - num_outputs: number of final output units.
+    
+    - architecture: name of the architecture. See ARCHITECTURES for a list of possible values.
+    
+    - classification: If `True`, the final layer will have a softmax activation, otherwise no activation at all.
+    
+    - name: The name of the network.
+    
+    # Returns:
+        keras.models.Model
+    """
     
     # CIFAR-100 architectures
     
