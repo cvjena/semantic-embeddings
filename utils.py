@@ -27,6 +27,16 @@ def mean_distance(y_true, y_pred):
     return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
 
 
+def von_mises_fisher_loss(concentration = 1.0):
+    """ Reference: Zhe et al.: "Directional Statistics-based Deep Metric Learning for Image Classification and Retrieval." 2018. """
+    
+    def vmf(y_true, y_pred):
+        sim = K.exp(concentration * K.sum(y_true * y_pred, axis = -1))
+        return -K.log(sim / K.sum(sim))
+    
+    return vmf
+
+
 def nn_accuracy(embedding, dot_prod_sim = False):
 
     def nn_accuracy(y_true, y_pred):
@@ -59,6 +69,10 @@ def devise_ranking_loss(embedding, margin = 0.1):
         return K.sum(K.relu(margin - true_sim[:,None] + other_sim), axis = -1) - margin
     
     return _loss
+
+
+def l2norm(x):
+    return K.l2_normalize(x, axis = -1)
 
 
 def build_simplenet(output_dim, filters, activation = 'relu', regularizer = keras.regularizers.l2(0.0005), final_activation = None, name = None):

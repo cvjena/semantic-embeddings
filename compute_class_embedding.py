@@ -237,16 +237,51 @@ def mds(class_dist, num_dim = None):
 
 
 
+def unitsphere_embedding(class_sim):
+    """
+    Finds an embedding of `n` classes on a unit sphere in `n`-dimensional space, so that their dot products correspond
+    to pre-defined similarities.
+    
+    class_sim - `n-by-n` matrix specifying the desired similarity between each pair of classes.
+    
+    Returns: `n-by-n` matrix with rows being the locations of the corresponding classes in the embedding space.
+    """
+    
+    # Check arguments
+    if (class_sim.ndim != 2) or (class_sim.shape[0] != class_sim.shape[1]):
+        raise ValueError('Given class_sim has invalid shape. Expected: (n, n). Got: {}'.format(class_sim.shape))
+    if (class_sim.shape[0] == 0):
+        raise ValueError('Empty class_sim given.')
+    
+    # Place first class
+    nc = class_sim.shape[0]
+    embeddings = np.zeros((nc, nc))
+    embeddings[0,0] = 1.
+    
+    # Iteratively place all remaining classes
+    for c in range(1, nc):
+        embeddings[c, :c] = np.linalg.solve(embeddings[:c, :c], class_sim[c, :c])
+        embeddings[c, c] = np.sqrt(1. - np.sum(embeddings[c, :c] ** 2))
+    
+    return embeddings
+
+
+
 if __name__ == '__main__':
     
     # Parse arguments
-    parser = argparse.ArgumentParser(description = 'Computes (n-1)-dimensional embeddings of n classes so that their distance corresponds to 1 minus the height of their LCS in a given hierarchy.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description = 'Computes embeddings of n classes so that their distance corresponds to 1 minus the height of their LCS in a given hierarchy.', formatter_class = argparse.RawTextHelpFormatter)
     parser.add_argument('--hierarchy', type = str, required = True, help = 'Path to a file containing parent-child or is-a relationships (one per line).')
     parser.add_argument('--is_a', action = 'store_true', default = False, help = 'If given, --hierarchy is assumed to contain is-a instead of parent-child relationships.')
     parser.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
     parser.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the classes to compute embeddings for (as first words per line). If not given, all leaf nodes in the hierarchy will be considered as target classes.')
     parser.add_argument('--out', type = str, required = True, help = 'Filename of the resulting pickle dump (containing keys "embedding", "ind2label", and "label2ind").')
-    parser.add_argument('--method', type = str, default = 'spheres', choices = ['spheres', 'mds'], help = 'Whether to use consecutive hypersphere intersections or multidimensional scaling.')
+    parser.add_argument('--method', type = str, default = 'spheres', choices = ['spheres', 'mds', 'unitsphere'],
+                        help = '''Which algorithm to use for computing class embeddings. Options are:
+    - "spheres": Compute (n-1)-dimensional embeddings so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using successive intersections of hyperspheres.
+    - "mds": Compute (n-1)-dimensional embeddings so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using classical multidimensional scaling.
+    - "unitsphere": Compute n-dimensional L2-normalized embeddings so that the dot product of class embeddings correspond to their semantic similarity.
+Default: "spheres"''')
     args = parser.parse_args()
     id_type = str if args.str_ids else int
     
@@ -275,13 +310,20 @@ if __name__ == '__main__':
         embedding = hierarchical_class_embedding(sem_class_dist)
     elif args.method == 'mds':
         embedding = mds(sem_class_dist, len(unique_labels) - 1)
+    elif args.method == 'unitsphere':
+        embedding = unitsphere_embedding(1. - sem_class_dist)
     else:
         raise ValueError('Unknown method: {}'.format(args.method))
     stop_time = time.time()
-    dist_error = np.abs(scipy.spatial.distance.squareform(scipy.spatial.distance.pdist(embedding)) - sem_class_dist)
     print('Computed semantic embeddings for {} classes in {} seconds.'.format(embedding.shape[0], stop_time - start_time))
-    print('Maximum deviation from target distances: {}'.format(dist_error.max()))
-    print('Average deviation from target distances: {}'.format(dist_error.mean()))
+    if args.method == 'unitsphere':
+        sim_error = np.abs(np.dot(embedding, embedding.T) - (1. - sem_class_dist))
+        print('Maximum deviation from target similarities: {}'.format(sim_error.max()))
+        print('Average deviation from target similarities: {}'.format(sim_error.mean()))
+    else:
+        dist_error = np.abs(scipy.spatial.distance.squareform(scipy.spatial.distance.pdist(embedding)) - sem_class_dist)
+        print('Maximum deviation from target distances: {}'.format(dist_error.max()))
+        print('Average deviation from target distances: {}'.format(dist_error.mean()))
     
     # Store results
     with open(args.out, 'wb') as dump_file:
