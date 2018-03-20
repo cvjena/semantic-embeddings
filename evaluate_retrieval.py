@@ -31,7 +31,7 @@ def pairwise_retrieval(features, normalize = False):
         ind2id = dict(enumerate(features.keys()))
         features = np.stack(list(features.values()))
         if features.ndim > 2:
-            features = features.mean(axis = tuple(range(2, features.ndim)))  # avg pooling
+            raise ValueError('Feature matrix must be 2-dimensional. Actual shape: {}'.format(features.shape))
     else:
         ind2id = None
     

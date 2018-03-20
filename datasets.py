@@ -342,10 +342,10 @@ class ILSVRCGenerator(FileDatasetGenerator):
         
         # Search for images
         for lbl, subdir in enumerate(self.classes):
-            cls_files = list_pictures(os.path.join(self.train_dir, subdir), 'JPE?G|jpe?g')
+            cls_files = sorted(list_pictures(os.path.join(self.train_dir, subdir), 'JPE?G|jpe?g'))
             self.train_img_files += cls_files
             self._train_labels += [lbl] * len(cls_files)
-            cls_files = list_pictures(os.path.join(self.test_dir, subdir), 'JPE?G|jpe?g')
+            cls_files = sorted(list_pictures(os.path.join(self.test_dir, subdir), 'JPE?G|jpe?g'))
             self.test_img_files += cls_files
             self._test_labels += [lbl] * len(cls_files)
         print('Found {} training and {} validation images from {} classes.'.format(self.num_train, self.num_test, self.num_classes))
