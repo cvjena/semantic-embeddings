@@ -254,19 +254,22 @@ class ClassHierarchy(object):
             
             # Compute WUP similarity and determine optimal ranking for this label
             if (lbl not in best_wup_cum) or compute_ahp:
-                wup = [self.wup_similarity(lbl, labels[r]) for r in ret]
+                # We inlined the cache lookup from self.wup_similarity() here to reduce unnecessary function calls.
+                wup = [self._wup_cache[(lbl, labels[r])] if (lbl, labels[r]) in self._wup_cache else self.wup_similarity(lbl, labels[r]) for r in ret]
                 if lbl not in best_wup_cum:
                     best_wup_cum[lbl] = np.cumsum(sorted(wup, reverse = True))
             else:
-                wup = [self.wup_similarity(lbl, labels[r]) for r in ret[:kmax+1]]
+                wup = [self._wup_cache[(lbl, labels[r])] if (lbl, labels[r]) in self._wup_cache else self.wup_similarity(lbl, labels[r]) for r in ret[:kmax+1]]
             
             # Compute LCS height based similarity and determine optimal ranking for this label
             if (lbl not in best_lcs_cum) or compute_ahp:
-                lcs = [1.0 - self.lcs_height(lbl, labels[r]) for r in ret]
+                # We inline self.lcs_height() here to reduce function calls.
+                # We also don't need to check whether the class pair is cached in self._lcs_cache, since we computed the WUP before which does that implicitly.
+                lcs = (1.0 - np.array([self.heights[self._lcs_cache[(lbl, labels[r])]] for r in ret]) / self.max_height).tolist()
                 if lbl not in best_lcs_cum:
                     best_lcs_cum[lbl] = np.cumsum(sorted(lcs, reverse = True))
             else:
-                lcs = [1.0 - self.lcs_height(lbl, labels[r]) for r in ret[:kmax+1]]
+                lcs = (1.0 - np.array([self.heights[self._lcs_cache[(lbl, labels[r])]] for r in ret[:kmax+1]]) / self.max_height).tolist()
             
             # Remove query from retrieval list
             cum_best_wup = best_wup_cum[lbl]

@@ -28,7 +28,7 @@ def pairwise_retrieval(features, normalize = False):
     if isinstance(features, dict):
         if 'feat' in features:
             features = features['feat']
-        ind2id = dict(enumerate(features.keys()))
+        ind2id = np.array(list(features.keys()))
         features = np.stack(list(features.values()))
         if features.ndim > 2:
             raise ValueError('Feature matrix must be 2-dimensional. Actual shape: {}'.format(features.shape))
@@ -48,7 +48,10 @@ def pairwise_retrieval(features, normalize = False):
     # Rank images
     ranking = np.argsort(pdist, axis = -1)
     del pdist
-    return { (ind2id[i] if ind2id is not None else i) : [ind2id[int(r)] if ind2id is not None else int(r) for r in ret] for i, ret in enumerate(ranking) }
+    if ind2id is not None:
+        return { ind2id[i] : ind2id[ret].tolist() for i, ret in enumerate(ranking) }
+    else:
+        return { i : ret.tolist() for i, ret in enumerate(ranking) }
 
 
 def print_performance(perf, metrics = METRICS):
