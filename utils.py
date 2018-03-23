@@ -13,7 +13,8 @@ from sgdr_callback import SGDR
 
 
 
-ARCHITECTURES = ['simple', 'simple-mp', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'wrn-28-10', 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'vgg16', 'resnet-50']
+ARCHITECTURES = ['simple', 'simple-mp', 'simple-selu', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'resnet-110-fc-selu', 'wrn-28-10',
+                 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'pyramidnet-272-200-selu', 'vgg16', 'resnet-50']
 
 LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
 
@@ -121,21 +122,27 @@ def build_network(num_outputs, architecture, classification = False, name = None
         keras.models.Model
     """
     
+    if architecture.lower().endswith('-selu'):
+        activation = 'selu'
+        architecture = architecture[:-5]
+    else:
+        activation = 'relu'
+    
     # CIFAR-100 architectures
     
     if architecture == 'resnet-32':
         
-        return cifar_resnet.SmallResNet(5, filters = [16, 32, 64] if classification else [32, 64, num_outputs],
+        return cifar_resnet.SmallResNet(5, filters = [16, 32, 64] if classification else [32, 64, num_outputs], activation = activation,
                                         include_top = classification, classes = num_outputs, name = name)
         
     elif architecture == 'resnet-110':
         
-        return cifar_resnet.SmallResNet(18, filters = [16, 32, 64] if classification else [32, 64, num_outputs],
+        return cifar_resnet.SmallResNet(18, filters = [16, 32, 64] if classification else [32, 64, num_outputs], activation = activation,
                                         include_top = classification, classes = num_outputs, name = name)
     
     elif architecture == 'resnet-110-fc':
         
-        return cifar_resnet.SmallResNet(18, filters = [32, 64, 128],
+        return cifar_resnet.SmallResNet(18, filters = [32, 64, 128], activation = activation,
                                         include_top = True, top_activation = 'softmax' if classification else None,
                                         classes = num_outputs, name = name)
     
@@ -151,23 +158,25 @@ def build_network(num_outputs, architecture, classification = False, name = None
     
     elif architecture == 'pyramidnet-272-200':
         
-        return cifar_pyramidnet.PyramidNet(272, 200, bottleneck = True,
+        return cifar_pyramidnet.PyramidNet(272, 200, bottleneck = True, activation = activation,
                                            classes = num_outputs, top_activation = 'softmax' if classification else None, name = name)
     
     elif architecture == 'pyramidnet-110-270':
         
-        return cifar_pyramidnet.PyramidNet(110, 270, bottleneck = False,
+        return cifar_pyramidnet.PyramidNet(110, 270, bottleneck = False, activation = activation,
                                            classes = num_outputs, top_activation = 'softmax' if classification else None, name = name)
         
     elif architecture == 'simple':
         
         return build_simplenet(num_outputs, [64, 64, 'ap', 128, 128, 128, 'ap', 256, 256, 256, 'ap', 512, 'gap', 'fc512'],
+                               activation = activation,
                                final_activation = 'softmax' if classification else None,
                                name = name)
     
     elif architecture == 'simple-mp':
         
         return build_simplenet(num_outputs, [64, 64, 'mp', 128, 128, 128, 'mp', 256, 256, 256, 'mp', 512, 'gap', 'fc512'],
+                               activation = activation,
                                final_activation = 'softmax' if classification else None,
                                name = name)
     
