@@ -13,13 +13,20 @@ from datasets import DATASETS, get_data_generator
 
 
 
-def cls_model(embed_model, num_classes):
+def cls_model(embed_model, num_classes, cls_base = None):
     
-    embedding = embed_model.output
-    x = keras.layers.Activation('relu')(embedding)
+    if cls_base is None:
+        base = embed_model.output
+    else:
+        try:
+            base = embed_model.layers[int(cls_base)].output
+        except ValueError:
+            base = embed_model.get_layer(cls_base).output
+    
+    x = keras.layers.Activation('relu')(base)
     x = keras.layers.BatchNormalization()(x)
     x = keras.layers.Dense(num_classes, activation = 'softmax', kernel_regularizer = keras.regularizers.l2(5e-4), name = 'prob')(x)
-    return keras.models.Model(embed_model.inputs, [embedding, x])
+    return keras.models.Model(embed_model.inputs, [embed_model.output, x])
 
 
 def gen_inputs(gen, embedding, num_classes = None):
@@ -42,6 +49,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--loss', type = str, default = 'mse', choices = ['mse', 'inv_corr'],
                           help = 'Loss function for learning embeddings. Use "mse" (mean squared error) for distance-based and "inv_corr" (negated dot product) for similarity-based L2-normalized embeddings.')
     arggroup.add_argument('--cls_weight', type = float, default = 0.0, help = 'If set to a positive value, an additional classification layer will be added and this parameter specifies the weight of the softmax loss.')
+    arggroup.add_argument('--cls_base', type = str, default = None, help = 'Name or index of the layer that the classification layer should be based on. If not specified, the final embedding layer will be used.')
     arggroup.add_argument('--lr_schedule', type = str, default = 'SGDR', choices = utils.LR_SCHEDULES, help = 'Type of learning rate schedule.')
     arggroup.add_argument('--clipgrad', type = float, default = 10.0, help = 'Gradient norm clipping.')
     arggroup.add_argument('--max_decay', type = float, default = 0.0, help = 'Learning Rate decay at the end of training.')
@@ -97,7 +105,7 @@ if __name__ == '__main__':
                 model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
                 embedding_layer_name = 'l2norm'
             if args.cls_weight > 0:
-                model = cls_model(model, data_generator.num_classes)
+                model = cls_model(model, data_generator.num_classes, args.cls_base)
         par_model = model
     else:
         with K.tf.device('/cpu:0'):
@@ -111,7 +119,7 @@ if __name__ == '__main__':
                     model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
                     embedding_layer_name = 'l2norm'
                 if args.cls_weight > 0:
-                    model = cls_model(model, data_generator.num_classes)
+                    model = cls_model(model, data_generator.num_classes, args.cls_base)
         par_model = keras.utils.multi_gpu_model(model, gpus = args.gpus)
     
     if not args.no_progress:
