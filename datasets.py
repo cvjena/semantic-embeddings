@@ -16,19 +16,19 @@ except ImportError:
 
 
 
-DATASETS = ['CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC', 'NAB', 'NAB-cropped', 'NAB-cropped-sq']
+DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC', 'NAB', 'NAB-cropped', 'NAB-cropped-sq']
 
 
 
 def get_data_generator(dataset, data_root, classes = None):
     
     dataset = dataset.lower()
-    if dataset == 'cifar-100':
-        return CifarGenerator(data_root, classes, True)
+    if dataset in ('cifar-10', 'cifar-100'):
+        return CifarGenerator(data_root, classes, reenumerate = True, cifar10 = (dataset == 'cifar-10'))
     elif dataset.startswith('cifar-100-a'):
-        return CifarGenerator(data_root, np.arange(50), dataset.endswith('-consec'))
+        return CifarGenerator(data_root, np.arange(50), reenumerate = dataset.endswith('-consec'))
     elif dataset.startswith('cifar-100-b'):
-        return CifarGenerator(data_root, np.arange(50, 100), dataset.endswith('-consec'))
+        return CifarGenerator(data_root, np.arange(50, 100), reenumerate = dataset.endswith('-consec'))
     elif dataset == 'ilsvrc':
         return ILSVRCGenerator(data_root, classes)
     elif dataset == 'nab':
@@ -44,20 +44,30 @@ def get_data_generator(dataset, data_root, classes = None):
 
 class CifarGenerator(object):
 
-    def __init__(self, root_dir, classes = None, reenumerate = False):
+    def __init__(self, root_dir, classes = None, reenumerate = False, cifar10 = False):
         
         super(CifarGenerator, self).__init__()
         self.root_dir = root_dir
 
         # Load dataset
+        if cifar10:
+            self.X_train, self.y_train = [], []
+            for i in range(1, 6):
+                with open(os.path.join(self.root_dir, 'data_batch_{}'.format(i)), 'rb') as pf:
+                    dump = pickle.load(pf, encoding='bytes')
+                    self.X_train.append(dump[b'data'].astype(np.float32))
+                    self.y_train += dump[b'labels']
+                    del dump
+            self.X_train = np.concatenate(self.X_train)
+        else:
         with open(os.path.join(self.root_dir, 'train'), 'rb') as pf:
             dump = pickle.load(pf, encoding='bytes')
             self.X_train, self.y_train = dump[b'data'].astype(np.float32), dump[b'fine_labels']
             del dump
 
-        with open(os.path.join(self.root_dir, 'test'), 'rb') as pf:
+        with open(os.path.join(self.root_dir, 'test_batch' if cifar10 else 'test'), 'rb') as pf:
             dump = pickle.load(pf, encoding='bytes')
-            self.X_test, self.y_test = dump[b'data'].astype(np.float32), dump[b'fine_labels']
+            self.X_test, self.y_test = dump[b'data'].astype(np.float32), dump[b'labels' if cifar10 else b'fine_labels']
             del dump
         
         # Restrict labels to the given classes and re-enumerate them
