@@ -63,10 +63,10 @@ class CifarGenerator(object):
                     del dump
             self.X_train = np.concatenate(self.X_train)
         else:
-        with open(os.path.join(self.root_dir, 'train'), 'rb') as pf:
-            dump = pickle.load(pf, encoding='bytes')
-            self.X_train, self.y_train = dump[b'data'].astype(np.float32), dump[b'fine_labels']
-            del dump
+            with open(os.path.join(self.root_dir, 'train'), 'rb') as pf:
+                dump = pickle.load(pf, encoding='bytes')
+                self.X_train, self.y_train = dump[b'data'].astype(np.float32), dump[b'fine_labels']
+                del dump
 
         with open(os.path.join(self.root_dir, 'test_batch' if cifar10 else 'test'), 'rb') as pf:
             dump = pickle.load(pf, encoding='bytes')
@@ -180,7 +180,7 @@ class FileDatasetGenerator(object):
         self.mean = np.asarray(mean, dtype=np.float32)
         if (mean is None) or (std is None):
             std = 0
-            for img in tqdm(self.train_img_files, desc = 'Computing channel variance'):
+            for fn in tqdm(self.train_img_files, desc = 'Computing channel variance'):
                 std += np.mean((np.asarray(load_img(fn), dtype=np.float64) - self.mean) ** 2, axis = (0,1))
             std = np.sqrt(std / (len(self.train_img_files) - 1))
             print('Channel-wise standard deviation: {}'.format(std))
@@ -338,7 +338,7 @@ class FileDatasetGenerator(object):
 
 class ILSVRCGenerator(FileDatasetGenerator):
 
-    def __init__(self, root_dir, classes = None, mean = [122.65435242, 116.6545058, 103.99789959], std = [72.39054456, 74.6065602, 75.43971812]):
+    def __init__(self, root_dir, classes = None, mean = [122.65435242, 116.6545058, 103.99789959], std = [71.40583196, 69.56888997, 73.0440314]):
         
         super(ILSVRCGenerator, self).__init__(root_dir, classes)
         self.train_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_train')
@@ -372,7 +372,7 @@ class NABGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, img_dir = 'images',
                  cropsize = (224, 224), randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
-                 mean = [125.30513277, 129.66606421, 118.45121113], std = [43.17212284, 31.89603679, 24.2052268]):
+                 mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446]):
         
         super(NABGenerator, self).__init__(root_dir, classes = classes, cropsize = cropsize, randzoom_range = randzoom_range, randerase_prob = randerase_prob, randerase_params = randerase_params)
         self.imgs_dir = os.path.join(root_dir, img_dir)
