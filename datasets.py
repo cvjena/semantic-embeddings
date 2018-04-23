@@ -23,8 +23,10 @@ DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-
 def get_data_generator(dataset, data_root, classes = None):
     
     dataset = dataset.lower()
-    if dataset in ('cifar-10', 'cifar-100'):
-        return CifarGenerator(data_root, classes, reenumerate = True, cifar10 = (dataset == 'cifar-10'))
+    if dataset == 'cifar-10':
+        return CifarGenerator(data_root, classes, reenumerate = True, cifar10 = True, randzoom_range = 0.25)
+    elif dataset == 'cifar-100':
+        return CifarGenerator(data_root, classes, reenumerate = True)
     elif dataset.startswith('cifar-100-a'):
         return CifarGenerator(data_root, np.arange(50), reenumerate = dataset.endswith('-consec'))
     elif dataset.startswith('cifar-100-b'):
@@ -44,7 +46,8 @@ def get_data_generator(dataset, data_root, classes = None):
 
 class CifarGenerator(object):
 
-    def __init__(self, root_dir, classes = None, reenumerate = False, cifar10 = False):
+    def __init__(self, root_dir, classes = None, reenumerate = False, cifar10 = False,
+                 randzoom_range = 0., rotation_range = 0.):
         
         super(CifarGenerator, self).__init__()
         self.root_dir = root_dir
@@ -92,7 +95,7 @@ class CifarGenerator(object):
 
         # Set up pre-processing
         self.image_generator = ImageDataGenerator(featurewise_center = True, featurewise_std_normalization = True, horizontal_flip = True,
-                                                  width_shift_range = 0.15, height_shift_range = 0.15)
+                                                  width_shift_range = 0.15, height_shift_range = 0.15, zoom_range = randzoom_range, rotation_range = rotation_range)
         self.image_generator.fit(self.X_train)
 
         self.test_image_generator = ImageDataGenerator(featurewise_center = True, featurewise_std_normalization = True)
