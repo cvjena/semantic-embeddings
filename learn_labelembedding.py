@@ -27,10 +27,10 @@ def labelembed_loss(out1, out2, tar, targets, tau = 2., alpha = 0.9, beta = 0.5,
     
     pred = K.argmax(out2, axis = -1)
     mask = K.stop_gradient(K.cast(K.equal(pred, K.cast(targets, 'int64')), K.floatx()))
-    L_o1_emb = -cross_entropy(out1, soft_tar)
+    L_o1_emb = -cross_entropy(out1, soft_tar)  # pylint: disable=invalid-unary-operand-type
     
     L_o2_y = K.sparse_categorical_crossentropy(output = out2_prob, target = targets)
-    L_emb_o2 = -cross_entropy(tar, tau2_prob) * mask * (K.cast(K.shape(mask)[0], K.floatx())/(K.sum(mask)+1e-8))
+    L_emb_o2 = -cross_entropy(tar, tau2_prob) * mask * (K.cast(K.shape(mask)[0], K.floatx())/(K.sum(mask)+1e-8))  # pylint: disable=invalid-unary-operand-type
     L_re = K.relu(K.sum(out2_prob * K.one_hot(K.cast(targets, 'int64'), num_classes), axis = -1) - alpha)
     
     return beta * L_o1_y + (1-beta) * L_o1_emb + L_o2_y + L_emb_o2 + L_re
@@ -55,10 +55,9 @@ def labelembed_model(base_model, num_classes, **kwargs):
     return keras.models.Model([input_, cls_input_], [embedding, out1, loss])
 
 
-def gen_inputs(gen, num_classes):
+def transform_inputs(X, y, num_classes):
     
-    for X, y in gen:
-        yield [X, y], { 'labelembed_loss' : np.zeros((len(X), 1)), 'prob' : keras.utils.to_categorical(y, num_classes) }
+    return [X, y], { 'labelembed_loss' : np.zeros((len(X), 1)), 'prob' : keras.utils.to_categorical(y, num_classes) }
 
 
 
@@ -138,15 +137,17 @@ if __name__ == '__main__':
                       loss = { 'labelembed_loss' : lambda y_true, y_pred: y_pred[:,0], 'embedding' : None, 'prob' : lambda y_true, y_pred: K.tf.zeros(K.shape(y_true)[:1], dtype=K.floatx()) },
                       metrics = { 'prob' : 'accuracy' })
 
+    batch_transform_kwargs = { 'num_classes' : data_generator.num_classes }
+
     par_model.fit_generator(
-              gen_inputs(data_generator.flow_train(args.batch_size), data_generator.num_classes),
-              data_generator.num_train // args.batch_size,
-              validation_data = gen_inputs(data_generator.flow_test(args.val_batch_size), data_generator.num_classes),
-              validation_steps = data_generator.num_test // args.val_batch_size,
-              epochs = args.epochs if args.epochs else num_epochs, callbacks = callbacks, verbose = not args.no_progress)
+              data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              epochs = args.epochs if args.epochs else num_epochs, initial_epoch = args.initial_epoch,
+              callbacks = callbacks, verbose = not args.no_progress,
+              max_queue_size = 100, workers = 8, use_multiprocessing = True)
 
     # Evaluate final performance
-    print(par_model.evaluate_generator(gen_inputs(data_generator.flow_test(args.val_batch_size), data_generator.num_classes), data_generator.num_test // args.val_batch_size))
+    print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
     try:
         scores = par_model.predict_generator(data_generator.flow_test(args.val_batch_size, False), data_generator.num_test // args.val_batch_size)[1]
         print(np.mean(np.argmax(scores, axis = -1) == data_generator.y_test))

@@ -5,6 +5,7 @@ import os
 import warnings
 
 from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array, list_pictures
+from keras.utils import Sequence
 from keras import backend as K
 
 try:
@@ -41,6 +42,47 @@ def get_data_generator(dataset, data_root, classes = None):
         return NABGenerator(data_root, classes, 'images_cropped_sq', mean = [124.31297374, 127.28434878, 115.89100229], std = [42.16245978, 30.43073297, 25.00008084])
     else:
         raise ValueError('Unknown dataset: {}'.format(dataset))
+
+
+
+class DataSequence(Sequence):
+
+    def __init__(self, data_generator, ids, labels, batch_size = 32, shuffle = False, batch_transform = None, batch_transform_kwargs = {}, **kwargs):
+
+        super(DataSequence, self).__init__()
+        self.data_generator = data_generator
+        self.ids = ids
+        self.labels = np.asarray(labels)
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.batch_transform = batch_transform
+        self.batch_transform_kwargs = batch_transform_kwargs
+        self.kwargs = kwargs
+
+        self.ind = np.arange(len(self.ids))
+        self.on_epoch_end()
+
+
+    def __len__(self):
+
+        return int(np.ceil(len(self.ids) / self.batch_size))
+
+
+    def __getitem__(self, idx):
+        
+        batch_ind = self.ind[idx:idx+self.batch_size]
+        X = self.data_generator.compose_batch([self.ids[i] for i in batch_ind], **self.kwargs)
+        y = self.labels[batch_ind]
+        if self.batch_transform is not None:
+            return self.batch_transform(X, y, **self.batch_transform_kwargs)  # pylint: disable=not-callable
+        else:
+            return X, y
+
+
+    def on_epoch_end(self):
+
+        if self.shuffle:
+            np.random.shuffle(self.ind)
 
 
 
@@ -114,8 +156,37 @@ class CifarGenerator(object):
         image_generator = self.image_generator if augment else self.test_image_generator
         return image_generator.flow(self.X_test, self.y_test if include_labels else None,
                                     batch_size=batch_size, shuffle=shuffle)
+
+
+    def train_sequence(self, batch_size = 32, shuffle = True, augment = True, batch_transform = None, batch_transform_kwargs = {}):
+        
+        return DataSequence(self, np.arange(len(self.X_train)), self.y_train,
+                            train=True, augment=augment,
+                            batch_size=batch_size, shuffle=shuffle, batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
     
     
+    def test_sequence(self, batch_size = 32, shuffle = False, augment = False, batch_transform = None, batch_transform_kwargs = {}):
+        
+        return DataSequence(self, np.arange(len(self.X_test)), self.y_test,
+                            train=False, augment=augment,
+                            batch_size=batch_size, shuffle=shuffle, batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
+    
+
+    def compose_batch(self, indices, train, augment = False):
+
+        X = self.X_train if train else self.X_test
+        image_generator = self.image_generator if augment else self.test_image_generator
+
+        batch = np.zeros((len(indices),) + tuple(X.shape[1:]), dtype=K.floatx())
+        for i, j in enumerate(indices):
+            x = X[j]
+            x = image_generator.random_transform(x.astype(K.floatx()))
+            x = image_generator.standardize(x)
+            batch[i] = x
+        
+        return batch
+    
+
     @property
     def labels_train(self):
         
@@ -200,15 +271,26 @@ class FileDatasetGenerator(object):
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
                           normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
     
-    
-    def _flow(self, filenames, labels = None, batch_size = 32, shuffle = False, cropsize = None, randcrop = False, data_format = None, **kwargs):
+
+    def train_sequence(self, batch_size = 32, shuffle = True, target_size = None, augment = True, batch_transform = None, batch_transform_kwargs = {}):
         
-        if data_format is None:
-            data_format = K.image_data_format()
-        if data_format == 'channels_first':
-            x_axis, y_axis = 2, 1
-        else:
-            x_axis, y_axis = 1, 0
+        return DataSequence(self, self.train_img_files, self._train_labels,
+                            batch_size=batch_size, shuffle=shuffle,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
+    
+    
+    def test_sequence(self, batch_size = 32, shuffle = False, target_size = None, augment = False, batch_transform = None, batch_transform_kwargs = {}):
+        
+        return DataSequence(self, self.test_img_files, self._test_labels,
+                            batch_size=batch_size, shuffle=shuffle,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
+    
+    
+    def _flow(self, filenames, labels = None, batch_size = 32, shuffle = False, **kwargs):
         
         ind = np.arange(len(filenames))
         if shuffle:
@@ -228,38 +310,50 @@ class FileDatasetGenerator(object):
             batch_ind = ind[offs:offs+batch_size]
             offs += batch_size
             
-            X = [self._load_and_transform(filenames[i], data_format=data_format, **kwargs) for i in batch_ind]
-            if cropsize is not None:
-                crop_width, crop_height = cropsize
-            else:
-                crop_height = int(np.median([img.shape[y_axis] for img in X]))
-                crop_width = int(np.median([img.shape[x_axis] for img in X]))
-            for i, img in enumerate(X):
-                y_pad = x_pad = 0
-                if img.shape[y_axis] > crop_height:
-                    y_offs = np.random.randint(img.shape[y_axis] - crop_height + 1) if randcrop else (img.shape[y_axis] - crop_height) // 2
-                    img = img[:,y_offs:y_offs+crop_height,:] if data_format == 'channels_first' else img[y_offs:y_offs+crop_height,:,:]
-                elif img.shape[y_axis] < crop_height:
-                    y_pad = np.random.randint(crop_height - img.shape[y_axis] + 1) if randcrop else (crop_height - img.shape[y_axis]) // 2
-                if img.shape[x_axis] > crop_width:
-                    x_offs = np.random.randint(img.shape[x_axis] - crop_width + 1) if randcrop else (img.shape[x_axis] - crop_width) // 2
-                    img = img[:,:,x_offs:x_offs+crop_width] if data_format == 'channels_first' else img[:,x_offs:x_offs+crop_width,:]
-                elif img.shape[x_axis] < crop_width:
-                    x_pad = np.random.randint(crop_width - img.shape[x_axis] + 1) if randcrop else (crop_width - img.shape[x_axis]) // 2
-                X[i] = np.pad(
-                    img,
-                    ((0,0), (y_pad, crop_height - img.shape[1] - y_pad), (x_pad, crop_width - img.shape[2] - x_pad)) if data_format == 'channels_first' else \
-                    ((y_pad, crop_height - img.shape[0] - y_pad), (x_pad, crop_width - img.shape[1] - x_pad), (0,0)),
-                    'reflect'
-                )
-            X = np.stack(X)
-            
+            X = self.compose_batch([filenames[i] for i in batch_ind], **kwargs)
+
             if labels is not None:
                 yield X, labels[batch_ind]
             else:
                 yield X
-    
-    
+
+
+    def compose_batch(self, filenames, cropsize = None, randcrop = False, data_format = None, **kwargs):
+
+        if data_format is None:
+            data_format = K.image_data_format()
+        if data_format == 'channels_first':
+            x_axis, y_axis = 2, 1
+        else:
+            x_axis, y_axis = 1, 0
+
+        X = [self._load_and_transform(fn, data_format=data_format, **kwargs) for fn in filenames]
+        if cropsize is not None:
+            crop_width, crop_height = cropsize
+        else:
+            crop_height = int(np.median([img.shape[y_axis] for img in X]))
+            crop_width = int(np.median([img.shape[x_axis] for img in X]))
+        for i, img in enumerate(X):
+            y_pad = x_pad = 0
+            if img.shape[y_axis] > crop_height:
+                y_offs = np.random.randint(img.shape[y_axis] - crop_height + 1) if randcrop else (img.shape[y_axis] - crop_height) // 2
+                img = img[:,y_offs:y_offs+crop_height,:] if data_format == 'channels_first' else img[y_offs:y_offs+crop_height,:,:]
+            elif img.shape[y_axis] < crop_height:
+                y_pad = np.random.randint(crop_height - img.shape[y_axis] + 1) if randcrop else (crop_height - img.shape[y_axis]) // 2
+            if img.shape[x_axis] > crop_width:
+                x_offs = np.random.randint(img.shape[x_axis] - crop_width + 1) if randcrop else (img.shape[x_axis] - crop_width) // 2
+                img = img[:,:,x_offs:x_offs+crop_width] if data_format == 'channels_first' else img[:,x_offs:x_offs+crop_width,:]
+            elif img.shape[x_axis] < crop_width:
+                x_pad = np.random.randint(crop_width - img.shape[x_axis] + 1) if randcrop else (crop_width - img.shape[x_axis]) // 2
+            X[i] = np.pad(
+                img,
+                ((0,0), (y_pad, crop_height - img.shape[1] - y_pad), (x_pad, crop_width - img.shape[2] - x_pad)) if data_format == 'channels_first' else \
+                ((y_pad, crop_height - img.shape[0] - y_pad), (x_pad, crop_width - img.shape[1] - x_pad), (0,0)),
+                'reflect'
+            )
+        return np.stack(X)
+
+
     def _load_and_transform(self, filename, target_size = None, normalize = True, hflip = False, vflip = False, randzoom = False, randerase = False, data_format = None):
         
         if data_format is None:
@@ -420,3 +514,21 @@ class NABGenerator(FileDatasetGenerator):
         return self._flow(self.test_img_files, self._test_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
                           normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
+
+
+    def train_sequence(self, batch_size = 32, shuffle = True, target_size = 256, augment = True, batch_transform = None, batch_transform_kwargs = {}):
+        
+        return DataSequence(self, self.train_img_files, self._train_labels,
+                            batch_size=batch_size, shuffle=shuffle,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
+    
+    
+    def test_sequence(self, batch_size = 32, shuffle = False, target_size = 256, augment = False, batch_transform = None, batch_transform_kwargs = {}):
+        
+        return DataSequence(self, self.test_img_files, self._test_labels,
+                            batch_size=batch_size, shuffle=shuffle,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)

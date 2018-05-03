@@ -40,10 +40,9 @@ def center_loss_model(base_model, centroids):
     return keras.models.Model([input_, cls_input_], [prob, center_loss])
 
 
-def gen_inputs(gen, num_classes):
+def transform_inputs(X, y, num_classes):
     
-    for X, y in gen:
-        yield [X, y], [keras.utils.to_categorical(y, num_classes), np.zeros(len(X))]
+    return [X, y], [keras.utils.to_categorical(y, num_classes), np.zeros(len(X))]
 
 
 
@@ -134,15 +133,17 @@ if __name__ == '__main__':
                       loss_weights = { 'prob' : 1.0, 'center_loss' : args.center_loss_weight },
                       metrics = { 'prob' : 'accuracy' })
 
+    batch_transform_kwargs = { 'num_classes' : data_generator.num_classes }
+
     par_model.fit_generator(
-              gen_inputs(data_generator.flow_train(args.batch_size), data_generator.num_classes),
-              data_generator.num_train // args.batch_size,
-              validation_data = gen_inputs(data_generator.flow_test(args.val_batch_size), data_generator.num_classes),
-              validation_steps = data_generator.num_test // args.val_batch_size,
-              epochs = args.epochs if args.epochs else num_epochs, callbacks = callbacks, verbose = not args.no_progress)
+              data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              epochs = args.epochs if args.epochs else num_epochs, initial_epoch = args.initial_epoch,
+              callbacks = callbacks, verbose = not args.no_progress,
+              max_queue_size = 100, workers = 8, use_multiprocessing = True)
 
     # Evaluate final performance
-    print(par_model.evaluate_generator(gen_inputs(data_generator.flow_test(args.val_batch_size), data_generator.num_classes), data_generator.num_test // args.val_batch_size))
+    print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
 
     # Save model
     if args.model_dump:

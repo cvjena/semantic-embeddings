@@ -13,10 +13,9 @@ from datasets import DATASETS, get_data_generator
 
 
 
-def gen_inputs(gen, embedding):
+def transform_inputs(X, y, embedding):
     
-    for X, y in gen:
-        yield (X, embedding[y])
+    return X, embedding[y]
 
 
 
@@ -75,6 +74,7 @@ if __name__ == '__main__':
         model.summary()
 
     callbacks = []
+    batch_transform_kwargs = { 'embedding' : embedding }
 
     if args.init_weights and (args.init_epochs > 0):
         print('Pre-training linear transformation')
@@ -86,12 +86,11 @@ if __name__ == '__main__':
                       metrics = [utils.nn_accuracy(embedding, dot_prod_sim = True)])
 
         model.fit_generator(
-                  gen_inputs(data_generator.flow_train(args.batch_size), embedding),
-                  data_generator.num_train // args.batch_size,
-                  validation_data = gen_inputs(data_generator.flow_test(args.val_batch_size), embedding),
-                  validation_steps = data_generator.num_test // args.val_batch_size,
-                  epochs = args.init_epochs,
-                  callbacks = callbacks, verbose = not args.no_progress)
+              data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              epochs = args.init_epochs,
+              callbacks = callbacks, verbose = not args.no_progress,
+              max_queue_size = 100, workers = 8, use_multiprocessing = True)
         
         for layer in model.layers[:-1]:
             layer.trainable = True
@@ -114,15 +113,14 @@ if __name__ == '__main__':
                       metrics = [utils.nn_accuracy(embedding, dot_prod_sim = True)])
 
         model.fit_generator(
-                  gen_inputs(data_generator.flow_train(args.batch_size), embedding),
-                  data_generator.num_train // args.batch_size,
-                  validation_data = gen_inputs(data_generator.flow_test(args.val_batch_size), embedding),
-                  validation_steps = data_generator.num_test // args.val_batch_size,
-                  epochs = args.ft_epochs,
-                  callbacks = callbacks, verbose = not args.no_progress)
+              data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              epochs = args.ft_epochs,
+              callbacks = callbacks, verbose = not args.no_progress,
+              max_queue_size = 100, workers = 8, use_multiprocessing = True)
 
     # Evaluate final performance
-    print(model.evaluate_generator(gen_inputs(data_generator.flow_test(args.val_batch_size), embedding), data_generator.num_test // args.val_batch_size))
+    print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
 
     # Save model
     if args.model_dump:

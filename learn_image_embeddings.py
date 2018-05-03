@@ -29,10 +29,9 @@ def cls_model(embed_model, num_classes, cls_base = None):
     return keras.models.Model(embed_model.inputs, [embed_model.output, x])
 
 
-def gen_inputs(gen, embedding, num_classes = None):
+def transform_inputs(X, y, embedding, num_classes = None):
     
-    for X, y in gen:
-        yield (X, embedding[y]) if num_classes is None else (X, [embedding[y], keras.utils.to_categorical(y, num_classes)])
+    return (X, embedding[y]) if num_classes is None else (X, [embedding[y], keras.utils.to_categorical(y, num_classes)])
 
 
 
@@ -150,16 +149,20 @@ if __name__ == '__main__':
                           loss = loss,
                           metrics = [utils.nn_accuracy(embedding, dot_prod_sim = (args.loss == 'inv_corr'))])
 
+    batch_transform_kwargs = {
+        'embedding' : embedding,
+        'num_classes' : data_generator.num_classes if args.cls_weight > 0 else None
+    }
+
     par_model.fit_generator(
-              gen_inputs(data_generator.flow_train(args.batch_size), embedding, data_generator.num_classes if args.cls_weight > 0 else None),
-              data_generator.num_train // args.batch_size,
-              validation_data = gen_inputs(data_generator.flow_test(args.val_batch_size), embedding, data_generator.num_classes if args.cls_weight > 0 else None),
-              validation_steps = data_generator.num_test // args.val_batch_size,
+              data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+              validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
               epochs = args.epochs if args.epochs else num_epochs, initial_epoch = args.initial_epoch,
-              callbacks = callbacks, verbose = not args.no_progress)
+              callbacks = callbacks, verbose = not args.no_progress,
+              max_queue_size = 100, workers = 8, use_multiprocessing = True)
 
     # Evaluate final performance
-    print(par_model.evaluate_generator(gen_inputs(data_generator.flow_test(args.val_batch_size), embedding, data_generator.num_classes if args.cls_weight > 0 else None), data_generator.num_test // args.val_batch_size))
+    print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
 
     # Save model
     if args.model_dump:
