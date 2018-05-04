@@ -132,7 +132,7 @@ if __name__ == '__main__':
         callbacks.append(keras.callbacks.TensorBoard(log_dir = args.log_dir, write_graph = False))
     
     if args.snapshot:
-        callbacks.append(keras.callbacks.ModelCheckpoint(args.snapshot))
+        callbacks.append(keras.callbacks.ModelCheckpoint(args.snapshot) if args.gpus <= 1 else utils.TemplateModelCheckpoint(model, args.snapshot))
 
     if args.max_decay > 0:
         decay = (1.0/args.max_decay - 1) / ((data_generator.num_train // args.batch_size) * (args.epochs if args.epochs else num_epochs))
