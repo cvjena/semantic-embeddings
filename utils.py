@@ -69,7 +69,7 @@ def devise_ranking_loss(embedding, margin = 0.1):
 
 
 def l2norm(x):
-    return K.l2_normalize(x, axis = -1)
+    return K.tf.nn.l2_normalize(x, -1)
 
 
 def build_simplenet(output_dim, filters, activation = 'relu', regularizer = keras.regularizers.l2(0.0005), final_activation = None, name = None):
