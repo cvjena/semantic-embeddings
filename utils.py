@@ -6,8 +6,10 @@ import numpy as np
 import keras
 from keras import backend as K
 
+import warnings
+
 from models import cifar_resnet, cifar_pyramidnet, vgg16, wide_residual_network as wrn
-import densenet
+import densenet  # pylint: disable=import-error
 from clr_callback import CyclicLR
 from sgdr_callback import SGDR
 
@@ -244,3 +246,50 @@ def get_lr_schedule(schedule, num_samples, batch_size, schedule_args = {}):
     else:
     
         raise ValueError('Unknown learning rate schedule: {}'.format(schedule))
+
+
+
+class TemplateModelCheckpoint(keras.callbacks.ModelCheckpoint):
+    """Saves a given model after each epoch (for multi GPU training). """
+
+    def __init__(self, tpl_model, filepath, *args, **kwargs):
+
+        super(TemplateModelCheckpoint, self).__init__(filepath, *args, **kwargs)
+        self.tpl_model = tpl_model
+
+
+    def on_epoch_end(self, epoch, logs=None):
+
+        logs = logs or {}
+        self.epochs_since_last_save += 1
+        if self.epochs_since_last_save >= self.period:
+            self.epochs_since_last_save = 0
+            filepath = self.filepath.format(epoch=epoch + 1, **logs)
+            if self.save_best_only:
+                current = logs.get(self.monitor)
+                if current is None:
+                    warnings.warn('Can save best model only with %s available, '
+                                  'skipping.' % (self.monitor), RuntimeWarning)
+                else:
+                    if self.monitor_op(current, self.best):
+                        if self.verbose > 0:
+                            print('Epoch %05d: %s improved from %0.5f to %0.5f,'
+                                  ' saving model to %s'
+                                  % (epoch + 1, self.monitor, self.best,
+                                     current, filepath))
+                        self.best = current
+                        if self.save_weights_only:
+                            self.tpl_model.save_weights(filepath, overwrite=True)
+                        else:
+                            self.tpl_model.save(filepath, overwrite=True)
+                    else:
+                        if self.verbose > 0:
+                            print('Epoch %05d: %s did not improve' %
+                                  (epoch + 1, self.monitor))
+            else:
+                if self.verbose > 0:
+                    print('Epoch %05d: saving model to %s' % (epoch + 1, filepath))
+                if self.save_weights_only:
+                    self.tpl_model.save_weights(filepath, overwrite=True)
+                else:
+                    self.tpl_model.save(filepath, overwrite=True)
