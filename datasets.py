@@ -70,7 +70,7 @@ class DataSequence(Sequence):
 
     def __getitem__(self, idx):
         
-        batch_ind = self.ind[idx:idx+self.batch_size]
+        batch_ind = self.ind[idx*self.batch_size:(idx+1)*self.batch_size]
         X = self.data_generator.compose_batch([self.ids[i] for i in batch_ind], **self.kwargs)
         y = self.labels[batch_ind]
         if self.batch_transform is not None:
