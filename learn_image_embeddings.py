@@ -99,10 +99,8 @@ if __name__ == '__main__':
             model = keras.models.load_model(args.snapshot, custom_objects = utils.get_custom_objects(args.architecture), compile = False)
         else:
             model = utils.build_network(embedding.shape[1], args.architecture)
-            embedding_layer_name = 'embedding'
             if args.loss == 'inv_corr':
                 model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
-                embedding_layer_name = 'l2norm'
             if args.cls_weight > 0:
                 model = cls_model(model, data_generator.num_classes, args.cls_base)
         par_model = model
@@ -113,13 +111,12 @@ if __name__ == '__main__':
                 model = keras.models.load_model(args.snapshot, custom_objects = utils.get_custom_objects(args.architecture), compile = False)
             else:
                 model = utils.build_network(embedding.shape[1], args.architecture)
-                embedding_layer_name = 'embedding'
                 if args.loss == 'inv_corr':
                     model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
-                    embedding_layer_name = 'l2norm'
                 if args.cls_weight > 0:
                     model = cls_model(model, data_generator.num_classes, args.cls_base)
         par_model = keras.utils.multi_gpu_model(model, gpus = args.gpus)
+    embedding_layer_name = 'l2norm' if args.loss == 'inv_corr' else 'embedding'
     
     if not args.no_progress:
         model.summary()
