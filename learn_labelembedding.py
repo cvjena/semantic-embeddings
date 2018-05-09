@@ -142,7 +142,7 @@ if __name__ == '__main__':
     par_model.fit_generator(
               data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
               validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
-              epochs = args.epochs if args.epochs else num_epochs, initial_epoch = args.initial_epoch,
+              epochs = args.epochs if args.epochs else num_epochs,
               callbacks = callbacks, verbose = not args.no_progress,
               max_queue_size = 100, workers = 8, use_multiprocessing = True)
 
