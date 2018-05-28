@@ -282,6 +282,7 @@ if __name__ == '__main__':
     - "mds": Compute (n-1)-dimensional embeddings so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using classical multidimensional scaling.
     - "unitsphere": Compute n-dimensional L2-normalized embeddings so that the dot product of class embeddings correspond to their semantic similarity.
 Default: "spheres"''')
+    parser.add_argument('--mds_dim', type = int, default = None, help = 'Number of embedding dimensions when using the "mds" mehod.')
     args = parser.parse_args()
     id_type = str if args.str_ids else int
     
@@ -309,7 +310,7 @@ Default: "spheres"''')
     if args.method == 'spheres':
         embedding = hierarchical_class_embedding(sem_class_dist)
     elif args.method == 'mds':
-        embedding = mds(sem_class_dist, len(unique_labels) - 1)
+        embedding = mds(sem_class_dist, args.mds_dim if args.mds_dim else len(unique_labels) - 1)
     elif args.method == 'unitsphere':
         embedding = unitsphere_embedding(1. - sem_class_dist)
     else:
