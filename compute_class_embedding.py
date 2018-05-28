@@ -247,6 +247,7 @@ if __name__ == '__main__':
     parser.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the classes to compute embeddings for (as first words per line). If not given, all leaf nodes in the hierarchy will be considered as target classes.')
     parser.add_argument('--out', type = str, required = True, help = 'Filename of the resulting pickle dump (containing keys "embedding", "ind2label", and "label2ind").')
     parser.add_argument('--method', type = str, default = 'spheres', choices = ['spheres', 'mds'], help = 'Whether to use consecutive hypersphere intersections or multidimensional scaling.')
+    parser.add_argument('--mds_dim', type = int, default = None, help = 'Number of embedding dimensions when using the "mds" mehod.')
     args = parser.parse_args()
     id_type = str if args.str_ids else int
     
@@ -274,7 +275,7 @@ if __name__ == '__main__':
     if args.method == 'spheres':
         embedding = hierarchical_class_embedding(sem_class_dist)
     elif args.method == 'mds':
-        embedding = mds(sem_class_dist, len(unique_labels) - 1)
+        embedding = mds(sem_class_dist, args.mds_dim if args.mds_dim else len(unique_labels) - 1)
     else:
         raise ValueError('Unknown method: {}'.format(args.method))
     stop_time = time.time()
