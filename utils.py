@@ -15,7 +15,7 @@ from sgdr_callback import SGDR
 
 
 
-ARCHITECTURES = ['simple', 'simple-mp', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'wrn-28-10', 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'vgg16', 'resnet-50']
+ARCHITECTURES = ['simple', 'simple-mp', 'simple-highres', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'wrn-28-10', 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'vgg16', 'resnet-50']
 
 LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
 
@@ -63,13 +63,13 @@ def devise_ranking_loss(embedding, margin = 0.1):
     return _loss
 
 
-def build_simplenet(output_dim, filters, activation = 'relu', regularizer = keras.regularizers.l2(0.0005), final_activation = None, name = None):
+def build_simplenet(output_dim, filters, activation = 'relu', regularizer = keras.regularizers.l2(0.0005), final_activation = None, input_shape = (32, 32, 3), name = None):
     
     prefix = '' if name is None else name + '_'
     
     flattened = False
     layers = [
-        keras.layers.Conv2D(filters[0], (3, 3), padding = 'same', activation = activation, kernel_regularizer = regularizer, input_shape = (32, 32, 3), name = prefix + 'conv1'),
+        keras.layers.Conv2D(filters[0], (3, 3), padding = 'same', activation = activation, kernel_regularizer = regularizer, input_shape = input_shape, name = prefix + 'conv1'),
         keras.layers.BatchNormalization(name = prefix + 'bn1')
     ]
     for i, f in enumerate(filters[1:], start = 2):
@@ -163,6 +163,13 @@ def build_network(num_outputs, architecture, classification = False, name = None
         
         return build_simplenet(num_outputs, [64, 64, 'mp', 128, 128, 128, 'mp', 256, 256, 256, 'mp', 512, 'gap', 'fc512'],
                                final_activation = 'softmax' if classification else None,
+                               name = name)
+    
+    elif architecture == 'simple-highres':
+        
+        return build_simplenet(num_outputs, [64, 64, 'ap', 128, 128, 128, 'ap', 256, 256, 256, 'ap', 512, 'gap', 'fc512'],
+                               final_activation = 'softmax' if classification else None,
+                               input_shape = (224, 224, 3),
                                name = name)
     
     # ImageNet architectures
