@@ -141,6 +141,37 @@ def unitsphere_embedding(class_sim):
 
 
 
+def sim_approx(class_sim, num_dim = None):
+    """
+    Finds an embedding of `n` classes in an `d`-dimensional space with `d <= n`, so that their
+    dot products best approximate pre-defined similarities.
+    
+    class_sim - `n-by-n` matrix specifying the desired similarity between each pair of classes.
+    num_dim - Optionally, the maximum target dimensionality `d` for the embeddings. If not given, it will be equal to `n`.
+    
+    Returns: `n-by-d` matrix with rows being the locations of the corresponding classes in the embedding space.
+    """
+    
+    # Check arguments
+    if (class_sim.ndim != 2) or (class_sim.shape[0] != class_sim.shape[1]):
+        raise ValueError('Given class_sim has invalid shape. Expected: (n, n). Got: {}'.format(class_sim.shape))
+    if (class_sim.shape[0] == 0):
+        raise ValueError('Empty class_sim given.')
+    
+    # Compute optimal embeddings based on eigendecomposition of similarity matrix
+    L, Q = np.linalg.eigh(class_sim)
+    if np.any(L < 0):
+        raise RuntimeError('Given class_sim is not positive semi-definite.')
+    embeddings = Q * np.sqrt(L)[None,:]
+
+    # Approximation using the eigenvectors corresponding to the largest eigenvalues
+    if (num_dim is not None) and (num_dim < embeddings.shape[1]):
+        embeddings = embeddings[:,-num_dim:]  # pylint: disable=invalid-unary-operand-type
+    
+    return embeddings
+
+
+
 if __name__ == '__main__':
     
     # Parse arguments
@@ -150,13 +181,14 @@ if __name__ == '__main__':
     parser.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
     parser.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the classes to compute embeddings for (as first words per line). If not given, all leaf nodes in the hierarchy will be considered as target classes.')
     parser.add_argument('--out', type = str, required = True, help = 'Filename of the resulting pickle dump (containing keys "embedding", "ind2label", and "label2ind").')
-    parser.add_argument('--method', type = str, default = 'spheres', choices = ['spheres', 'mds', 'unitsphere'],
+    parser.add_argument('--method', type = str, default = 'spheres', choices = ['spheres', 'mds', 'unitsphere', 'approx_sim'],
                         help = '''Which algorithm to use for computing class embeddings. Options are:
     - "spheres": Compute (n-1)-dimensional embeddings so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using successive intersections of hyperspheres.
-    - "mds": Compute (n-1)-dimensional embeddings so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using classical multidimensional scaling.
-    - "unitsphere": Compute n-dimensional L2-normalized embeddings so that the dot product of class embeddings correspond to their semantic similarity.
+    - "mds": Compute embeddings of arbitrary dimensionality so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using classical multidimensional scaling.
+    - "unitsphere": Compute n-dimensional L2-normalized embeddings so that the dot products of class embeddings correspond to their semantic similarity.
+    - "approx_sim": Compute embeddings of arbitrary dimensionality so that the dot products of class embeddings correspond to their semantic similarity.
 Default: "spheres"''')
-    parser.add_argument('--mds_dim', type = int, default = None, help = 'Number of embedding dimensions when using the "mds" mehod.')
+    parser.add_argument('--num_dim', type = int, default = None, help = 'Number of embedding dimensions when using the "mds" or "approx_sim" method.')
     args = parser.parse_args()
     id_type = str if args.str_ids else int
     
@@ -184,14 +216,18 @@ Default: "spheres"''')
     if args.method == 'spheres':
         embedding = hierarchical_class_embedding(sem_class_dist)
     elif args.method == 'mds':
-        embedding = mds(sem_class_dist, args.mds_dim if args.mds_dim else len(unique_labels) - 1)
+        embedding = mds(sem_class_dist, args.num_dim if args.num_dim else len(unique_labels) - 1)
     elif args.method == 'unitsphere':
         embedding = unitsphere_embedding(1. - sem_class_dist)
+    elif args.method == 'approx_sim':
+        embedding = sim_approx(1. - sem_class_dist, args.num_dim)
     else:
         raise ValueError('Unknown method: {}'.format(args.method))
     stop_time = time.time()
-    print('Computed semantic embeddings for {} classes in {} seconds.'.format(embedding.shape[0], stop_time - start_time))
-    if args.method == 'unitsphere':
+    print('Computed {}-dimensional semantic embeddings for {} classes using the "{}" method in {} seconds.'.format(
+        embedding.shape[1], embedding.shape[0], args.method, stop_time - start_time)
+    )
+    if args.method in ('unitsphere', 'approx_sim'):
         sim_error = np.abs(np.dot(embedding, embedding.T) - (1. - sem_class_dist))
         print('Maximum deviation from target similarities: {}'.format(sim_error.max()))
         print('Average deviation from target similarities: {}'.format(sim_error.mean()))
