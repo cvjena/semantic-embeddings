@@ -222,6 +222,8 @@ class ClassHierarchy(object):
         ks - Cut-off points `k` which hierarchical precision is to be computed for.
         compute_ahp - If set to `True`, two additional metrics named "AHP (WUP)" and "AHP (LCS_HEIGHT)" will be computed, giving the area under the entire
                       hierarchical precision curve, normalized so that the optimum is 1.0.
+                      This argument may also be set to a positive integer, in which case the area under the HP@k curve from 1 to k will be computed, denoted
+                      as "AHP@k (LCS_HEIGHT)" and "AHP@k (WUP)".
         ignore_qids - If set to `True`, query ids appearing in the retrieved ranking will be ignored.
         all_ids - Optionally, a list with the IDs of all images in the database. IDs missing in retrieval results will be appended to the end in arbitrary order.
         
@@ -234,11 +236,14 @@ class ClassHierarchy(object):
         if isinstance(ks, int):
             ks = [ks]
         kmax = max(ks)
+        if not isinstance(compute_ahp, bool):
+            kmax = max(kmax, int(compute_ahp))
         
         prec = { 'P@{} ({})'.format(k, type) : {} for k in ks for type in ('WUP', 'LCS_HEIGHT') }
         if compute_ahp:
-            prec['AHP (WUP)'] = {}
-            prec['AHP (LCS_HEIGHT)'] = {}
+            ahp_suffix = '' if isinstance(compute_ahp, bool) else '@{}'.format(compute_ahp)
+            prec['AHP{} (WUP)'.format(ahp_suffix)] = {}
+            prec['AHP{} (LCS_HEIGHT)'.format(ahp_suffix)] = {}
         
         best_wup_cum = {}
         best_lcs_cum = {}
@@ -253,7 +258,7 @@ class ClassHierarchy(object):
                 ret = ret + [id for id in all_ids if id not in sret]
             
             # Compute WUP similarity and determine optimal ranking for this label
-            if (lbl not in best_wup_cum) or compute_ahp:
+            if (lbl not in best_wup_cum) or (compute_ahp is True):
                 # We inlined the cache lookup from self.wup_similarity() here to reduce unnecessary function calls.
                 wup = [self._wup_cache[(lbl, labels[r])] if (lbl, labels[r]) in self._wup_cache else self.wup_similarity(lbl, labels[r]) for r in ret]
                 if lbl not in best_wup_cum:
@@ -262,7 +267,7 @@ class ClassHierarchy(object):
                 wup = [self._wup_cache[(lbl, labels[r])] if (lbl, labels[r]) in self._wup_cache else self.wup_similarity(lbl, labels[r]) for r in ret[:kmax+1]]
             
             # Compute LCS height based similarity and determine optimal ranking for this label
-            if (lbl not in best_lcs_cum) or compute_ahp:
+            if (lbl not in best_lcs_cum) or (compute_ahp is True):
                 # We inline self.lcs_height() here to reduce function calls.
                 # We also don't need to check whether the class pair is cached in self._lcs_cache, since we computed the WUP before which does that implicitly.
                 lcs = (1.0 - np.array([self.heights[self._lcs_cache[(lbl, labels[r])]] for r in ret]) / self.max_height).tolist()
@@ -290,8 +295,12 @@ class ClassHierarchy(object):
                 prec['P@{} (WUP)'.format(k)][qid]        = sum(wup[:k]) / cum_best_wup[k-1]
                 prec['P@{} (LCS_HEIGHT)'.format(k)][qid] = sum(lcs[:k]) / cum_best_lcs[k-1]
             if compute_ahp:
-                prec['AHP (WUP)'][qid]        = np.mean(np.cumsum(wup) / cum_best_wup) - (wup[0] / cum_best_wup[0] + wup[-1] / cum_best_wup[-1]) / (2 * len(wup))
-                prec['AHP (LCS_HEIGHT)'][qid] = np.mean(np.cumsum(lcs) / cum_best_lcs) - (lcs[0] / cum_best_lcs[0] + lcs[-1] / cum_best_lcs[-1]) / (2 * len(lcs))
+                if isinstance(compute_ahp, bool):
+                    prec['AHP (WUP)'][qid]        = np.mean(np.cumsum(wup) / cum_best_wup) - (wup[0] / cum_best_wup[0] + wup[-1] / cum_best_wup[-1]) / (2 * len(wup))
+                    prec['AHP (LCS_HEIGHT)'][qid] = np.mean(np.cumsum(lcs) / cum_best_lcs) - (lcs[0] / cum_best_lcs[0] + lcs[-1] / cum_best_lcs[-1]) / (2 * len(lcs))
+                else:
+                    prec['AHP{} (WUP)'.format(ahp_suffix)][qid]        = np.mean(np.cumsum(wup[:compute_ahp]) / cum_best_wup[:compute_ahp]) - (wup[0] / cum_best_wup[0] + wup[compute_ahp-1] / cum_best_wup[compute_ahp-1]) / (2 * compute_ahp)
+                    prec['AHP{} (LCS_HEIGHT)'.format(ahp_suffix)][qid] = np.mean(np.cumsum(lcs[:compute_ahp]) / cum_best_lcs[:compute_ahp]) - (lcs[0] / cum_best_lcs[0] + lcs[compute_ahp-1] / cum_best_lcs[compute_ahp-1]) / (2 * compute_ahp)
         
         return { metric : sum(values.values()) / len(values) for metric, values in prec.items() }, prec
     
