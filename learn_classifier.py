@@ -38,7 +38,8 @@ if __name__ == '__main__':
     arggroup.add_argument('--initial_epoch', type = int, default = 0, help = 'Initial epoch for resuming training from snapshot.')
     arggroup.add_argument('--gpus', type = int, default = 1, help = 'Number of GPUs to be used.')
     arggroup = parser.add_argument_group('Output parameters')
-    arggroup.add_argument('--model_dump', type = str, default = None, help = 'Filename where the learned model should be written to.')
+    arggroup.add_argument('--model_dump', type = str, default = None, help = 'Filename where the learned model definition and weights should be written to.')
+    arggroup.add_argument('--weight_dump', type = str, default = None, help = 'Filename where the learned model weights should be written to (without model definition).')
     arggroup.add_argument('--feature_dump', type = str, default = None, help = 'Filename where learned features for test images should be written to.')
     arggroup.add_argument('--log_dir', type = str, default = None, help = 'Tensorboard log directory.')
     arggroup.add_argument('--no_progress', action = 'store_true', default = False, help = 'Do not display training progress, but just the final performance.')
@@ -116,8 +117,16 @@ if __name__ == '__main__':
     print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
 
     # Save model
+    if args.weight_dump:
+        try:
+            model.save_weights(args.weight_dump)
+        except Exception as e:
+            print('An error occurred while saving the model weights: {}'.format(e))
     if args.model_dump:
-        model.save(args.model_dump)
+        try:
+            model.save(args.model_dump)
+        except Exception as e:
+            print('An error occurred while saving the model: {}'.format(e))
 
     # Save test image features
     if args.feature_dump:
