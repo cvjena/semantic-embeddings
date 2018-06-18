@@ -82,10 +82,10 @@ def extract_predictions(data, model, layer = None, custom_objects = {}, batch_si
     return model.predict_generator(data.flow_test(batch_size, False, shuffle = False, augment = False), data.num_test // batch_size, verbose = 1).argsort(axis = -1)[:,::-1]
 
 
-def evaluate(y_pred, y_true, hierarchy, ind2label = None):
+def evaluate(y_pred, data_generator, hierarchy):
     
     perf = OrderedDict()
-    y_true = np.asarray(y_true)
+    y_true = np.asarray(data_generator.labels_test)
     if y_pred.ndim == 2:
         perf['Top-5 Accuracy'] = np.mean(np.any(y_pred[:,:5] == y_true[:,None], axis = -1))
         y_pred = y_pred[:,0]
@@ -94,7 +94,7 @@ def evaluate(y_pred, y_true, hierarchy, ind2label = None):
     
     perf['Hierarchical Accuracy'] = 0.0
     for yp, yt in zip(y_pred, y_true):
-        perf['Hierarchical Accuracy'] += 1.0 - (hierarchy.lcs_height(int(yp), int(yt)) if ind2label is None else hierarchy.lcs_height(ind2label[int(yp)], ind2label[int(yt)]))
+        perf['Hierarchical Accuracy'] += 1.0 - hierarchy.lcs_height(data_generator.classes[int(yp)], data_generator.classes[int(yt)])
     perf['Hierarchical Accuracy'] /= len(y_true)
     
     return perf
@@ -185,7 +185,7 @@ if __name__ == '__main__':
             pred = nn_classification(data_generator, centroids, model, layer, custom_objects, args.batch_size)
         else:
             pred = train_and_predict(data_generator, model, layer, normalize, args.augmentation_epochs, args.C, custom_objects, args.batch_size)
-        perf[model_name] = evaluate(pred, data_generator.labels_test, hierarchy, embed_labels)
+        perf[model_name] = evaluate(pred, data_generator, hierarchy)
     
     # Show results
     print_performance(perf)
