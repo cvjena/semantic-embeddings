@@ -72,7 +72,7 @@ def l2norm(x):
     return K.tf.nn.l2_normalize(x, -1)
 
 
-def build_simplenet(output_dim, filters, activation = 'relu', regularizer = keras.regularizers.l2(0.0005), final_activation = None, input_shape = (32, 32, 3), name = None):
+def build_simplenet(output_dim, filters, activation = 'relu', regularizer = keras.regularizers.l2(0.0005), final_activation = None, input_shape = (32, 32, 3), pool_size = (2,2), name = None):
     
     prefix = '' if name is None else name + '_'
     
@@ -83,9 +83,9 @@ def build_simplenet(output_dim, filters, activation = 'relu', regularizer = kera
     ]
     for i, f in enumerate(filters[1:], start = 2):
         if f == 'mp':
-            layers.append(keras.layers.MaxPooling2D(pool_size = (2,2), name = '{}mp{}'.format(prefix, i)))
+            layers.append(keras.layers.MaxPooling2D(pool_size = pool_size, name = '{}mp{}'.format(prefix, i)))
         elif f == 'ap':
-            layers.append(keras.layers.AveragePooling2D(pool_size = (2,2), name = '{}ap{}'.format(prefix, i)))
+            layers.append(keras.layers.AveragePooling2D(pool_size = pool_size, name = '{}ap{}'.format(prefix, i)))
         elif f == 'gap':
             layers.append(keras.layers.GlobalAvgPool2D(name = prefix + 'avg_pool'))
             flattened = True
@@ -187,6 +187,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
         return build_simplenet(num_outputs, [64, 64, 'ap', 128, 128, 128, 'ap', 256, 256, 256, 'ap', 512, 'gap', 'fc512'],
                                final_activation = 'softmax' if classification else None,
                                input_shape = (224, 224, 3),
+                               pool_size = (4, 4),
                                name = name)
     
     # ImageNet architectures
