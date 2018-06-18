@@ -8,7 +8,7 @@ from keras import backend as K
 
 import warnings
 
-from models import cifar_resnet, cifar_pyramidnet, vgg16, wide_residual_network as wrn
+from models import cifar_resnet, cifar_pyramidnet, plainnet, vgg16, wide_residual_network as wrn
 import densenet  # pylint: disable=import-error
 from clr_callback import CyclicLR
 from sgdr_callback import SGDR
@@ -61,41 +61,6 @@ def devise_ranking_loss(embedding, margin = 0.1):
         return K.sum(K.relu(margin - true_sim[:,None] + other_sim), axis = -1) - margin
     
     return _loss
-
-
-def build_simplenet(output_dim, filters, activation = 'relu', regularizer = keras.regularizers.l2(0.0005), final_activation = None, input_shape = (32, 32, 3), pool_size = (2,2), name = None):
-    
-    prefix = '' if name is None else name + '_'
-    
-    flattened = False
-    layers = [
-        keras.layers.Conv2D(filters[0], (3, 3), padding = 'same', activation = activation, kernel_regularizer = regularizer, input_shape = input_shape, name = prefix + 'conv1'),
-        keras.layers.BatchNormalization(name = prefix + 'bn1')
-    ]
-    for i, f in enumerate(filters[1:], start = 2):
-        if f == 'mp':
-            layers.append(keras.layers.MaxPooling2D(pool_size = pool_size, name = '{}mp{}'.format(prefix, i)))
-        elif f == 'ap':
-            layers.append(keras.layers.AveragePooling2D(pool_size = pool_size, name = '{}ap{}'.format(prefix, i)))
-        elif f == 'gap':
-            layers.append(keras.layers.GlobalAvgPool2D(name = prefix + 'avg_pool'))
-            flattened = True
-        elif isinstance(f, str) and f.startswith('fc'):
-            if not flattened:
-                layers.append(keras.layers.Flatten(name = prefix + 'flatten'))
-                flattened = True
-            layers.append(keras.layers.Dense(int(f[2:]), activation = activation, kernel_regularizer = regularizer, name = '{}fc{}'.format(prefix, i)))
-            layers.append(keras.layers.BatchNormalization(name = '{}bn{}'.format(prefix, i)))
-        else:
-            layers.append(keras.layers.Conv2D(f, (3, 3), padding = 'same', activation = activation, kernel_regularizer = regularizer, name = '{}conv{}'.format(prefix, i)))
-            layers.append(keras.layers.BatchNormalization(name = '{}bn{}'.format(prefix, i)))
-    
-    if not flattened:
-        layers.append(keras.layers.Flatten(name = prefix + 'flatten'))
-        flattened = True
-    layers.append(keras.layers.Dense(output_dim, activation = final_activation, name = prefix + ('prob' if final_activation == 'softmax' else 'embedding')))
-    
-    return keras.models.Sequential(layers, name = name)
 
 
 def build_network(num_outputs, architecture, classification = False, name = None):
@@ -155,23 +120,23 @@ def build_network(num_outputs, architecture, classification = False, name = None
         
     elif architecture == 'simple':
         
-        return build_simplenet(num_outputs, [64, 64, 'ap', 128, 128, 128, 'ap', 256, 256, 256, 'ap', 512, 'gap', 'fc512'],
-                               final_activation = 'softmax' if classification else None,
-                               name = name)
+        return plainnet.PlainNet(num_outputs, [64, 64, 'ap', 128, 128, 128, 'ap', 256, 256, 256, 'ap', 512, 'gap', 'fc512'],
+                                 final_activation = 'softmax' if classification else None,
+                                 name = name)
     
     elif architecture == 'simple-mp':
         
-        return build_simplenet(num_outputs, [64, 64, 'mp', 128, 128, 128, 'mp', 256, 256, 256, 'mp', 512, 'gap', 'fc512'],
-                               final_activation = 'softmax' if classification else None,
-                               name = name)
+        return plainnet.PlainNet(num_outputs, [64, 64, 'mp', 128, 128, 128, 'mp', 256, 256, 256, 'mp', 512, 'gap', 'fc512'],
+                                 final_activation = 'softmax' if classification else None,
+                                 name = name)
     
     elif architecture == 'simple-highres':
         
-        return build_simplenet(num_outputs, [64, 64, 'ap', 128, 128, 128, 'ap', 256, 256, 256, 'ap', 512, 'gap', 'fc512'],
-                               final_activation = 'softmax' if classification else None,
-                               input_shape = (224, 224, 3),
-                               pool_size = (4, 4),
-                               name = name)
+        return plainnet.PlainNet(num_outputs,
+                                 final_activation = 'softmax' if classification else None,
+                                 input_shape = (224, 224, 3),
+                                 pool_size = (4, 4),
+                                 name = name)
     
     # ImageNet architectures
     
