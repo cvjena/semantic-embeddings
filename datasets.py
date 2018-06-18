@@ -130,6 +130,11 @@ class CifarGenerator(object):
                 self.class_indices = dict(zip(self.classes, range(len(self.classes))))
                 self.y_train = [self.class_indices[lbl] for lbl in self.y_train]
                 self.y_test = [self.class_indices[lbl] for lbl in self.y_test]
+        
+        else:
+
+            self.classes = np.arange(max(self.y_train) + 1)
+            self.class_indices = dict(zip(self.classes, self.classes))
 
         # Reshape data to images
         self.X_train = self.X_train.reshape(-1, 3, 32, 32).transpose((0, 2, 3, 1))
