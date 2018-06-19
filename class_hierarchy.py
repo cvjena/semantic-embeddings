@@ -1,4 +1,5 @@
 import numpy as np
+import types
 
 
 
@@ -217,7 +218,7 @@ class ClassHierarchy(object):
         `1.0 - height(lcs(a,b))/height(root)`, where `lcs(a,b)` is the lowest common subsumer of the classes `a` and `b`.
         
         Parameters:
-        retrieved - Dictionary mapping query image IDs to ranked lists of IDs of retrieved images.
+        retrieved - Dictionary mapping query image IDs to ranked lists of IDs of retrieved images or a generator yielding (ID, retrieved_list) tuples.
         labels - Dictionary mapping image IDs to class labels.
         ks - Cut-off points `k` which hierarchical precision is to be computed for.
         compute_ahp - If set to `True`, two additional metrics named "AHP (WUP)" and "AHP (LCS_HEIGHT)" will be computed, giving the area under the entire
@@ -248,7 +249,7 @@ class ClassHierarchy(object):
         best_wup_cum = {}
         best_lcs_cum = {}
         
-        for qid, ret in retrieved.items():
+        for qid, ret in (retrieved if isinstance(retrieved, types.GeneratorType) else retrieved.items()):
             
             lbl = labels[qid]
             

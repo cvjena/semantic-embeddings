@@ -19,7 +19,7 @@ METRICS = ['P@1 (WUP)', 'P@10 (WUP)', 'P@50 (WUP)', 'P@100 (WUP)', 'AHP (WUP)', 
 
 
 
-def pairwise_retrieval(features, normalize = False):
+def pairwise_retrieval(features, normalize = False, return_generator = True):
     
     # Convert feature list to numpy array
     if isinstance(features, str):
@@ -49,9 +49,10 @@ def pairwise_retrieval(features, normalize = False):
     ranking = np.argsort(pdist, axis = -1)
     del pdist
     if ind2id is not None:
-        return { ind2id[i] : ind2id[ret].tolist() for i, ret in enumerate(ranking) }
+        gen = ((ind2id[i], ind2id[ret].tolist()) for i, ret in enumerate(ranking))
     else:
-        return { i : ret.tolist() for i, ret in enumerate(ranking) }
+        gen = ((i, ret.tolist()) for i, ret in enumerate(ranking))
+    return gen if return_generator else dict(gen)
 
 
 def print_performance(perf, metrics = METRICS):
