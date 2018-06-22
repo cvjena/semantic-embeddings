@@ -4,7 +4,10 @@ import PIL.Image
 import os
 import warnings
 
-from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array, list_pictures
+try:
+    from keras_preprocessing.image import ImageDataGenerator, load_img, img_to_array, list_pictures
+except ImportError:
+    from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array, list_pictures
 from keras import backend as K
 
 try:
