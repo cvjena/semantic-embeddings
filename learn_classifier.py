@@ -37,6 +37,8 @@ if __name__ == '__main__':
     arggroup.add_argument('--snapshot', type = str, default = None, help = 'Path where snapshots should be stored after every epoch. If existing, it will be used to resume training.')
     arggroup.add_argument('--initial_epoch', type = int, default = 0, help = 'Initial epoch for resuming training from snapshot.')
     arggroup.add_argument('--gpus', type = int, default = 1, help = 'Number of GPUs to be used.')
+    arggroup.add_argument('--read_workers', type = int, default = 8, help = 'Number of parallel data pre-processing processes.')
+    arggroup.add_argument('--queue_size', type = int, default = 100, help = 'Maximum size of data queue.')
     arggroup = parser.add_argument_group('Output parameters')
     arggroup.add_argument('--model_dump', type = str, default = None, help = 'Filename where the learned model definition and weights should be written to.')
     arggroup.add_argument('--weight_dump', type = str, default = None, help = 'Filename where the learned model weights should be written to (without model definition).')
@@ -111,7 +113,7 @@ if __name__ == '__main__':
               validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
               epochs = args.epochs if args.epochs else num_epochs, initial_epoch = args.initial_epoch,
               callbacks = callbacks, verbose = not args.no_progress,
-              max_queue_size = 100, workers = 8, use_multiprocessing = True)
+              max_queue_size = args.queue_size, workers = args.read_workers, use_multiprocessing = True)
 
     # Evaluate final performance
     print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
