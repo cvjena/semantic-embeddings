@@ -373,7 +373,10 @@ class FileDatasetGenerator(object):
             if target_size is None:
                 target_size = img.size
             if randzoom and (self.randzoom_range is not None):
-                target_size = np.round(np.array(target_size) * np.random.uniform(self.randzoom_range[0], self.randzoom_range[1])).astype(int).tolist()
+                if isinstance(self.randzoom_range[0], float):
+                    target_size = np.round(np.array(target_size) * np.random.uniform(self.randzoom_range[0], self.randzoom_range[1])).astype(int).tolist()
+                else:
+                    target_size = np.random.randint(self.randzoom_range[0], self.randzoom_range[1])
             if isinstance(target_size, int):
                 target_size = (target_size, round(img.size[1] * (target_size / img.size[0]))) if img.size[0] < img.size[1] else (round(img.size[0] * (target_size / img.size[1])), target_size)
             img = img.resize(target_size, PIL.Image.BILINEAR)
@@ -442,7 +445,7 @@ class ILSVRCGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, mean = [122.65435242, 116.6545058, 103.99789959], std = [71.40583196, 69.56888997, 73.0440314]):
         
-        super(ILSVRCGenerator, self).__init__(root_dir, classes)
+        super(ILSVRCGenerator, self).__init__(root_dir, classes, randzoom_range = (256, 480))
         self.train_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_train')
         self.test_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_val')
         
@@ -467,6 +470,22 @@ class ILSVRCGenerator(FileDatasetGenerator):
         
         # Compute mean and standard deviation
         self._compute_stats(mean, std)
+    
+
+    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = 256, augment = False):
+        
+        return self._flow(self.test_img_files, self._test_labels if include_labels else None,
+                          batch_size=batch_size, shuffle=shuffle, target_size=target_size,
+                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
+    
+    
+    def test_sequence(self, batch_size = 32, shuffle = False, target_size = 256, augment = False, batch_transform = None, batch_transform_kwargs = {}):
+        
+        return DataSequence(self, self.test_img_files, self._test_labels,
+                            batch_size=batch_size, shuffle=shuffle,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
 
 
 
