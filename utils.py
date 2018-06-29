@@ -165,7 +165,8 @@ def build_network(num_outputs, architecture, classification = False, name = None
     elif architecture == 'resnet-50':
         
         rn50 = keras.applications.ResNet50(include_top=False, weights=None)
-        x = keras.layers.GlobalAvgPool2D(name='avg_pool')(rn50.layers[-2].output)
+        rn50_out = rn50.layers[-2].output if isinstance(rn50.layers[-1], keras.layers.AveragePooling2D) else rn50.layers[-1].output
+        x = keras.layers.GlobalAvgPool2D(name='avg_pool')(rn50_out)
         x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification else None, name = 'prob' if classification else 'embedding')(x)
         return keras.models.Model(rn50.inputs, x, name=name)
     
