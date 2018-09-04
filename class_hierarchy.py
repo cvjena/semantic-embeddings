@@ -1,5 +1,6 @@
 import numpy as np
 import types
+from sklearn.metrics import average_precision_score
 
 
 
@@ -207,7 +208,7 @@ class ClassHierarchy(object):
         return self.heights[self.lcs(a, b)] / self.max_height
     
     
-    def hierarchical_precision(self, retrieved, labels, ks = [1, 10, 50, 100], compute_ahp = False, ignore_qids = True, all_ids = None):
+    def hierarchical_precision(self, retrieved, labels, ks = [1, 10, 50, 100], compute_ahp = False, compute_ap = False, ignore_qids = True, all_ids = None):
         """ Computes average hierarchical precision for lists of retrieved images at several cut-off points.
         
         Hierarchical precision is a generalization of Precision@K which takes class similarities into account and is defined as the sum
@@ -225,6 +226,8 @@ class ClassHierarchy(object):
                       hierarchical precision curve, normalized so that the optimum is 1.0.
                       This argument may also be set to a positive integer, in which case the area under the HP@k curve from 1 to k will be computed, denoted
                       as "AHP@k (LCS_HEIGHT)" and "AHP@k (WUP)".
+        compute_ap - If set to `True`, an additional metric "AP" will be computed, providing classical (mean) average precision where all classes but the
+                     correct one are considered to be equally wrong.
         ignore_qids - If set to `True`, query ids appearing in the retrieved ranking will be ignored.
         all_ids - Optionally, a list with the IDs of all images in the database. IDs missing in retrieval results will be appended to the end in arbitrary order.
         
@@ -245,6 +248,8 @@ class ClassHierarchy(object):
             ahp_suffix = '' if isinstance(compute_ahp, bool) else '@{}'.format(compute_ahp)
             prec['AHP{} (WUP)'.format(ahp_suffix)] = {}
             prec['AHP{} (LCS_HEIGHT)'.format(ahp_suffix)] = {}
+        if compute_ap:
+            prec['AP'] = {}
         
         best_wup_cum = {}
         best_lcs_cum = {}
@@ -302,6 +307,11 @@ class ClassHierarchy(object):
                 else:
                     prec['AHP{} (WUP)'.format(ahp_suffix)][qid]        = np.mean(np.cumsum(wup[:compute_ahp]) / cum_best_wup[:compute_ahp]) - (wup[0] / cum_best_wup[0] + wup[compute_ahp-1] / cum_best_wup[compute_ahp-1]) / (2 * compute_ahp)
                     prec['AHP{} (LCS_HEIGHT)'.format(ahp_suffix)][qid] = np.mean(np.cumsum(lcs[:compute_ahp]) / cum_best_lcs[:compute_ahp]) - (lcs[0] / cum_best_lcs[0] + lcs[compute_ahp-1] / cum_best_lcs[compute_ahp-1]) / (2 * compute_ahp)
+            if compute_ap:
+                prec['AP'][qid] = average_precision_score(
+                    [labels[r] == lbl for r in ret if (not ignore_qids) or (r != qid)],
+                    [-i for i, r in enumerate(ret) if (not ignore_qids) or (r != qid)]
+                )
         
         return { metric : sum(values.values()) / len(values) for metric, values in prec.items() }, prec
     

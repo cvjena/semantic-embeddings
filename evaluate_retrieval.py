@@ -15,7 +15,7 @@ except ImportError:
 
 
 
-METRICS = ['P@1 (WUP)', 'P@10 (WUP)', 'P@50 (WUP)', 'P@100 (WUP)', 'AHP (WUP)', 'P@1 (LCS_HEIGHT)', 'P@10 (LCS_HEIGHT)', 'P@50 (LCS_HEIGHT)', 'P@100 (LCS_HEIGHT)', 'AHP (LCS_HEIGHT)']
+METRICS = ['P@1 (WUP)', 'P@10 (WUP)', 'P@50 (WUP)', 'P@100 (WUP)', 'AHP (WUP)', 'P@1 (LCS_HEIGHT)', 'P@10 (LCS_HEIGHT)', 'P@50 (LCS_HEIGHT)', 'P@100 (LCS_HEIGHT)', 'AHP (LCS_HEIGHT)', 'AP']
 
 
 
@@ -61,12 +61,12 @@ def print_performance(perf, metrics = METRICS):
     
     # Print header
     max_name_len = max(len(lbl) for lbl in perf.keys())
-    print(' | '.join([' ' * max_name_len] + ['{:^6s}'.format(metric) for metric in METRICS]))
-    print('-' * (max_name_len + sum(3 + max(6, len(metric)) for metric in METRICS)))
+    print(' | '.join([' ' * max_name_len] + ['{:^6s}'.format(metric) for metric in metrics]))
+    print('-' * (max_name_len + sum(3 + max(6, len(metric)) for metric in metrics)))
 
     # Print result rows
     for lbl, results in perf.items():
-        print('{:{}s} | {}'.format(lbl, max_name_len, ' | '.join('{:>{}.4f}'.format(results[metric], max(len(metric), 6)) for metric in METRICS)))
+        print('{:{}s} | {}'.format(lbl, max_name_len, ' | '.join('{:>{}.4f}'.format(results[metric], max(len(metric), 6)) for metric in metrics)))
 
     print()
 
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     for i, feat_dump in tqdm(enumerate(args.feat), total = len(args.feat)):
         feat_name = args.label[i] if (args.label is not None) and (i < len(args.label)) else os.path.splitext(os.path.basename(feat_dump))[0]
         normalize = args.norm[i] if (args.norm is not None) and (i < len(args.norm)) else False
-        perf[feat_name] = hierarchy.hierarchical_precision(pairwise_retrieval(feat_dump, normalize), labels_test, ks, compute_ahp = True, all_ids = list(range(data_generator.num_test)))[0]
+        perf[feat_name] = hierarchy.hierarchical_precision(pairwise_retrieval(feat_dump, normalize), labels_test, ks, compute_ahp = True, compute_ap = True, all_ids = list(range(data_generator.num_test)))[0]
     
     # Show results
     print_performance(perf)
