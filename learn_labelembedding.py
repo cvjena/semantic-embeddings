@@ -84,6 +84,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--gpus', type = int, default = 1, help = 'Number of GPUs to be used.')
     arggroup.add_argument('--read_workers', type = int, default = 8, help = 'Number of parallel data pre-processing processes.')
     arggroup.add_argument('--queue_size', type = int, default = 100, help = 'Maximum size of data queue.')
+    arggroup.add_argument('--gpu_merge', action = 'store_true', default = False, help = 'Merge weights on the GPU.')
     arggroup = parser.add_argument_group('Output parameters')
     arggroup.add_argument('--model_dump', type = str, default = None, help = 'Filename where the learned model definition and weights should be written to.')
     arggroup.add_argument('--weight_dump', type = str, default = None, help = 'Filename where the learned model weights should be written to (without model definition).')
@@ -113,10 +114,10 @@ if __name__ == '__main__':
     data_generator = get_data_generator(args.dataset, args.data_root)
 
     # Construct and train model
-    if args.gpus <= 1:
+    if (args.gpus <= 1) or args.gpu_merge:
         embed_model = utils.build_network(args.embed_dim, args.architecture)
         model = labelembed_model(embed_model, data_generator.num_classes, tau = args.tau, alpha = args.alpha, beta = args.beta)
-        par_model = model
+        par_model = model if args.gpus <= 1 else keras.utils.multi_gpu_model(model, gpus = args.gpus, cpu_merge = False)
     else:
         with K.tf.device('/cpu:0'):
             embed_model = utils.build_network(args.embed_dim, args.architecture)
