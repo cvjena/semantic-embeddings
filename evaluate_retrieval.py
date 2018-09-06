@@ -84,7 +84,7 @@ def write_performance(perf, csv_file, prec_type = 'LCS_HEIGHT'):
                 break
 
 
-def plot_performance(perf, kmax = 100, prec_type = 'LCS_HEIGHT'):
+def plot_performance(perf, kmax = 100, prec_type = 'LCS_HEIGHT', clip_ahp = None):
     
     import matplotlib.pyplot as plt
     
@@ -114,7 +114,7 @@ def plot_performance(perf, kmax = 100, prec_type = 'LCS_HEIGHT'):
     plt.grid(axis = 'x')
     
     for i, (lbl, metrics) in enumerate(perf.items()):
-        mAHP = metrics['AHP ({})'.format(prec_type)]
+        mAHP = metrics['AHP{} ({})'.format('@{}'.format(clip_ahp) if clip_ahp else '', prec_type)]
         plt.barh(i + 0.5, mAHP, 0.8)
         plt.text(0.01, i + 0.5, lbl, verticalalignment = 'center', horizontalalignment = 'left', color = 'white', fontsize = 'small')
         plt.text(mAHP - 0.01, i + 0.5, '{:.1%}'.format(mAHP), verticalalignment = 'center', horizontalalignment = 'right', color = 'white')
@@ -151,6 +151,7 @@ if __name__ == '__main__':
     arggroup = parser.add_argument_group('Output')
     arggroup.add_argument('--plot_max', type = int, default = 250, help = 'Plot hierarchical precision up to this number of retrieved images. Set this to 0 to disable plotting.')
     arggroup.add_argument('--prec_type', type = str, default = 'LCS_HEIGHT', choices = ['WUP', 'LCS_HEIGHT'], help = 'Measure for semantic similarity between classes to be used.')
+    arggroup.add_argument('--clip_ahp', type = int, default = None, help = 'If given, clip ranking at this position for computing AHP.')
     arggroup.add_argument('--csv', type = str, default = None, help = 'Name of a CSV file where performance metrics will be written to.')
     args = parser.parse_args()
     
@@ -176,11 +177,14 @@ if __name__ == '__main__':
     for i, feat_dump in tqdm(enumerate(args.feat), total = len(args.feat)):
         feat_name = args.label[i] if (args.label is not None) and (i < len(args.label)) else os.path.splitext(os.path.basename(feat_dump))[0]
         normalize = args.norm[i] if (args.norm is not None) and (i < len(args.norm)) else False
-        perf[feat_name] = hierarchy.hierarchical_precision(pairwise_retrieval(feat_dump, normalize), labels_test, ks, compute_ahp = True, compute_ap = True, all_ids = list(range(data_generator.num_test)))[0]
+        perf[feat_name] = hierarchy.hierarchical_precision(pairwise_retrieval(feat_dump, normalize), labels_test, ks, compute_ahp = args.clip_ahp if args.clip_ahp else True, compute_ap = True, all_ids = list(range(data_generator.num_test)))[0]
     
     # Show results
+    if args.clip_ahp:
+        METRICS[4] = 'AHP@250 (WUP)'
+        METRICS[9] = 'AHP@250 (LCS_HEIGHT)'
     print_performance(perf)
     if args.csv:
         write_performance(perf, args.csv, args.prec_type)
     if args.plot_max > 0:
-        plot_performance(perf, args.plot_max, args.prec_type)
+        plot_performance(perf, args.plot_max, args.prec_type, args.clip_ahp)
