@@ -181,13 +181,13 @@ if __name__ == '__main__':
     parser.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
     parser.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the classes to compute embeddings for (as first words per line). If not given, all leaf nodes in the hierarchy will be considered as target classes.')
     parser.add_argument('--out', type = str, required = True, help = 'Filename of the resulting pickle dump (containing keys "embedding", "ind2label", and "label2ind").')
-    parser.add_argument('--method', type = str, default = 'spheres', choices = ['spheres', 'mds', 'unitsphere', 'approx_sim'],
+    parser.add_argument('--method', type = str, default = 'unitsphere', choices = ['spheres', 'mds', 'unitsphere', 'approx_sim'],
                         help = '''Which algorithm to use for computing class embeddings. Options are:
     - "spheres": Compute (n-1)-dimensional embeddings so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using successive intersections of hyperspheres.
     - "mds": Compute embeddings of arbitrary dimensionality so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using classical multidimensional scaling.
     - "unitsphere": Compute n-dimensional L2-normalized embeddings so that the dot products of class embeddings correspond to their semantic similarity.
     - "approx_sim": Compute embeddings of arbitrary dimensionality so that the dot products of class embeddings correspond to their semantic similarity.
-Default: "spheres"''')
+Default: "unitsphere"''')
     parser.add_argument('--num_dim', type = int, default = None, help = 'Number of embedding dimensions when using the "mds" or "approx_sim" method.')
     args = parser.parse_args()
     id_type = str if args.str_ids else int
