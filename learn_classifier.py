@@ -4,6 +4,7 @@ import argparse
 import pickle
 import os
 import shutil
+from collections import OrderedDict
 
 import keras
 from keras import backend as K
@@ -26,6 +27,7 @@ if __name__ == '__main__':
     arggroup = parser.add_argument_group('Data parameters')
     arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
+    arggroup.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the subset of classes to be used (as first words per line).')
     arggroup = parser.add_argument_group('Training parameters')
     arggroup.add_argument('--architecture', type = str, default = 'simple', choices = utils.ARCHITECTURES, help = 'Type of network architecture.')
     arggroup.add_argument('--lr_schedule', type = str, default = 'SGDR', choices = utils.LR_SCHEDULES, help = 'Type of learning rate schedule.')
@@ -68,7 +70,16 @@ if __name__ == '__main__':
     K.set_session(K.tf.Session(config = K.tf.ConfigProto(gpu_options = { 'allow_growth' : True })))
 
     # Load dataset
-    data_generator = get_data_generator(args.dataset, args.data_root)
+    if args.class_list is not None:
+        with open(args.class_list) as class_file:
+            class_list = list(OrderedDict((l.strip().split()[0], None) for l in class_file if l.strip() != '').keys())
+            try:
+                class_list = [int(lbl) for lbl in class_list]
+            except ValueError:
+                pass
+    else:
+        class_list = None
+    data_generator = get_data_generator(args.dataset, args.data_root, classes = class_list)
 
     # Construct and train model
     if (args.gpus <= 1) or args.gpu_merge:

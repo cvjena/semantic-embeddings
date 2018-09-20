@@ -5,6 +5,7 @@ import scipy.linalg, scipy.spatial.distance
 import time
 import argparse
 import pickle
+from collections import OrderedDict
 
 from class_hierarchy import ClassHierarchy
 
@@ -198,7 +199,7 @@ Default: "unitsphere"''')
     # Determine target classes
     if args.class_list is not None:
         with open(args.class_list) as class_file:
-            unique_labels = list(set(id_type(l.strip().split()[0]) for l in class_file if l.strip() != ''))
+            unique_labels = list(OrderedDict((id_type(l.strip().split()[0]), None) for l in class_file if l.strip() != '').keys())
     else:
         unique_labels = [lbl for lbl in hierarchy.nodes if (lbl not in hierarchy.children) or (len(hierarchy.children[lbl]) == 0)]
         if not args.str_ids:
