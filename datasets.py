@@ -3,6 +3,7 @@ import pickle
 import PIL.Image
 import os
 import warnings
+from collections import Counter
 
 try:
     from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array, list_pictures
@@ -51,7 +52,7 @@ def get_data_generator(dataset, data_root, classes = None):
 
 class DataSequence(Sequence):
 
-    def __init__(self, data_generator, ids, labels, batch_size = 32, shuffle = False, batch_transform = None, batch_transform_kwargs = {}, **kwargs):
+    def __init__(self, data_generator, ids, labels, batch_size = 32, shuffle = False, oversample = False, batch_transform = None, batch_transform_kwargs = {}, **kwargs):
 
         super(DataSequence, self).__init__()
         self.data_generator = data_generator
@@ -59,17 +60,31 @@ class DataSequence(Sequence):
         self.labels = np.asarray(labels)
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.oversample = oversample
         self.batch_transform = batch_transform
         self.batch_transform_kwargs = batch_transform_kwargs
         self.kwargs = kwargs
 
-        self.ind = np.arange(len(self.ids))
+        if self.oversample:
+            self.class_sizes = Counter(labels)
+            self.max_class_size = max(self.class_sizes.values())
+            self.class_members = { lbl : np.where(np.asarray(labels) == lbl)[0] for lbl in self.class_sizes.keys() }
+            self.ind = np.concatenate([
+                np.repeat(members, int(np.ceil(self.max_class_size / len(members))))[:self.max_class_size]
+                for lbl, members in self.class_members.items()
+            ])
+        else:
+            self.ind = np.arange(len(self.ids))
+        
         self.on_epoch_end()
 
 
     def __len__(self):
 
-        return int(np.ceil(len(self.ids) / self.batch_size))
+        if self.oversample:
+            return int(np.ceil((len(self.class_sizes) * self.max_class_size) / self.batch_size))
+        else:
+            return int(np.ceil(len(self.ids) / self.batch_size))
 
 
     def __getitem__(self, idx):
@@ -86,6 +101,16 @@ class DataSequence(Sequence):
     def on_epoch_end(self):
 
         if self.shuffle:
+            
+            if self.oversample:
+                self.ind = np.concatenate([
+                    np.concatenate([
+                        np.random.choice(members, len(members), replace = False)
+                        for _ in range(int(np.ceil(self.max_class_size / len(members))))
+                    ])[:self.max_class_size]
+                    for lbl, members in self.class_members.items()
+                ])
+            
             np.random.shuffle(self.ind)
 
 
@@ -547,7 +572,7 @@ class NABGenerator(FileDatasetGenerator):
     def train_sequence(self, batch_size = 32, shuffle = True, target_size = 256, augment = True, batch_transform = None, batch_transform_kwargs = {}):
         
         return DataSequence(self, self.train_img_files, self._train_labels,
-                            batch_size=batch_size, shuffle=shuffle,
+                            batch_size=batch_size, shuffle=shuffle, oversample=augment,
                             target_size=target_size, normalize=True, hflip=augment, vflip=False,
                             randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
                             batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
