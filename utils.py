@@ -16,7 +16,7 @@ from sgdr_callback import SGDR
 
 
 ARCHITECTURES = ['simple', 'simple-mp', 'simple-highres', 'simple-selu', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'resnet-110-fc-selu', 'wrn-28-10',
-                 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'pyramidnet-272-200-selu', 'vgg16', 'resnet-50']
+                 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'pyramidnet-272-200-selu', 'vgg16', 'resnet-50', 'nasnet-a']
 
 LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
 
@@ -169,6 +169,12 @@ def build_network(num_outputs, architecture, classification = False, name = None
         x = keras.layers.GlobalAvgPool2D(name='avg_pool')(rn50_out)
         x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification else None, name = 'prob' if classification else 'embedding')(x)
         return keras.models.Model(rn50.inputs, x, name=name)
+    
+    elif architecture == 'nasnet-a':
+        
+        nasnet = keras.applications.NASNetLarge(include_top=False, weights=None, pooling='avg')
+        x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification else None, name = 'prob' if classification else 'embedding')(nasnet.output)
+        return keras.models.Model(nasnet.inputs, x, name=name)
     
     else:
         
