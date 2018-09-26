@@ -164,8 +164,12 @@ if __name__ == '__main__':
     # Evaluate final performance
     print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
     try:
-        scores = par_model.predict_generator(data_generator.flow_test(args.val_batch_size, False), data_generator.num_test // args.val_batch_size)[1]
-        print(np.mean(np.argmax(scores, axis = -1) == data_generator.y_test))
+        test_pred = par_model.predict_generator(data_generator.flow_test(args.val_batch_size, False), data_generator.num_test // args.val_batch_size)[1].argmax(axis = -1)
+        class_freq = np.bincount(data_generator.labels_test)
+        print('Accuracy: {:.4f}'.format(np.mean(test_pred == np.asarray(data_generator.labels_test))))
+        print('Average Accuracy: {:.4f}'.format(
+            ((test_pred == np.asarray(data_generator.labels_test)).astype(np.float) / class_freq[np.asarray(data_generator.labels_test)]).sum() / len(class_freq)
+        ))
     except:
         pass
 

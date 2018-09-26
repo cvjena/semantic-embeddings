@@ -156,6 +156,11 @@ if __name__ == '__main__':
 
     # Evaluate final performance
     print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
+    test_pred = par_model.predict_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs))[0].argmax(axis=-1)
+    class_freq = np.bincount(data_generator.labels_test)
+    print('Average Accuracy: {:.4f}'.format(
+        ((test_pred == np.asarray(data_generator.labels_test)).astype(np.float) / class_freq[np.asarray(data_generator.labels_test)]).sum() / len(class_freq)
+    ))
 
     # Save model
     if args.weight_dump:
