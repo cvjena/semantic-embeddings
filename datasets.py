@@ -572,7 +572,7 @@ class NABGenerator(FileDatasetGenerator):
     def train_sequence(self, batch_size = 32, shuffle = True, target_size = 256, augment = True, batch_transform = None, batch_transform_kwargs = {}):
         
         return DataSequence(self, self.train_img_files, self._train_labels,
-                            batch_size=batch_size, shuffle=shuffle, oversample=augment,
+                            batch_size=batch_size, shuffle=shuffle,
                             target_size=target_size, normalize=True, hflip=augment, vflip=False,
                             randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
                             batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
