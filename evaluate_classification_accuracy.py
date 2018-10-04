@@ -13,7 +13,7 @@ from learn_labelembedding import labelembed_loss
 
 
 
-METRICS = ['Accuracy', 'Top-5 Accuracy', 'Hierarchical Accuracy']
+METRICS = ['Accuracy', 'Top-5 Accuracy', 'Avg. Accuracy', 'Hierarchical Accuracy']
 
 
 
@@ -91,6 +91,9 @@ def evaluate(y_pred, data_generator, hierarchy):
         y_pred = y_pred[:,0]
     
     perf['Accuracy'] = np.mean(y_pred == y_true)
+
+    class_freq = np.bincount(y_true)
+    perf['Avg. Accuracy'] = ((y_pred == y_true).astype(np.float) / class_freq[y_true]).sum() / len(class_freq)
     
     perf['Hierarchical Accuracy'] = 0.0
     for yp, yt in zip(y_pred, y_true):
