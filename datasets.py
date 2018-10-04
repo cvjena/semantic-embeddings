@@ -40,7 +40,7 @@ def get_data_generator(dataset, data_root, classes = None):
     elif dataset == 'ilsvrc':
         return ILSVRCGenerator(data_root, classes)
     elif dataset == 'nab':
-        return NABGenerator(data_root, classes, 'images')
+        return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480))
     elif dataset == 'nab-cropped':
         return NABGenerator(data_root, classes, 'images_cropped', mean = [121.29065134, 121.44002115, 109.69898554], std = [50.45762169, 42.66789459, 40.12496913])
     elif dataset == 'nab-cropped-sq':
