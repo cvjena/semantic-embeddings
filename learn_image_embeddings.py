@@ -57,6 +57,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--val_batch_size', type = int, default = None, help = 'Validation batch size.')
     arggroup.add_argument('--snapshot', type = str, default = None, help = 'Path where snapshots should be stored after every epoch. If existing, it will be used to resume training.')
     arggroup.add_argument('--initial_epoch', type = int, default = 0, help = 'Initial epoch for resuming training from snapshot.')
+    arggroup.add_argument('--finetune', type = str, default = None, help = 'Path to pre-trained weights to be fine-tuned (will be loaded by layer name).')
     arggroup.add_argument('--gpus', type = int, default = 1, help = 'Number of GPUs to be used.')
     arggroup.add_argument('--read_workers', type = int, default = 8, help = 'Number of parallel data pre-processing processes.')
     arggroup.add_argument('--queue_size', type = int, default = 100, help = 'Maximum size of data queue.')
@@ -124,7 +125,39 @@ if __name__ == '__main__':
     
     if not args.no_progress:
         model.summary()
+    
+    batch_transform_kwargs = {
+        'embedding' : embedding,
+        'num_classes' : data_generator.num_classes if args.cls_weight > 0 else None
+    }
+    loss = utils.inv_correlation if args.loss == 'inv_corr' else utils.squared_distance
+    
+    # Load pre-trained weights and train last layer for a few epochs
+    if args.finetune:
+        print('Loading pre-trained weights from {}'.format(args.finetune))
+        model.load_weights(args.finetune, by_name=True, skip_mismatch=True)
+        print('Pre-training new layers')
+        for layer in model.layers:
+            layer.trainable = (layer.name in ('embedding', 'prob'))
+        if args.cls_weight > 0:
+            par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, clipnorm = args.clipgrad),
+                            loss = { embedding_layer_name : loss, 'prob' : 'categorical_crossentropy' },
+                            loss_weights = { embedding_layer_name : 1.0, 'prob' : args.cls_weight },
+                            metrics = { embedding_layer_name : utils.nn_accuracy(embedding, dot_prod_sim = (args.loss == 'inv_corr')), 'prob' : 'accuracy' })
+        else:
+            par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, clipnorm = args.clipgrad),
+                            loss = loss,
+                            metrics = [utils.nn_accuracy(embedding, dot_prod_sim = (args.loss == 'inv_corr'))])
+        par_model.fit_generator(
+                data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+                validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+                epochs = 3, verbose = not args.no_progress,
+                max_queue_size = args.queue_size, workers = args.read_workers, use_multiprocessing = True)
+        for layer in model.layers:
+            layer.trainable = True
+        print('Full model training')
 
+    # Train model
     callbacks, num_epochs = utils.get_lr_schedule(args.lr_schedule, data_generator.num_train, args.batch_size, schedule_args = { arg_name : arg_val for arg_name, arg_val in vars(args).items() if arg_val is not None })
 
     if args.log_dir:
@@ -139,7 +172,6 @@ if __name__ == '__main__':
         decay = (1.0/args.max_decay - 1) / ((data_generator.num_train // args.batch_size) * (args.epochs if args.epochs else num_epochs))
     else:
         decay = 0.0
-    loss = utils.inv_correlation if args.loss == 'inv_corr' else utils.squared_distance
     if args.cls_weight > 0:
         par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
                           loss = { embedding_layer_name : loss, 'prob' : 'categorical_crossentropy' },
@@ -149,11 +181,6 @@ if __name__ == '__main__':
         par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
                           loss = loss,
                           metrics = [utils.nn_accuracy(embedding, dot_prod_sim = (args.loss == 'inv_corr'))])
-
-    batch_transform_kwargs = {
-        'embedding' : embedding,
-        'num_classes' : data_generator.num_classes if args.cls_weight > 0 else None
-    }
 
     par_model.fit_generator(
               data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
