@@ -172,7 +172,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
     
     elif architecture == 'nasnet-a':
         
-        nasnet = keras.applications.NASNetLarge(include_top=False, weights=None, pooling='avg')
+        nasnet = keras.applications.NASNetLarge(include_top=False, input_shape=(224,224,3), weights=None, pooling='avg')
         x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification else None, name = 'prob' if classification else 'embedding')(nasnet.output)
         return keras.models.Model(nasnet.inputs, x, name=name)
     
