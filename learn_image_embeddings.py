@@ -58,7 +58,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--snapshot', type = str, default = None, help = 'Path where snapshots should be stored after every epoch. If existing, it will be used to resume training.')
     arggroup.add_argument('--initial_epoch', type = int, default = 0, help = 'Initial epoch for resuming training from snapshot.')
     arggroup.add_argument('--finetune', type = str, default = None, help = 'Path to pre-trained weights to be fine-tuned (will be loaded by layer name).')
-    arggroup.add_argument('--finetune_init', type = int, default = 3, help = 'Number of initial epochs for training just the new layers before fine-tuning.')
+    arggroup.add_argument('--finetune_init', type = int, default = 8, help = 'Number of initial epochs for training just the new layers before fine-tuning.')
     arggroup.add_argument('--gpus', type = int, default = 1, help = 'Number of GPUs to be used.')
     arggroup.add_argument('--read_workers', type = int, default = 8, help = 'Number of parallel data pre-processing processes.')
     arggroup.add_argument('--queue_size', type = int, default = 100, help = 'Maximum size of data queue.')
@@ -104,7 +104,8 @@ if __name__ == '__main__':
             print('Resuming from snapshot {}'.format(args.snapshot))
             model = keras.models.load_model(args.snapshot, custom_objects = utils.get_custom_objects(args.architecture), compile = False)
         else:
-            model = utils.build_network(embedding.shape[1], args.architecture)
+            embed_model = utils.build_network(embedding.shape[1], args.architecture)
+            model = embed_model
             if args.loss == 'inv_corr':
                 model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
             if args.cls_weight > 0:
@@ -116,7 +117,8 @@ if __name__ == '__main__':
                 print('Resuming from snapshot {}'.format(args.snapshot))
                 model = keras.models.load_model(args.snapshot, custom_objects = utils.get_custom_objects(args.architecture), compile = False)
             else:
-                model = utils.build_network(embedding.shape[1], args.architecture)
+                embed_model = utils.build_network(embedding.shape[1], args.architecture)
+                model = embed_model
                 if args.loss == 'inv_corr':
                     model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
                 if args.cls_weight > 0:
@@ -140,6 +142,7 @@ if __name__ == '__main__':
         print('Pre-training new layers')
         for layer in model.layers:
             layer.trainable = (layer.name in ('embedding', 'prob'))
+        embed_model.layers[-1].trainable = True
         if args.cls_weight > 0:
             par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, clipnorm = args.clipgrad),
                             loss = { embedding_layer_name : loss, 'prob' : 'categorical_crossentropy' },

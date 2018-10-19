@@ -43,7 +43,7 @@ def labelembed_model(base_model, num_classes, **kwargs):
     embedding = base_model.output
     
     out = keras.layers.Activation('relu')(embedding)
-    out = keras.layers.BatchNormalization()(out)
+    out = keras.layers.BatchNormalization(name = 'embedding_bn')(out)
     out1 = keras.layers.Dense(num_classes, name = 'prob')(out)
     out2 = keras.layers.Dense(num_classes, name = 'out2')(keras.layers.Lambda(lambda x: K.stop_gradient(x))(out))
     
@@ -83,6 +83,8 @@ if __name__ == '__main__':
     arggroup.add_argument('--epochs', type = int, default = None, help = 'Number of training epochs.')
     arggroup.add_argument('--batch_size', type = int, default = 100, help = 'Batch size.')
     arggroup.add_argument('--val_batch_size', type = int, default = None, help = 'Validation batch size.')
+    arggroup.add_argument('--finetune', type = str, default = None, help = 'Path to pre-trained weights to be fine-tuned (will be loaded by layer name).')
+    arggroup.add_argument('--finetune_init', type = int, default = 3, help = 'Number of initial epochs for training just the new layers before fine-tuning.')
     arggroup.add_argument('--gpus', type = int, default = 1, help = 'Number of GPUs to be used.')
     arggroup.add_argument('--read_workers', type = int, default = 8, help = 'Number of parallel data pre-processing processes.')
     arggroup.add_argument('--queue_size', type = int, default = 100, help = 'Maximum size of data queue.')
@@ -136,7 +138,30 @@ if __name__ == '__main__':
         par_model = keras.utils.multi_gpu_model(model, gpus = args.gpus)
     if not args.no_progress:
         model.summary()
-
+    
+    batch_transform_kwargs = { 'num_classes' : data_generator.num_classes }
+    
+    # Load pre-trained weights and train last layer for a few epochs
+    if args.finetune:
+        print('Loading pre-trained weights from {}'.format(args.finetune))
+        model.load_weights(args.finetune, by_name=True, skip_mismatch=True)
+        print('Pre-training new layers')
+        for layer in model.layers:
+            layer.trainable = (layer.name in ('embedding', 'embedding_bn', 'prob', 'out2', 'labelembeddings'))
+        embed_model.layers[-1].trainable = True
+        par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, clipnorm = args.clipgrad),
+                          loss = { 'labelembed_loss' : lambda y_true, y_pred: y_pred[:,0], 'embedding' : None, 'prob' : lambda y_true, y_pred: K.tf.zeros(K.shape(y_true)[:1], dtype=K.floatx()) },
+                          metrics = { 'prob' : 'accuracy' })
+        par_model.fit_generator(
+                data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+                validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+                epochs = args.finetune_init, verbose = not args.no_progress,
+                max_queue_size = args.queue_size, workers = args.read_workers, use_multiprocessing = True)
+        for layer in model.layers:
+            layer.trainable = True
+        print('Full model training')
+    
+    # Train model
     callbacks, num_epochs = utils.get_lr_schedule(args.lr_schedule, data_generator.num_train, args.batch_size, schedule_args = { arg_name : arg_val for arg_name, arg_val in vars(args).items() if arg_val is not None })
 
     if args.log_dir:
@@ -151,8 +176,6 @@ if __name__ == '__main__':
     par_model.compile(optimizer = keras.optimizers.SGD(lr=0.1, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
                       loss = { 'labelembed_loss' : lambda y_true, y_pred: y_pred[:,0], 'embedding' : None, 'prob' : lambda y_true, y_pred: K.tf.zeros(K.shape(y_true)[:1], dtype=K.floatx()) },
                       metrics = { 'prob' : 'accuracy' })
-
-    batch_transform_kwargs = { 'num_classes' : data_generator.num_classes }
 
     par_model.fit_generator(
               data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
