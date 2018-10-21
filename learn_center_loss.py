@@ -81,6 +81,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--no_progress', action = 'store_true', default = False, help = 'Do not display training progress, but just the final performance.')
     arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGD')
     arggroup.add_argument('--sgd_patience', type = int, default = None, help = 'Patience of learning rate reduction in epochs.')
+    arggroup.add_argument('--sgd_lr', type = float, default = 0.1, help = 'Initial learning rate.')
     arggroup.add_argument('--sgd_min_lr', type = float, default = None, help = 'Minimum learning rate.')
     arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGDR')
     arggroup.add_argument('--sgdr_base_len', type = int, default = None, help = 'Length of first cycle in epochs.')
@@ -166,7 +167,7 @@ if __name__ == '__main__':
         decay = (1.0/args.max_decay - 1) / ((data_generator.num_train // args.batch_size) * (args.epochs if args.epochs else num_epochs))
     else:
         decay = 0.0
-    par_model.compile(optimizer = keras.optimizers.SGD(lr=0.1, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
+    par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
                       loss = { 'prob' : 'categorical_crossentropy', 'center_loss' : lambda y_true, y_pred: y_pred },
                       loss_weights = { 'prob' : 1.0, 'center_loss' : args.center_loss_weight },
                       metrics = { 'prob' : 'accuracy' })
