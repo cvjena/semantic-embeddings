@@ -39,6 +39,8 @@ def get_data_generator(dataset, data_root, classes = None):
         return CifarGenerator(data_root, np.arange(50, 100), reenumerate = dataset.endswith('-consec'))
     elif dataset == 'ilsvrc':
         return ILSVRCGenerator(data_root, classes)
+    elif dataset == 'ilsvrc-caffe':
+        return ILSVRCGenerator(data_root, classes, mean = [123.68, 116.779, 103.939], std = [1., 1., 1.], color_mode = 'bgr')
     elif dataset == 'nab':
         return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480))
     elif dataset == 'nab-cropped':
@@ -254,7 +256,30 @@ class CifarGenerator(object):
 
 class FileDatasetGenerator(object):
 
-    def __init__(self, root_dir, classes = None, cropsize = (224, 224), randzoom_range = None, randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 }):
+    def __init__(self, root_dir, classes = None, cropsize = (224, 224),
+                 randzoom_range = None, randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 },
+                 color_mode = 'rgb'):
+        """ Abstract base class for image generators.
+
+        # Arguments:
+
+        - root_dir: Root directory of the dataset.
+
+        - classes: List of classes to restrict the dataset to. Numeric labels will be assigned to these classes in ascending order.
+                   If set to `None`, all available classes will be used.
+        
+        - cropsize: Tuple with width and height of crops extracted from the images.
+
+        - randzoom_range: Tuple with minimum and maximum size of the smaller image dimension for random scale augmentation.
+                          May ever be given as integer specifying absolute pixel values or float specifying the relative scale of the image.
+                          If set to `None`, no scale augmentation will be performed.
+        
+        - randerase_prob: Probability for random erasing.
+
+        - randerase_params: Random erasing parameters (see Zhong et al. (2017): "Random erasing data augmentation.").
+
+        - color_mode: Image color mode, either "rgb" or "bgr".
+        """
         
         super(FileDatasetGenerator, self).__init__()
         
@@ -263,6 +288,7 @@ class FileDatasetGenerator(object):
         self.randzoom_range = randzoom_range
         self.randerase_prob = randerase_prob
         self.randerase_params = randerase_params
+        self.color_mode = color_mode.lower()
         
         self.classes = []
         self.train_img_files = []
@@ -274,7 +300,12 @@ class FileDatasetGenerator(object):
     
     
     def _compute_stats(self, mean = None, std = None):
-        """ Computes channel-wise mean and standard deviation of all images in the dataset. """
+        """ Computes channel-wise mean and standard deviation of all images in the dataset.
+        
+        If `mean` and `std` arguments are given, they will just be stored instead of being re-computed.
+
+        The channel order of both is always "RGB", independent of `color_mode`.
+        """
         
         if mean is None:
             mean = 0
@@ -406,12 +437,16 @@ class FileDatasetGenerator(object):
             if isinstance(target_size, int):
                 target_size = (target_size, round(img.size[1] * (target_size / img.size[0]))) if img.size[0] < img.size[1] else (round(img.size[0] * (target_size / img.size[1])), target_size)
             img = img.resize(target_size, PIL.Image.BILINEAR)
-        img = img_to_array(img)
+        img = img_to_array(img, data_format=data_format)
         
         # Normalize image
         if normalize:
             img -= self.mean[:,None,None] if data_format == 'channels_first' else self.mean[None,None,:]
             img /= self.std[:,None,None] if data_format == 'channels_first' else self.std[None,None,:]
+        
+        # RGB -> BGR conversion
+        if self.color_mode == 'bgr':
+            img = img[::-1,:,:] if data_format == 'channels_first' else img[:,:,::-1]
         
         # Random Flipping
         if hflip and (np.random.random() < 0.5):
@@ -469,9 +504,25 @@ class FileDatasetGenerator(object):
 
 class ILSVRCGenerator(FileDatasetGenerator):
 
-    def __init__(self, root_dir, classes = None, mean = [122.65435242, 116.6545058, 103.99789959], std = [71.40583196, 69.56888997, 73.0440314]):
+    def __init__(self, root_dir, classes = None, mean = [122.65435242, 116.6545058, 103.99789959], std = [71.40583196, 69.56888997, 73.0440314], color_mode = "rgb"):
+        """ ILSVRC data generator.
+
+        # Arguments:
+
+        - root_dir: Root directory of the ILSVRC dataset, containing directories "ILSVRC2012_img_train" and "ILSVRC2012_img_val", both containing
+                    sub-directories with names of synsets and the images for each synset in the corresponding sub-directories.
+
+        - classes: List of synsets to restrict the dataset to. Numeric labels will be assigned to these synsets in ascending order.
+                   If set to `None`, all available synsets will be used and enumerated in the lexicographical order.
         
-        super(ILSVRCGenerator, self).__init__(root_dir, classes, randzoom_range = (256, 480))
+        - mean: Channel-wise image mean for normalization (in "RGB" order). If set to `None`, mean and standard deviation will be computed from the images.
+
+        - std: Channel-wise standard deviation for normalization (in "RGB" order). If set to `None`, standard deviation will be computed from the images.
+
+        - color_mode: Image color mode, either "rgb" or "bgr".
+        """
+        
+        super(ILSVRCGenerator, self).__init__(root_dir, classes, randzoom_range = (256, 480), color_mode = color_mode)
         self.train_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_train')
         self.test_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_val')
         
@@ -519,9 +570,9 @@ class NABGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, img_dir = 'images',
                  cropsize = (224, 224), randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
-                 mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446]):
+                 mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446], color_mode = color_mode):
         
-        super(NABGenerator, self).__init__(root_dir, classes = classes, cropsize = cropsize, randzoom_range = randzoom_range, randerase_prob = randerase_prob, randerase_params = randerase_params)
+        super(NABGenerator, self).__init__(root_dir, classes = classes, cropsize = cropsize, randzoom_range = randzoom_range, randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
         self.imgs_dir = os.path.join(root_dir, img_dir)
         self.img_list_file = os.path.join(root_dir, 'images.txt')
         self.label_file = os.path.join(root_dir, 'image_class_labels.txt')
