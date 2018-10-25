@@ -22,7 +22,7 @@ except ImportError:
 
 
 
-DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC', 'NAB', 'NAB-cropped', 'NAB-cropped-sq']
+DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC', 'ILSVRC-caffe', 'NAB', 'NAB-cropped', 'NAB-cropped-sq']
 
 
 
