@@ -570,7 +570,7 @@ class NABGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, img_dir = 'images',
                  cropsize = (224, 224), randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
-                 mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446], color_mode = color_mode):
+                 mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446], color_mode = "rgb"):
         
         super(NABGenerator, self).__init__(root_dir, classes = classes, cropsize = cropsize, randzoom_range = randzoom_range, randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
         self.imgs_dir = os.path.join(root_dir, img_dir)
