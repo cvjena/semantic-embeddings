@@ -16,7 +16,8 @@ from sgdr_callback import SGDR
 
 
 ARCHITECTURES = ['simple', 'simple-mp', 'simple-highres', 'simple-selu', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'resnet-110-fc-selu', 'wrn-28-10',
-                 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'pyramidnet-272-200-selu', 'vgg16', 'resnet-50', 'nasnet-a']
+                 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'pyramidnet-272-200-selu', 'vgg16',
+                 'resnet-50', 'rn18', 'rn34', 'rn50', 'rn101', 'rn152', 'rn200', 'nasnet-a']
 
 LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
 
@@ -169,6 +170,25 @@ def build_network(num_outputs, architecture, classification = False, name = None
         x = keras.layers.GlobalAvgPool2D(name='avg_pool')(rn50_out)
         x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification else None, name = 'prob' if classification else 'embedding')(x)
         return keras.models.Model(rn50.inputs, x, name=name)
+    
+    elif architecture.startswith('rn'):
+
+        import keras_resnet.models
+        factories = {
+            'rn18'  : keras_resnet.models.ResNet18,
+            'rn34'  : keras_resnet.models.ResNet34,
+            'rn50'  : keras_resnet.models.ResNet50,
+            'rn101' : keras_resnet.models.ResNet101,
+            'rn152' : keras_resnet.models.ResNet152,
+            'rn200' : keras_resnet.models.ResNet200
+        }
+        input_ = keras.layers.Input((3, None, None)) if K.image_data_format() == 'channels_first' else keras.layers.Input((None, None, 3))
+        rn = factories[architecture](input_, include_top = classification, classes = num_outputs, name = name)
+        if not classification:
+            x = keras.layers.GlobalAvgPool2D(name = 'avg_pool')(rn.outputs[-1])
+            x = keras.layers.Dense(num_outputs, name = 'embedding')(x)
+            rn = keras.models.Model(input_, x, name = name)
+        return rn
     
     elif architecture == 'nasnet-a':
         
