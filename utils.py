@@ -183,7 +183,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
             'rn200' : keras_resnet.models.ResNet200
         }
         input_ = keras.layers.Input((3, None, None)) if K.image_data_format() == 'channels_first' else keras.layers.Input((None, None, 3))
-        rn = factories[architecture](input_, include_top = classification, classes = num_outputs, name = name)
+        rn = factories[architecture](input_, include_top = classification, classes = num_outputs, freeze_bn = False, name = name)
         if not classification:
             x = keras.layers.GlobalAvgPool2D(name = 'avg_pool')(rn.outputs[-1])
             x = keras.layers.Dense(num_outputs, name = 'embedding')(x)
