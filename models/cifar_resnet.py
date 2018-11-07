@@ -19,6 +19,10 @@ from keras.engine import Layer, InputSpec
 from keras.engine.topology import get_source_inputs
 from keras.utils import layer_utils, conv_utils
 from keras.utils.data_utils import get_file
+try:
+    from keras.utils.conv_utils import normalize_data_format
+except ImportError:
+    from keras.backend import normalize_data_format
 
 
 class ChannelPadding(Layer):
@@ -36,7 +40,7 @@ class ChannelPadding(Layer):
     def __init__(self, padding=1, data_format=None, **kwargs):
         super(ChannelPadding, self).__init__(**kwargs)
         self.padding = conv_utils.normalize_tuple(padding, 2, 'padding')
-        self.data_format = conv_utils.normalize_data_format(data_format)
+        self.data_format = normalize_data_format(data_format)
         self.input_spec = InputSpec(ndim=4)
 
     def compute_output_shape(self, input_shape):
