@@ -18,6 +18,7 @@ METRICS = ['Accuracy', 'Top-5 Accuracy', 'Avg. Accuracy', 'Hierarchical Accuracy
 
 
 def train_and_predict(data, model, layer = None, normalize = False, augmentation_epochs = 1, C = 1.0, custom_objects = {}, batch_size = 1):
+    """ Extracts image features, trains a linear SVM for classification, and returns predictions on the test data. """
     
     # Load model
     if isinstance(model, str):
@@ -48,6 +49,7 @@ def train_and_predict(data, model, layer = None, normalize = False, augmentation
 
 
 def nn_classification(data, centroids, model, layer = None, custom_objects = {}, batch_size = 1):
+    """ Extracts image embeddings and performs classification by assigning samples to the class of the nearest embedding. """
     
     # Load class centroids
     if isinstance(centroids, str):
@@ -70,6 +72,7 @@ def nn_classification(data, centroids, model, layer = None, custom_objects = {},
 
 
 def extract_predictions(data, model, layer = None, custom_objects = {}, batch_size = 1):
+    """ Extracts class predictions. """
     
     # Load model
     if isinstance(model, str):
@@ -132,17 +135,17 @@ def str2bool(v):
 
 if __name__ == '__main__':
     
-    parser = argparse.ArgumentParser(description = 'Trains a linear SVM on different image embeddings and evaluates flat and hierarchical accuracy.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description = 'Evaluates flat, balanced, and hierarchical accuracy of several models.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     arggroup = parser.add_argument_group('Dataset')
     arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup.add_argument('--hierarchy', type = str, required = True, help = 'Path to a file containing parent-child relationships (one per line).')
     arggroup.add_argument('--is_a', action = 'store_true', default = False, help = 'If given, --hierarchy is assumed to contain is-a instead of parent-child relationships.')
     arggroup.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
-    arggroup.add_argument('--classes_from', type = str, default = None, help = 'Optionally, a path to a pickle dump containing a dictionary with item "ind2label" specifying the classes to be considered.')
-    arggroup.add_argument('--augmentation_epochs', type = int, default = 1, help = 'Number of training image augmentations.')
+    arggroup.add_argument('--classes_from', type = str, default = None, help = 'Optionally, a path to a pickle dump containing a dictionary with item "ind2label" specifying the classes to be considered. These should be in the same order as the classes predicted by the model.')
+    arggroup.add_argument('--augmentation_epochs', type = int, default = 1, help = 'Number of training image augmentations when training an SVM on top of embeddings.')
     arggroup.add_argument('--C', type = float, default = 0.1, help = 'Weight of the error in SVM loss.')
-    arggroup.add_argument('--batch_size', type = int, default = 1, help = 'Batch size for feature extraction. Must divide the number of images evenly.')
+    arggroup.add_argument('--batch_size', type = int, default = 1, help = 'Batch size for feature extraction. Must divide the number of test images evenly.')
     arggroup = parser.add_argument_group('Features')
     arggroup.add_argument('--architecture', type = str, default = 'simple', choices = utils.ARCHITECTURES, help = 'Type of network architecture.')
     arggroup.add_argument('--model', type = str, action = 'append', required = True, help = 'Path to a keras model dump used for extracting image features.')

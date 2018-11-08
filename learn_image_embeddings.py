@@ -14,6 +14,22 @@ from datasets import DATASETS, get_data_generator
 
 
 def cls_model(embed_model, num_classes, cls_base = None):
+    """ Appends a classifier to an embedding model.
+
+    # Arguments:
+
+    - embed_model: Base model generating image features.
+
+    - num_classes: Number of classes.
+
+    - cls_base: Optionally, the name of the layer in `embed_model` that will be used for extracting embeddings.
+                If set to None, the final output of the model will be used.
+    
+    # Returns:
+        a new model that extends `embed_model` with a ReLU activation, batch normalization, and a fully-connected
+        classifier with softmax activation. This model will have two outputs: the original output of the `embed_model`
+        and the output of the appended classifier.
+    """
     
     if cls_base is None:
         base = embed_model.output

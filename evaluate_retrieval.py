@@ -20,6 +20,24 @@ METRICS = ['P@1 (WUP)', 'P@10 (WUP)', 'P@50 (WUP)', 'P@100 (WUP)', 'AHP (WUP)', 
 
 
 def pairwise_retrieval(features, normalize = False, return_generator = True):
+    """ Uses each image as query and retrieves its nearest neighbors.
+    
+    # Arguments:
+
+    - features: Features for all images. Can be provided in the following ways:
+                - 2-d numpy array with each row corresponding to a sample.
+                - Dictionary mapping image IDs to feature vectors.
+                - Path to a pickle file containing such a dictionary.
+    
+    - normalize: Whether to L2-normalize the features.
+
+    - return_generator: If True, a generator will be returned instead of a dictionary.
+
+    # Returns:
+        If return_generator is True, a generator will be returned that yields tuples consisting
+        of an image ID and an ordered list with the IDs of this image's nearest neighbors.
+        If return_generator is False, a dictionary mapping IDs to such lists will be returned.
+    """
     
     # Convert feature list to numpy array
     if isinstance(features, str):

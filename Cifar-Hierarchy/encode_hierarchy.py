@@ -1,4 +1,5 @@
 import sys
+import argparse
 import pickle
 
 
@@ -97,24 +98,27 @@ def plot_hierarchy(hierarchy, filename):
 
 if __name__ == '__main__':
     
-    if len(sys.argv) < 3:
-        print('Usage: {} <hierarchy-file> <meta-file> [plot]'.format(sys.argv[0]))
-        exit()
+    parser = argparse.ArgumentParser(
+        description='Translates a hierarchy given in indented tree-form into a list of parent-child tuples.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument('hierarchy_file', type=str, help='The input file specifying the hierarchy in indented tree format.')
+    parser.add_argument('meta_file', type=str, help='Path to the meta pickle file from CIFAR-100.')
+    parser.add_argument('--out', type=str, default='cifar.parent-child.txt', help='Output file containing parent-child tuples.')
+    parser.add_argument('--out_names', type=str, default='class_names.txt', help='Output file associating numerical class labels with their original names.')
+    parser.add_argument('--plot', type=str, default=None, help='If given, a plot of the hierarchy will be written to the specified file. Requires the pydot package.')
+    args = parser.parse_args()
     
-    hierarchy_file = sys.argv[1]
-    meta_file = sys.argv[2]
-    plot = ((len(sys.argv) > 3) and (sys.argv[3].lower() in ('plot', 'true', 'yes', '1')))
-    
-    with open(meta_file, 'rb') as meta_pickle:
+    with open(args.meta_file, 'rb') as meta_pickle:
         meta = pickle.load(meta_pickle, encoding = 'bytes')
     
-    hierarchy = read_hierarchy(hierarchy_file)
-    if plot:
-        plot_hierarchy(hierarchy, 'hierarchy.svg')
+    hierarchy = read_hierarchy(args.hierarchy_file)
+    if args.plot is not None:
+        plot_hierarchy(hierarchy, args.plot)
     hierarchy, node_names = encode_class_names(hierarchy, [lbl.decode() for lbl in meta[b'fine_label_names']])
     
-    save_hierarchy(hierarchy, 'cifar.parent-child.txt')
+    save_hierarchy(hierarchy, args.out)
     
-    with open('class_names.txt', 'w') as f:
+    with open(args.out_names, 'w') as f:
         for ind, name in enumerate(node_names):
             f.write('{} {}\n'.format(ind, name))

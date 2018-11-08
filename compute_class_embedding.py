@@ -11,7 +11,68 @@ from class_hierarchy import ClassHierarchy
 
 
 
-def hierarchical_class_embedding(class_dist, solver = 'general'):
+def unitsphere_embedding(class_sim):
+    """
+    Finds an embedding of `n` classes on a unit sphere in `n`-dimensional space, so that their dot products correspond
+    to pre-defined similarities.
+    
+    class_sim - `n-by-n` matrix specifying the desired similarity between each pair of classes.
+    
+    Returns: `n-by-n` matrix with rows being the locations of the corresponding classes in the embedding space.
+    """
+    
+    # Check arguments
+    if (class_sim.ndim != 2) or (class_sim.shape[0] != class_sim.shape[1]):
+        raise ValueError('Given class_sim has invalid shape. Expected: (n, n). Got: {}'.format(class_sim.shape))
+    if (class_sim.shape[0] == 0):
+        raise ValueError('Empty class_sim given.')
+    
+    # Place first class
+    nc = class_sim.shape[0]
+    embeddings = np.zeros((nc, nc))
+    embeddings[0,0] = 1.
+    
+    # Iteratively place all remaining classes
+    for c in range(1, nc):
+        embeddings[c, :c] = np.linalg.solve(embeddings[:c, :c], class_sim[c, :c])
+        embeddings[c, c] = np.sqrt(1. - np.sum(embeddings[c, :c] ** 2))
+    
+    return embeddings
+
+
+
+def sim_approx(class_sim, num_dim = None):
+    """
+    Finds an embedding of `n` classes in an `d`-dimensional space with `d <= n`, so that their
+    dot products best approximate pre-defined similarities.
+    
+    class_sim - `n-by-n` matrix specifying the desired similarity between each pair of classes.
+    num_dim - Optionally, the maximum target dimensionality `d` for the embeddings. If not given, it will be equal to `n`.
+    
+    Returns: `n-by-d` matrix with rows being the locations of the corresponding classes in the embedding space.
+    """
+    
+    # Check arguments
+    if (class_sim.ndim != 2) or (class_sim.shape[0] != class_sim.shape[1]):
+        raise ValueError('Given class_sim has invalid shape. Expected: (n, n). Got: {}'.format(class_sim.shape))
+    if (class_sim.shape[0] == 0):
+        raise ValueError('Empty class_sim given.')
+    
+    # Compute optimal embeddings based on eigendecomposition of similarity matrix
+    L, Q = np.linalg.eigh(class_sim)
+    if np.any(L < 0):
+        raise RuntimeError('Given class_sim is not positive semi-definite.')
+    embeddings = Q * np.sqrt(L)[None,:]
+
+    # Approximation using the eigenvectors corresponding to the largest eigenvalues
+    if (num_dim is not None) and (num_dim < embeddings.shape[1]):
+        embeddings = embeddings[:,-num_dim:]  # pylint: disable=invalid-unary-operand-type
+    
+    return embeddings
+
+
+
+def euclidean_embedding(class_dist, solver = 'general'):
     """
     Finds an embedding of `n` classes in an `(n-1)`-dimensional space, so that their Euclidean distances correspond
     to pre-defined ones.
@@ -112,82 +173,21 @@ def mds(class_dist, num_dim = None):
 
 
 
-def unitsphere_embedding(class_sim):
-    """
-    Finds an embedding of `n` classes on a unit sphere in `n`-dimensional space, so that their dot products correspond
-    to pre-defined similarities.
-    
-    class_sim - `n-by-n` matrix specifying the desired similarity between each pair of classes.
-    
-    Returns: `n-by-n` matrix with rows being the locations of the corresponding classes in the embedding space.
-    """
-    
-    # Check arguments
-    if (class_sim.ndim != 2) or (class_sim.shape[0] != class_sim.shape[1]):
-        raise ValueError('Given class_sim has invalid shape. Expected: (n, n). Got: {}'.format(class_sim.shape))
-    if (class_sim.shape[0] == 0):
-        raise ValueError('Empty class_sim given.')
-    
-    # Place first class
-    nc = class_sim.shape[0]
-    embeddings = np.zeros((nc, nc))
-    embeddings[0,0] = 1.
-    
-    # Iteratively place all remaining classes
-    for c in range(1, nc):
-        embeddings[c, :c] = np.linalg.solve(embeddings[:c, :c], class_sim[c, :c])
-        embeddings[c, c] = np.sqrt(1. - np.sum(embeddings[c, :c] ** 2))
-    
-    return embeddings
-
-
-
-def sim_approx(class_sim, num_dim = None):
-    """
-    Finds an embedding of `n` classes in an `d`-dimensional space with `d <= n`, so that their
-    dot products best approximate pre-defined similarities.
-    
-    class_sim - `n-by-n` matrix specifying the desired similarity between each pair of classes.
-    num_dim - Optionally, the maximum target dimensionality `d` for the embeddings. If not given, it will be equal to `n`.
-    
-    Returns: `n-by-d` matrix with rows being the locations of the corresponding classes in the embedding space.
-    """
-    
-    # Check arguments
-    if (class_sim.ndim != 2) or (class_sim.shape[0] != class_sim.shape[1]):
-        raise ValueError('Given class_sim has invalid shape. Expected: (n, n). Got: {}'.format(class_sim.shape))
-    if (class_sim.shape[0] == 0):
-        raise ValueError('Empty class_sim given.')
-    
-    # Compute optimal embeddings based on eigendecomposition of similarity matrix
-    L, Q = np.linalg.eigh(class_sim)
-    if np.any(L < 0):
-        raise RuntimeError('Given class_sim is not positive semi-definite.')
-    embeddings = Q * np.sqrt(L)[None,:]
-
-    # Approximation using the eigenvectors corresponding to the largest eigenvalues
-    if (num_dim is not None) and (num_dim < embeddings.shape[1]):
-        embeddings = embeddings[:,-num_dim:]  # pylint: disable=invalid-unary-operand-type
-    
-    return embeddings
-
-
-
 if __name__ == '__main__':
     
     # Parse arguments
-    parser = argparse.ArgumentParser(description = 'Computes embeddings of n classes so that their distance corresponds to 1 minus the height of their LCS in a given hierarchy.', formatter_class = argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description = 'Computes semantic class embeddings based on a given hierarchy.', formatter_class = argparse.RawTextHelpFormatter)
     parser.add_argument('--hierarchy', type = str, required = True, help = 'Path to a file containing parent-child or is-a relationships (one per line).')
     parser.add_argument('--is_a', action = 'store_true', default = False, help = 'If given, --hierarchy is assumed to contain is-a instead of parent-child relationships.')
     parser.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
     parser.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the classes to compute embeddings for (as first words per line). If not given, all leaf nodes in the hierarchy will be considered as target classes.')
     parser.add_argument('--out', type = str, required = True, help = 'Filename of the resulting pickle dump (containing keys "embedding", "ind2label", and "label2ind").')
-    parser.add_argument('--method', type = str, default = 'unitsphere', choices = ['spheres', 'mds', 'unitsphere', 'approx_sim'],
+    parser.add_argument('--method', type = str, default = 'unitsphere', choices = ['unitsphere', 'approx_sim', 'spheres', 'mds'],
                         help = '''Which algorithm to use for computing class embeddings. Options are:
-    - "spheres": Compute (n-1)-dimensional embeddings so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using successive intersections of hyperspheres.
-    - "mds": Compute embeddings of arbitrary dimensionality so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using classical multidimensional scaling.
     - "unitsphere": Compute n-dimensional L2-normalized embeddings so that the dot products of class embeddings correspond to their semantic similarity.
     - "approx_sim": Compute embeddings of arbitrary dimensionality so that the dot products of class embeddings correspond to their semantic similarity.
+    - "spheres": Compute (n-1)-dimensional embeddings so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using successive intersections of hyperspheres.
+    - "mds": Compute embeddings of arbitrary dimensionality so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using classical multidimensional scaling.
 Default: "unitsphere"''')
     parser.add_argument('--num_dim', type = int, default = None, help = 'Number of embedding dimensions when using the "mds" or "approx_sim" method.')
     args = parser.parse_args()
@@ -215,7 +215,7 @@ Default: "unitsphere"''')
     # Compute class embeddings
     start_time = time.time()
     if args.method == 'spheres':
-        embedding = hierarchical_class_embedding(sem_class_dist)
+        embedding = euclidean_embedding(sem_class_dist)
     elif args.method == 'mds':
         embedding = mds(sem_class_dist, args.num_dim if args.num_dim else len(unique_labels) - 1)
     elif args.method == 'unitsphere':

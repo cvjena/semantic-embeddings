@@ -10,6 +10,40 @@ def PlainNet(output_dim,
              input_shape = (32, 32, 3),
              pool_size = (2,2),
              name = None):
+    """ Creates the Plain-11 network architecture.
+
+    # Reference:
+
+    Björn Barz and Joachim Denzler:
+    "Deep Learning is not a Matter of Depth but of Good Training."
+    International Conference on Pattern Recognition and Artificial Intelligence (ICPRAI), pp. 683-687, 2018.
+    http://hera.inf-cv.uni-jena.de:6680/pdf/Barz18:GoodTraining
+
+    # Arguments:
+
+    - output_dim: Number of output units of the final layer.
+
+    - filters: List specifying the individual layers constituting the network architecture.
+               BatchNormalization will be inserted automatically.
+               Possible types of values for the items of this list are:
+                   - int: a 3x3 Conv2D layer with this number of channels.
+                   - 'fc'+int: fully-connected layer with the specified number of units.
+                   - 'ap': average pooling.
+                   - 'mp': maximum pooling.
+                   - 'gap': global average pooling.
+
+    - activation: Activation function of Conv2D and Dense layers.
+
+    - regularizer: Kernel regularizer of Conv2D and Dense layers.
+
+    - final_activation: Activation function of the final layer.
+
+    - input_shape: 3-tuple specifying the shape of the input tensor.
+
+    - pool_size: 2-tuple specifying the kernel size of average pooling and maximum pooling layers.
+
+    - name: Name of the network.
+    """
     
     prefix = '' if name is None else name + '_'
     

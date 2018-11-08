@@ -24,18 +24,33 @@ LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
 
 
 def squared_distance(y_true, y_pred):
+    """ Computes the squared Euclidean distance between corresponding pairs of samples in two tensors. """
     return K.sum(K.square(y_pred - y_true), axis=-1)
 
 
 def mean_distance(y_true, y_pred):
+    """ Computes the Euclidean distance between corresponding pairs of samples in two tensors. """
     return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
 
 
 def inv_correlation(y_true, y_pred):
+    """ Computes 1 minus the dot product between corresponding pairs of samples in two tensors. """
     return 1. - K.sum(y_true * y_pred, axis = -1)
 
 
 def nn_accuracy(embedding, dot_prod_sim = False):
+    """ Metric computing classification accuracy by assigning samples to the class with the nearest embedding in feature space.
+
+    # Arguments:
+
+    - embedding: 2-d numpy array whose rows are class embeddings.
+
+    - dot_prod_sim: If True, the dot product will be used to find the most similar embedding (assumes L2-normalized embeddings and features).
+                    Otherwise, Euclidean distance will be used.
+    
+    # Returns:
+        a Keras metric function taking y_true and y_pred as inputs and returning a tensor of sample-wise accuracies.
+    """
 
     def nn_accuracy(y_true, y_pred):
 
@@ -59,6 +74,17 @@ def nn_accuracy(embedding, dot_prod_sim = False):
 
 
 def devise_ranking_loss(embedding, margin = 0.1):
+    """ The ranking loss used by DeViSE.
+
+    # Arguments:
+
+    - embedding: 2-d numpy array whose rows are class embeddings.
+
+    - margin: margin for the ranking loss.
+
+    # Returns:
+        a Keras loss function taking y_true and y_pred as inputs and returning a loss tensor.
+    """
     
     def _loss(y_true, y_pred):
         embedding_t = K.constant(embedding.T)
@@ -70,6 +96,7 @@ def devise_ranking_loss(embedding, margin = 0.1):
 
 
 def l2norm(x):
+    """ L2-normalizes a tensor along the last axis. """
     return K.tf.nn.l2_normalize(x, -1)
 
 
@@ -80,7 +107,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
     
     - num_outputs: number of final output units.
     
-    - architecture: name of the architecture. See ARCHITECTURES for a list of possible values.
+    - architecture: name of the architecture. See ARCHITECTURES for a list of possible values and README.md for descriptions.
     
     - classification: If `True`, the final layer will have a softmax activation, otherwise no activation at all.
     
@@ -202,6 +229,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
 
 
 def get_custom_objects(architecture):
+    """ Provides a dictionary with custom objects required for loading a certain model architecture using `keras.models.load_model`. """
     
     if architecture in ('resnet-32', 'resnet-110', 'resnet-110-fc', 'pyramidnet-272-200', 'pyramidnet-110-270'):
         return { 'ChannelPadding' : cifar_resnet.ChannelPadding }
@@ -210,6 +238,37 @@ def get_custom_objects(architecture):
 
 
 def get_lr_schedule(schedule, num_samples, batch_size, schedule_args = {}):
+    """ Creates a learning rate schedule.
+
+    # Arguments:
+
+    - schedule: Name of the schedule. Possible values:
+                - 'sgd': Stochastic Gradient Descent with ReduceLROnPlateau callback.
+                - 'sgdr': Stochastic Gradient Descent with Cosine Annealing and Warm Restarts.
+                - 'clr': Cyclical Learning Rates.
+                - 'resnet-schedule': Hand-crafted schedule used by He et al. for training ResNet.
+    
+    - num_samples: Number of training samples.
+
+    - batch_size: Number of samples per batch.
+
+    - schedule_args: Further arguments for the specific learning rate schedule.
+                     'sgd' supports:
+                        - 'sgd_patience': Number of epochs without improvement before reducing the LR. Default: 10.
+                        - 'sgd_min_lr': Minimum learning rate. Default : 1e-4
+                     'sgdr' supports:
+                        - 'sgdr_base_len': Length of the first cycle. Default: 12.
+                        - 'sgdr_mul': Factor multiplied with the length of the cycle after the end of each one. Default: 2.
+                        - 'sgdr_max_lr': Initial learning rate at the beginning of each cycle. Default: 0.1.
+                     'clr' supports:
+                        - 'clr_step_len': Number of training epochs per half-cycle. Default: 12.
+                        - 'clr_min_lr': Minimum learning rate. Default: 1e-5.
+                        - 'clr_max_lr': Maximum learning rate: Default: 0.1.
+    
+    # Returns:
+        - a list of callbacks for being passed to the fit function,
+        - a suggested number of training epochs.
+    """
 
     if schedule.lower() == 'sgd':
     
