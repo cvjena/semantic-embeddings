@@ -8,15 +8,15 @@ from keras import backend as K
 
 import warnings
 
-from models import cifar_resnet, cifar_pyramidnet, plainnet, vgg16, wide_residual_network as wrn
+from models import cifar_resnet, cifar_pyramidnet, plainnet, wide_residual_network as wrn
 import densenet  # pylint: disable=import-error
 from clr_callback import CyclicLR
 from sgdr_callback import SGDR
 
 
 
-ARCHITECTURES = ['simple', 'simple-mp', 'simple-highres', 'simple-selu', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'resnet-110-fc-selu', 'wrn-28-10',
-                 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270', 'pyramidnet-272-200-selu', 'vgg16',
+ARCHITECTURES = ['simple', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'wrn-28-10',
+                 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270',
                  'resnet-50', 'rn18', 'rn34', 'rn50', 'rn101', 'rn152', 'rn200', 'nasnet-a']
 
 LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
@@ -168,27 +168,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
                                  final_activation = 'softmax' if classification else None,
                                  name = name)
     
-    elif architecture == 'simple-mp':
-        
-        return plainnet.PlainNet(num_outputs, [64, 64, 'mp', 128, 128, 128, 'mp', 256, 256, 256, 'mp', 512, 'gap', 'fc512'],
-                                 activation = activation,
-                                 final_activation = 'softmax' if classification else None,
-                                 name = name)
-    
-    elif architecture == 'simple-highres':
-        
-        return plainnet.PlainNet(num_outputs,
-                                 activation = activation,
-                                 final_activation = 'softmax' if classification else None,
-                                 input_shape = (224, 224, 3),
-                                 pool_size = (4, 4),
-                                 name = name)
-    
     # ImageNet architectures
-    
-    elif architecture == 'vgg16':
-        
-        return vgg16.VGG16(classes = num_outputs, final_activation = 'softmax' if classification else None)
     
     elif architecture == 'resnet-50':
         
