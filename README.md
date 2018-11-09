@@ -276,8 +276,8 @@ python learn_image_embeddings.py \
 
 |  Dataset  |              Model              | mAHP@250 | Balanced Accuracy |
 |-----------|---------------------------------|---------:|------------------:|
-| CIFAR-100 | [Plain-11][16]                  |   82.48% |            74.37% |
-| CIFAR-100 | [ResNet-110-fc][17]             |   83.35% |            76.24% |
+| CIFAR-100 | [Plain-11][16]                  |   82.05% |            74.10% |
+| CIFAR-100 | [ResNet-110-fc][17]             |   83.29% |            76.60% |
 | CIFAR-100 | [PyramidNet-272-200][18]        |   86.38% |            80.49% |
 | NABirds   | [ResNet-50 (from scratch)][19]  |   73.99% |            59.46% |
 | NABirds   | [ResNet-50 (fine-tuned)][20]    |   81.37% |            69.25% |
