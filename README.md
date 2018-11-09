@@ -6,6 +6,8 @@ This repository contains the official source code used to produce the results re
 > Björn Barz and Joachim Denzler.  
 > IEEE Winter Conference on Applications of Computer Vision (WACV), 2019.
 
+If you use this code, please cite that paper.
+
 
 **Table of Contents:**
 
@@ -340,9 +342,9 @@ model.load_weights('cifar_unitsphere-embed+cls_resnet-110-fc.model.h5')
 [13]: https://github.com/broadinstitute/keras-resnet
 [14]: https://github.com/broadinstitute/keras-resnet/pull/47
 [15]: https://arxiv.org/pdf/1707.07012.pdf
-[16]: about:blank
-[17]: about:blank
-[18]: about:blank
-[19]: about:blank
-[20]: about:blank
-[21]: about:blank
+[16]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/cifar_unitsphere-embed+cls_plain11.model.h5
+[17]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/cifar_unitsphere-embed+cls_resnet-110-fc.model.h5
+[18]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/cifar_unitsphere-embed+cls_pyramidnet-272-200.model.h5
+[19]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/nab_unitsphere-embed+cls_rn50.model.h5
+[20]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/nab_unitsphere-embed+cls_rn50_finetuned.model.h5
+[21]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/imagenet_unitsphere-embed+cls_rn50.model.h5
