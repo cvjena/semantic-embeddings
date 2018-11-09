@@ -7,7 +7,25 @@ This repository contains the official source code used to produce the results re
 > IEEE Winter Conference on Applications of Computer Vision (WACV), 2019.
 
 
-## What are hierarchy-based semantic image embeddings?
+**Table of Contents:**
+
+1. [What are hierarchy-based semantic image embeddings?](#what-are-hierarchy-based-semantic-image-embeddings)
+2. [How to learn semantic image embeddings?](#how-to-learn-semantic-embeddings)
+    1. [Computing target class embeddings](#computing-target-class-embeddings)
+    2. [Learning image embeddings](#learning-image-embeddings)
+    3. [Evaluation](#evaluation)
+    4. [Supported datasets](#supported-datasets)
+    5. [Available network architectures](#available-network-architectures)
+    6. [Learning semantic embeddings for ILSVRC and NABirds](#learning-semantic-embeddings-for-ilsvrc-and-nabirds)
+3. [Requirements](#requirements)
+4. [Pre-trained models](#pre-trained-models)
+    1. [Download links](#download-links)
+    2. [Troubleshooting](#troubleshooting)
+
+
+## 1. What are hierarchy-based semantic image embeddings?
+
+![Image retrieval results with classification-based features and semantic embeddings on CIFAR-100](https://user-images.githubusercontent.com/7915048/48255570-6c733f00-e40d-11e8-85fb-3d64c97c114d.png)
 
 Features extracted and aggregated from the last convolutional layer of deep neural networks trained for classification have proven to be useful image descriptors for a variety of tasks, e.g., transfer learning and image retrieval.
 Regarding content-based image retrieval, it is often claimed that visually similar images are clustered in this feature space.
@@ -25,7 +43,7 @@ These pair-wise similarities are then used for explicitly computing optimal targ
 Finally, a CNN is trained to maximize the correlation between all images and the embedding of their respective class.
 
 
-## How to learn semantic embeddings?
+## 2. How to learn semantic embeddings?
 
 The learning process is divided into two steps:
 
@@ -34,7 +52,7 @@ The learning process is divided into two steps:
 
 In the following, we provide a step-by-step example for the CIFAR-100 dataset.
 
-### Computing target class embeddings
+### 2.1. Computing target class embeddings
 
 We derived a class taxonomy for CIFAR-100 from WordNet, but took care that our taxonomy is a tree, which is required for our method.
 The hierarchy is encoded in the file [Cifar-Hierarchy/cifar.parent-child.txt](Cifar-Hierarchy/cifar.parent-child.txt) as a set of `parent child` tuples.
@@ -69,7 +87,7 @@ For ILSVRC, three different taxonomies are provided:
 - [ILSVRC/wordnet.parent-child.mintree.txt](ILSVRC/wordnet.parent-child.mintree.txt): A tree derived from the complete taxonomy, starting with all classes with a unique root-path and then adding those paths to other classes which would cause the fewest changes to the tree. This is used for training.
 - [ILSVRC/wordnet.parent-child.pruned.txt](ILSVRC/wordnet.parent-child.pruned.txt): The complete WordNet taxonomy for all synsets, but with all children of ILSVRC classes removed. This is not a tree, but is used for evaluation.
 
-### Learning image embeddings
+### 2.2. Learning image embeddings
 
 After having computed the target class embeddings based on the hierarchy, we can start with training a CNN for mapping the images from the training dataset onto the embeddings of their respective classes.
 First, download CIFAR-100 from [here][2] and extract it to some directory.
@@ -95,7 +113,7 @@ For training with the embedding loss only, just omit the `--cls_weight` argument
 
 A set of pre-trained models can be found below.
 
-### Evaluation
+### 2.3. Evaluation
 
 To evaluate your learned model and features, two scripts are provided.
 
@@ -148,7 +166,7 @@ python evaluate_classification_accuracy.py \
     --label "Semantic Embeddings"
 ```
 
-### Supported datasets
+### 2.4. Supported datasets
 
 The following values can be specified for `--dataset`:
 
@@ -165,9 +183,9 @@ For ILSVRC, you need to move the test images into sub-directories for each class
 
 Own dataset interfaces can be defined in [datasets.py](datasets.py).
 
-### Available network architectures
+### 2.5. Available network architectures
 
-#### Tested
+#### 2.5.1. Tested
 
 For CIFAR:
 
@@ -181,7 +199,7 @@ For ImageNet and NABirds:
 
 - **resnet-50**: The standard [ResNet-50][8] implementation from `keras-applications`.
 
-#### Experimental
+#### 2.5.2. Experimental
 
 For CIFAR:
 
@@ -196,7 +214,7 @@ For ImageNet and NABirds:
 - **nasnet-a**: The [NasNet-A][15] implementation from `keras-applications`.
 
 
-### Learning semantic embeddings for ILSVRC and NABirds
+### 2.6. Learning semantic embeddings for ILSVRC and NABirds
 
 The previous sections have shown in detail how to learn semantic image embeddings for CIFAR-100.
 In the following, we provide the calls to [learn_image_embeddings.py](learn_image_embeddings.py) that we used to train our semantic embedding models (including classification objective) on the [ILSVRC 2012][4] and [NABirds][5] datasets.
@@ -257,7 +275,7 @@ python learn_image_embeddings.py \
     --model_dump nab_unitsphere-embed+cls_rn50_finetuned.model.h5
 ```
 
-### Requirements
+## 3. Requirements
 
 - Python 3
 - numpy
@@ -270,9 +288,9 @@ python learn_image_embeddings.py \
 - matplotlib
 
 
-## Pre-trained models
+## 4. Pre-trained models
 
-### Download links
+### 4.1. Download links
 
 |  Dataset  |              Model              | mAHP@250 | Balanced Accuracy |
 |-----------|---------------------------------|---------:|------------------:|
@@ -283,7 +301,7 @@ python learn_image_embeddings.py \
 | NABirds   | [ResNet-50 (fine-tuned)][20]    |   81.37% |            69.25% |
 | ILSVRC    | [ResNet-50][21]                 |   82.42% |            69.18% |
 
-### Troubleshooting
+### 4.2. Troubleshooting
 
 Sometimes, loading of the pre-trained models fails with the error message "unknown opcode".
 In the case of this or other issues, you can still create the architecture yourself and load the pre-trained weights from the model files provided above.
