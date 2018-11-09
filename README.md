@@ -9,18 +9,18 @@ This repository contains the official source code used to produce the results re
 
 **Table of Contents:**
 
-1. [What are hierarchy-based semantic image embeddings?](#what-are-hierarchy-based-semantic-image-embeddings)
-2. [How to learn semantic image embeddings?](#how-to-learn-semantic-embeddings)
-    1. [Computing target class embeddings](#computing-target-class-embeddings)
-    2. [Learning image embeddings](#learning-image-embeddings)
-    3. [Evaluation](#evaluation)
-    4. [Supported datasets](#supported-datasets)
-    5. [Available network architectures](#available-network-architectures)
-    6. [Learning semantic embeddings for ILSVRC and NABirds](#learning-semantic-embeddings-for-ilsvrc-and-nabirds)
-3. [Requirements](#requirements)
-4. [Pre-trained models](#pre-trained-models)
-    1. [Download links](#download-links)
-    2. [Troubleshooting](#troubleshooting)
+1. [What are hierarchy-based semantic image embeddings?](#1-what-are-hierarchy-based-semantic-image-embeddings)
+2. [How to learn semantic image embeddings?](#2-how-to-learn-semantic-embeddings)
+    1. [Computing target class embeddings](#21-computing-target-class-embeddings)
+    2. [Learning image embeddings](#22-learning-image-embeddings)
+    3. [Evaluation](#23-evaluation)
+    4. [Supported datasets](#24-supported-datasets)
+    5. [Available network architectures](#25-available-network-architectures)
+    6. [Learning semantic embeddings for ILSVRC and NABirds](#26-learning-semantic-embeddings-for-ilsvrc-and-nabirds)
+3. [Requirements](#3-requirements)
+4. [Pre-trained models](#4-pre-trained-models)
+    1. [Download links](#41-download-links)
+    2. [Troubleshooting](#42-troubleshooting)
 
 
 ## 1. What are hierarchy-based semantic image embeddings?
