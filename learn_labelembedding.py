@@ -71,7 +71,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the subset of classes to be used (as first words per line).')
     arggroup = parser.add_argument_group('Label embedding parameters')
-    arggroup.add_argument('--embed_dim', type = int, default = 99, help = 'Embedding dimensionality.')
+    arggroup.add_argument('--embed_dim', type = int, default = 100, help = 'Embedding dimensionality.')
     arggroup.add_argument('--tau', type = float, default = 2., help = 'Softmax temperature.')
     arggroup.add_argument('--alpha', type = float, default = 0.9)
     arggroup.add_argument('--beta', type = float, default = 0.5)
