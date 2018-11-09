@@ -25,7 +25,7 @@ This repository contains the official source code used to produce the results re
 
 ## 1. What are hierarchy-based semantic image embeddings?
 
-![Image retrieval results with classification-based features and semantic embeddings on CIFAR-100](https://user-images.githubusercontent.com/7915048/48255570-6c733f00-e40d-11e8-85fb-3d64c97c114d.png)
+![Image retrieval results with classification-based features and semantic embeddings on CIFAR-100](https://user-images.githubusercontent.com/7915048/48264069-8c642c00-e428-11e8-99ec-7260023322d0.png)
 
 Features extracted and aggregated from the last convolutional layer of deep neural networks trained for classification have proven to be useful image descriptors for a variety of tasks, e.g., transfer learning and image retrieval.
 Regarding content-based image retrieval, it is often claimed that visually similar images are clustered in this feature space.
@@ -41,6 +41,8 @@ Hierarchy-based semantic embeddings overcome these issues by embedding images in
 To this end, the semantic similarity between classes is derived from a class taxonomy specifying is-a relationships between classes.
 These pair-wise similarities are then used for explicitly computing optimal target locations for all classes in the feature space.
 Finally, a CNN is trained to maximize the correlation between all images and the embedding of their respective class.
+
+![Illustration of semantic embeddings: not visually similar classes are close together but semantically similar ones. Similarities between classes are derived from a given taxonomy.](https://user-images.githubusercontent.com/7915048/48264159-d64d1200-e428-11e8-97ba-ec4b52e9d76b.png)
 
 
 ## 2. How to learn semantic embeddings?
