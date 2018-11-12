@@ -194,6 +194,8 @@ Own dataset interfaces can be defined in [datasets.py](datasets.py).
 For CIFAR:
 
 - **simple**: The [Plain-11][7] architecture, a strictly sequential, shallow CNN with 11 trainable layers. Good for conducting quick experiments.
+  For training this network architecture, we used `--max_decay 0.1` in addition to the other arguments provided above for the ResNet.
+  This causes a continuous decay of the learning rate so that the final learning rate will be 10 times less than the initial one.
 - **resnet-110**: The standard [ResNet-110][8].
 - **resnet-110-fc**: A variant of [ResNet-110][8] with twice the number of channels per block. In contrast to the standard ResNet-110, it will always have a fully-convolutional layer after the global average pooling, even when used for learning embeddings.
 - **wrn-28-10**: A [Wide Residual Network][9] with depth 28 and width 10.
