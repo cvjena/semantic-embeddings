@@ -337,7 +337,7 @@ def add_lr_schedule_arguments(parser):
     arggroup.add_argument('--sgd_patience', type = int, default = None, help = 'Patience of learning rate reduction in epochs.')
     arggroup.add_argument('--sgd_lr', type = float, default = 0.1, help = 'Initial learning rate.')
     arggroup.add_argument('--sgd_min_lr', type = float, default = None, help = 'Minimum learning rate.')
-    arggroup.add_argument('--sgd_schedule', type = float, default = None,
+    arggroup.add_argument('--sgd_schedule', type = str, default = None,
                           help = 'Comma-separated list of `epoch:lr` pairs, defining a learning rate schedule. The total number of epochs can be appended to this list, separated by a comma as well.')
     arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGDR')
     arggroup.add_argument('--sgdr_base_len', type = int, default = None, help = 'Length of first cycle in epochs.')
