@@ -136,21 +136,22 @@ if __name__ == '__main__':
     if args.finetune:
         print('Loading pre-trained weights from {}'.format(args.finetune))
         model.load_weights(args.finetune, by_name=True, skip_mismatch=True)
-        print('Pre-training new layers')
-        for layer in model.layers:
-            layer.trainable = (layer.name in ('embedding', 'embedding_bn', 'prob', 'out2', 'labelembeddings'))
-        embed_model.layers[-1].trainable = True
-        par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, clipnorm = args.clipgrad),
-                          loss = { 'labelembed_loss' : lambda y_true, y_pred: y_pred[:,0], 'embedding' : None, 'prob' : lambda y_true, y_pred: K.tf.zeros(K.shape(y_true)[:1], dtype=K.floatx()) },
-                          metrics = { 'prob' : 'accuracy' })
-        par_model.fit_generator(
-                data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
-                validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
-                epochs = args.finetune_init, verbose = not args.no_progress,
-                max_queue_size = args.queue_size, workers = args.read_workers, use_multiprocessing = True)
-        for layer in model.layers:
-            layer.trainable = True
-        print('Full model training')
+        if args.finetune_init > 0:
+            print('Pre-training new layers')
+            for layer in model.layers:
+                layer.trainable = (layer.name in ('embedding', 'embedding_bn', 'prob', 'out2', 'labelembeddings'))
+            embed_model.layers[-1].trainable = True
+            par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, clipnorm = args.clipgrad),
+                            loss = { 'labelembed_loss' : lambda y_true, y_pred: y_pred[:,0], 'embedding' : None, 'prob' : lambda y_true, y_pred: K.tf.zeros(K.shape(y_true)[:1], dtype=K.floatx()) },
+                            metrics = { 'prob' : 'accuracy' })
+            par_model.fit_generator(
+                    data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+                    validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
+                    epochs = args.finetune_init, verbose = not args.no_progress,
+                    max_queue_size = args.queue_size, workers = args.read_workers, use_multiprocessing = True)
+            for layer in model.layers:
+                layer.trainable = True
+            print('Full model training')
     
     # Train model
     callbacks, num_epochs = utils.get_lr_schedule(args.lr_schedule, data_generator.num_train, args.batch_size, schedule_args = { arg_name : arg_val for arg_name, arg_val in vars(args).items() if arg_val is not None })
