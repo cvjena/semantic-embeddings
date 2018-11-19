@@ -85,18 +85,8 @@ if __name__ == '__main__':
     arggroup.add_argument('--feature_dump', type = str, default = None, help = 'Filename where learned embeddings for test images should be written to.')
     arggroup.add_argument('--log_dir', type = str, default = None, help = 'Tensorboard log directory.')
     arggroup.add_argument('--no_progress', action = 'store_true', default = False, help = 'Do not display training progress, but just the final performance.')
-    arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGD')
-    arggroup.add_argument('--sgd_patience', type = int, default = None, help = 'Patience of learning rate reduction in epochs.')
-    arggroup.add_argument('--sgd_lr', type = float, default = 0.1, help = 'Initial learning rate.')
-    arggroup.add_argument('--sgd_min_lr', type = float, default = None, help = 'Minimum learning rate.')
-    arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGDR')
-    arggroup.add_argument('--sgdr_base_len', type = int, default = None, help = 'Length of first cycle in epochs.')
-    arggroup.add_argument('--sgdr_mul', type = int, default = None, help = 'Multiplier for cycle length after each cycle.')
-    arggroup.add_argument('--sgdr_max_lr', type = float, default = None, help = 'Maximum learning rate.')
-    arggroup = parser.add_argument_group('Parameters for --lr_schedule=CLR')
-    arggroup.add_argument('--clr_step_len', type = int, default = None, help = 'Length of each step in epochs.')
-    arggroup.add_argument('--clr_min_lr', type = float, default = None, help = 'Minimum learning rate.')
-    arggroup.add_argument('--clr_max_lr', type = float, default = None, help = 'Maximum learning rate.')
+    utils.add_lr_schedule_arguments(parser)
+
     args = parser.parse_args()
     
     if args.val_batch_size is None:

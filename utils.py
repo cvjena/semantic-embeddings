@@ -223,7 +223,7 @@ def get_lr_schedule(schedule, num_samples, batch_size, schedule_args = {}):
     # Arguments:
 
     - schedule: Name of the schedule. Possible values:
-                - 'sgd': Stochastic Gradient Descent with ReduceLROnPlateau callback.
+                - 'sgd': Stochastic Gradient Descent with ReduceLROnPlateau or LearningRateSchedule callback.
                 - 'sgdr': Stochastic Gradient Descent with Cosine Annealing and Warm Restarts.
                 - 'clr': Cyclical Learning Rates.
                 - 'resnet-schedule': Hand-crafted schedule used by He et al. for training ResNet.
@@ -236,6 +236,12 @@ def get_lr_schedule(schedule, num_samples, batch_size, schedule_args = {}):
                      'sgd' supports:
                         - 'sgd_patience': Number of epochs without improvement before reducing the LR. Default: 10.
                         - 'sgd_min_lr': Minimum learning rate. Default : 1e-4
+                        - 'sgd_schedule': Comma-separated list of `epoch:lr` pairs, defining a learning rate schedule.
+                                          The total number of epochs can be appended to this list, separated by a comma as well.
+                                          If this is specified, the learning rate will not be reduced on plateaus automatically
+                                          and `sgd_patience` and `sgd_min_lr` will be ignored.
+                                          The following example would mean to train for 50 epochs, starting with a learning rate
+                                          of 0.1 and reducing it by a factor of 10 after 30 and 40 epochs: "1:0.1,31:0.01,41:0.001,50".
                      'sgdr' supports:
                         - 'sgdr_base_len': Length of the first cycle. Default: 12.
                         - 'sgdr_mul': Factor multiplied with the length of the cycle after the end of each one. Default: 2.
@@ -252,13 +258,32 @@ def get_lr_schedule(schedule, num_samples, batch_size, schedule_args = {}):
 
     if schedule.lower() == 'sgd':
     
-        if 'sgd_patience' not in schedule_args:
-            schedule_args['sgd_patience'] = 10
-        if 'sgd_min_lr' not in schedule_args:
-            schedule_args['sgd_min_lr'] = 1e-4
-        return [
-            keras.callbacks.ReduceLROnPlateau('val_loss', patience = schedule_args['sgd_patience'], epsilon = 1e-4, min_lr = schedule_args['sgd_min_lr'], verbose = True)
-        ], 200
+        if ('sgd_schedule' in schedule_args) and (schedule_args['sgd_schedule'] is not None) and (schedule_args['sgd_schedule'] != ''):
+
+            def lr_scheduler(schedule, epoch, cur_lr):
+                if schedule[0][0] > epoch:
+                    return cur_lr
+                for i in range(1, len(schedule)):
+                    if schedule[i][0] > epoch:
+                        return schedule[i-1][1]
+                return schedule[-1][1]
+            
+            schedule = [(int(point[0]) - 1, float(point[1]) if len(point) > 1 else None) for sched_tuple in schedule_args['sgd_schedule'].split(',') for point in [sched_tuple.split(':')]]
+            schedule.sort()
+            return [keras.callbacks.LearningRateScheduler(
+                lambda ep, cur_lr: lr_scheduler(schedule, ep, cur_lr)
+            )], schedule[-1][0] + 1
+
+        else:
+
+            if 'sgd_patience' not in schedule_args:
+                schedule_args['sgd_patience'] = 10
+            if 'sgd_min_lr' not in schedule_args:
+                schedule_args['sgd_min_lr'] = 1e-4
+
+            return [
+                keras.callbacks.ReduceLROnPlateau('val_loss', patience = schedule_args['sgd_patience'], epsilon = 1e-4, min_lr = schedule_args['sgd_min_lr'], verbose = True)
+            ], 200
     
     elif schedule.lower() == 'sgdr':
     
@@ -303,6 +328,25 @@ def get_lr_schedule(schedule, num_samples, batch_size, schedule_args = {}):
     else:
     
         raise ValueError('Unknown learning rate schedule: {}'.format(schedule))
+
+
+def add_lr_schedule_arguments(parser):
+    """ Adds common command-line arguments for controlling different learning rate schedules to a given `argparse.ArgumentParser`. """
+
+    arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGD')
+    arggroup.add_argument('--sgd_patience', type = int, default = None, help = 'Patience of learning rate reduction in epochs.')
+    arggroup.add_argument('--sgd_lr', type = float, default = 0.1, help = 'Initial learning rate.')
+    arggroup.add_argument('--sgd_min_lr', type = float, default = None, help = 'Minimum learning rate.')
+    arggroup.add_argument('--sgd_schedule', type = float, default = None,
+                          help = 'Comma-separated list of `epoch:lr` pairs, defining a learning rate schedule. The total number of epochs can be appended to this list, separated by a comma as well.')
+    arggroup = parser.add_argument_group('Parameters for --lr_schedule=SGDR')
+    arggroup.add_argument('--sgdr_base_len', type = int, default = None, help = 'Length of first cycle in epochs.')
+    arggroup.add_argument('--sgdr_mul', type = int, default = None, help = 'Multiplier for cycle length after each cycle.')
+    arggroup.add_argument('--sgdr_max_lr', type = float, default = None, help = 'Maximum learning rate.')
+    arggroup = parser.add_argument_group('Parameters for --lr_schedule=CLR')
+    arggroup.add_argument('--clr_step_len', type = int, default = None, help = 'Length of each step in epochs.')
+    arggroup.add_argument('--clr_min_lr', type = float, default = None, help = 'Minimum learning rate.')
+    arggroup.add_argument('--clr_max_lr', type = float, default = None, help = 'Maximum learning rate.')
 
 
 
