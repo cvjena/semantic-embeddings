@@ -22,10 +22,14 @@ except ImportError:
 
 
 
-DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC', 'ILSVRC-caffe', 'NAB', 'NAB-caffe']
+DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec',
+            'ILSVRC', 'ILSVRC-caffe', 'NAB', 'NAB-ilsvrcmean', 'NAB-caffe']
 
 CAFFE_MEAN = [123.68, 116.779, 103.939]
 CAFFE_STD = [1., 1., 1.]
+
+IMAGENET_MEAN = [122.65435242, 116.6545058, 103.99789959]
+IMAGENET_STD = [71.40583196, 69.56888997, 73.0440314]
 
 
 
@@ -59,6 +63,9 @@ def get_data_generator(dataset, data_root, classes = None):
         return ILSVRCGenerator(data_root, classes, mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
     elif dataset == 'nab':
         return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480))
+    elif dataset == 'nab-ilsvrcmean':
+        return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480),
+                            mean = IMAGENET_MEAN, std = IMAGENET_STD)
     elif dataset == 'nab-caffe':
         return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480),
                             mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
@@ -833,7 +840,7 @@ class FileDatasetGenerator(object):
 
 class ILSVRCGenerator(FileDatasetGenerator):
 
-    def __init__(self, root_dir, classes = None, mean = [122.65435242, 116.6545058, 103.99789959], std = [71.40583196, 69.56888997, 73.0440314], color_mode = "rgb"):
+    def __init__(self, root_dir, classes = None, mean = IMAGENET_MEAN, std = IMAGENET_STD, color_mode = "rgb"):
         """ ILSVRC data generator.
 
         # Arguments:
