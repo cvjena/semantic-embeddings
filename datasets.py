@@ -407,7 +407,7 @@ class CifarGenerator(object):
 class FileDatasetGenerator(object):
     """ Abstract base class for image generators. """
 
-    def __init__(self, root_dir, classes = None, cropsize = (224, 224),
+    def __init__(self, root_dir, classes = None, cropsize = (224, 224), default_target_size = -1,
                  randzoom_range = None, randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 },
                  color_mode = 'rgb'):
         """ Abstract base class for image generators.
@@ -436,6 +436,7 @@ class FileDatasetGenerator(object):
         
         self.root_dir = root_dir
         self.cropsize = cropsize
+        self.default_target_size = default_target_size
         self.randzoom_range = randzoom_range
         self.randerase_prob = randerase_prob
         self.randerase_params = randerase_params
@@ -487,6 +488,8 @@ class FileDatasetGenerator(object):
 
         - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
                        If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
+                       If set to -1, the image won't be resized.
+                       If set to None, the default_target_size passed to the constructor will be used.
         
         - augment: Whether data augmentation should be applied or not.
 
@@ -513,6 +516,8 @@ class FileDatasetGenerator(object):
 
         - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
                        If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
+                       If set to -1, the image won't be resized.
+                       If set to None, the default_target_size passed to the constructor will be used.
         
         - augment: Whether data augmentation should be applied or not.
 
@@ -537,6 +542,8 @@ class FileDatasetGenerator(object):
 
         - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
                        If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
+                       If set to -1, the image won't be resized.
+                       If set to None, the default_target_size passed to the constructor will be used.
         
         - augment: Whether data augmentation should be applied or not.
 
@@ -568,6 +575,8 @@ class FileDatasetGenerator(object):
 
         - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
                        If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
+                       If set to -1, the image won't be resized.
+                       If set to None, the default_target_size passed to the constructor will be used.
         
         - augment: Whether data augmentation should be applied or not.
 
@@ -698,6 +707,8 @@ class FileDatasetGenerator(object):
 
         - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to.
                        If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
+                       If set to -1, the image won't be resized.
+                       If set to None, the default_target_size passed to the constructor will be used.
                        The actual size may be modified further is `randzoom` is True.
         
         - normalize: If True, the image will be normalized by subtracting the channel-wise mean and dividing by the channel-wise standard deviation.
@@ -723,8 +734,10 @@ class FileDatasetGenerator(object):
         
         # Load and resize image
         img = load_img(filename)
-        if (target_size is not None) or (randzoom and (self.randzoom_range is not None)):
-            if target_size is None:
+        if target_size is None:
+            target_size = self.default_target_size
+        if (target_size > 0) or (randzoom and (self.randzoom_range is not None)):
+            if target_size <= 0:
                 target_size = img.size
             if randzoom and (self.randzoom_range is not None):
                 if isinstance(self.randzoom_range[0], float):
@@ -832,7 +845,7 @@ class ILSVRCGenerator(FileDatasetGenerator):
         - color_mode: Image color mode, either "rgb" or "bgr".
         """
         
-        super(ILSVRCGenerator, self).__init__(root_dir, classes, randzoom_range = (256, 480), color_mode = color_mode)
+        super(ILSVRCGenerator, self).__init__(root_dir, classes, default_target_size = 256, randzoom_range = (256, 480), color_mode = color_mode)
         self.train_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_train')
         self.test_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_val')
         
@@ -857,70 +870,13 @@ class ILSVRCGenerator(FileDatasetGenerator):
         
         # Compute mean and standard deviation
         self._compute_stats(mean, std)
-    
-
-    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = 256, augment = False):
-        """ A generator yielding batches of pre-processed and augmented test images.
-
-        # Arguments:
-
-        - batch_size: Number of images per batch.
-
-        - include_labels: If true, target labels will be yielded as well.
-
-        - shuffle: If True, the order of images will be shuffled after each epoch.
-
-        - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
-                       If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
-        
-        - augment: Whether data augmentation should be applied or not.
-
-        # Yields:
-            If `include_labels` is True, a tuple of inputs and targets for each batch.
-            Otherwise, only inputs will be yielded.
-        """
-        
-        return self._flow(self.test_img_files, self._test_labels if include_labels else None,
-                          batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
-    
-    
-    def test_sequence(self, batch_size = 32, shuffle = False, target_size = 256, augment = False, batch_transform = None, batch_transform_kwargs = {}):
-        """ Creates a `DataSequence` with pre-processed and augmented test images that can be passed to the Keras methods expecting a generator for efficient and safe multi-processing.
-
-        # Arguments:
-
-        - batch_size: Number of images per batch.
-
-        - shuffle: If True, the order of images will be shuffled after each epoch.
-
-        - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
-                       If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
-        
-        - augment: Whether data augmentation should be applied or not.
-
-        - batch_transform: Optionally, a function that takes the inputs and targets of a batch and returns
-                           transformed inputs and targets that will be provided by the sequence instead of
-                           the original ones.
-        
-        - batch_transform_kwargs: Additional keyword arguments passed to `batch_transform`.
-
-        # Returns:
-            a DataSequence instance
-        """
-        
-        return DataSequence(self, self.test_img_files, self._test_labels,
-                            batch_size=batch_size, shuffle=shuffle,
-                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
-                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
-                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
 
 
 
 class NABGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, img_dir = 'images',
-                 cropsize = (224, 224), randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
+                 cropsize = (224, 224), default_target_size = 256, randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
                  mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446], color_mode = "rgb"):
         """ NABirds data generator.
 
@@ -950,7 +906,8 @@ class NABGenerator(FileDatasetGenerator):
         - color_mode: Image color mode, either "rgb" or "bgr".
         """
         
-        super(NABGenerator, self).__init__(root_dir, classes = classes, cropsize = cropsize, randzoom_range = randzoom_range, randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
+        super(NABGenerator, self).__init__(root_dir, classes = classes, cropsize = cropsize, default_target_size = default_target_size, randzoom_range = randzoom_range,
+                                           randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
         self.imgs_dir = os.path.join(root_dir, img_dir)
         self.img_list_file = os.path.join(root_dir, 'images.txt')
         self.label_file = os.path.join(root_dir, 'image_class_labels.txt')
@@ -982,117 +939,3 @@ class NABGenerator(FileDatasetGenerator):
         
         # Compute mean and standard deviation
         self._compute_stats(mean, std)
-    
-    
-    def flow_train(self, batch_size = 32, include_labels = True, shuffle = True, target_size = 256, augment = True):
-        """ A generator yielding batches of pre-processed and augmented training images.
-
-        # Arguments:
-
-        - batch_size: Number of images per batch.
-
-        - include_labels: If true, target labels will be yielded as well.
-
-        - shuffle: If True, the order of images will be shuffled after each epoch.
-
-        - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
-                       If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
-        
-        - augment: Whether data augmentation should be applied or not.
-
-        # Yields:
-            If `include_labels` is True, a tuple of inputs and targets for each batch.
-            Otherwise, only inputs will be yielded.
-        """
-        
-        return self._flow(self.train_img_files, self._train_labels if include_labels else None,
-                          batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
-    
-    
-    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = 256, augment = False):
-        """ A generator yielding batches of pre-processed and augmented test images.
-
-        # Arguments:
-
-        - batch_size: Number of images per batch.
-
-        - include_labels: If true, target labels will be yielded as well.
-
-        - shuffle: If True, the order of images will be shuffled after each epoch.
-
-        - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
-                       If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
-        
-        - augment: Whether data augmentation should be applied or not.
-
-        # Yields:
-            If `include_labels` is True, a tuple of inputs and targets for each batch.
-            Otherwise, only inputs will be yielded.
-        """
-        
-        return self._flow(self.test_img_files, self._test_labels if include_labels else None,
-                          batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
-
-
-    def train_sequence(self, batch_size = 32, shuffle = True, target_size = 256, augment = True, batch_transform = None, batch_transform_kwargs = {}):
-        """ Creates a `DataSequence` with pre-processed and augmented training images that can be passed to the Keras methods expecting a generator for efficient and safe multi-processing.
-
-        # Arguments:
-
-        - batch_size: Number of images per batch.
-
-        - shuffle: If True, the order of images will be shuffled after each epoch.
-
-        - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
-                       If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
-        
-        - augment: Whether data augmentation should be applied or not.
-
-        - batch_transform: Optionally, a function that takes the inputs and targets of a batch and returns
-                           transformed inputs and targets that will be provided by the sequence instead of
-                           the original ones.
-        
-        - batch_transform_kwargs: Additional keyword arguments passed to `batch_transform`.
-
-        # Returns:
-            a DataSequence instance
-        """
-        
-        return DataSequence(self, self.train_img_files, self._train_labels,
-                            batch_size=batch_size, shuffle=shuffle,
-                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
-                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
-                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
-    
-    
-    def test_sequence(self, batch_size = 32, shuffle = False, target_size = 256, augment = False, batch_transform = None, batch_transform_kwargs = {}):
-        """ Creates a `DataSequence` with pre-processed and augmented test images that can be passed to the Keras methods expecting a generator for efficient and safe multi-processing.
-
-        # Arguments:
-
-        - batch_size: Number of images per batch.
-
-        - shuffle: If True, the order of images will be shuffled after each epoch.
-
-        - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to (before cropping).
-                       If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
-        
-        - augment: Whether data augmentation should be applied or not.
-
-        - batch_transform: Optionally, a function that takes the inputs and targets of a batch and returns
-                           transformed inputs and targets that will be provided by the sequence instead of
-                           the original ones.
-        
-        - batch_transform_kwargs: Additional keyword arguments passed to `batch_transform`.
-
-        # Returns:
-            a DataSequence instance
-        """
-        
-        return DataSequence(self, self.test_img_files, self._test_labels,
-                            batch_size=batch_size, shuffle=shuffle,
-                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
-                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
-                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
