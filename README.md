@@ -185,6 +185,8 @@ The following values can be specified for `--dataset`:
 - **ILSVRC**: Interface to the [ILSVRC 2012][4] dataset.
 - **ILSVRC-caffe**: [ILSVRC 2012][4] dataset with Caffe-style pre-processing (i.e., BGR channel ordering and no normalization of standard deviation).
 - **NAB**: Interface to the [NABirds][5] dataset, expecting images in the sub-directory `images`.
+- **NAB-caffe**: [NABirds][5] dataset with Caffe-style pre-processing.
+- **NAB-ilsvrcmean**: [NABirds][5] dataset using channel-wise mean and standard deviation computed on ILSVRC.
 
 For ILSVRC, you need to move the test images into sub-directories for each class. [This script][6] could be used for this, for example.
 
