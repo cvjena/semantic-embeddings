@@ -9,7 +9,7 @@ This repository contains the official source code used to produce the results re
 If you use this code, please cite that paper.
 
 
-**Table of Contents:**
+<details><summary><strong>Table of Contents</strong></summary>
 
 1. [What are hierarchy-based semantic image embeddings?](#1-what-are-hierarchy-based-semantic-image-embeddings)
 2. [How to learn semantic image embeddings?](#2-how-to-learn-semantic-embeddings)
@@ -22,7 +22,10 @@ If you use this code, please cite that paper.
 3. [Requirements](#3-requirements)
 4. [Pre-trained models](#4-pre-trained-models)
     1. [Download links](#41-download-links)
-    2. [Troubleshooting](#42-troubleshooting)
+    2. [Pre-processing](#42-pre-processing)
+    3. [Troubleshooting](#43-troubleshooting)
+
+</details>
 
 
 ## 1. What are hierarchy-based semantic image embeddings?
@@ -253,6 +256,7 @@ python learn_image_embeddings.py \
     --lr_schedule SGDR \
     --sgdr_max_lr 0.5 \
     --max_decay 0 \
+    --epochs 180 \
     --batch_size 128 \
     --gpus 2 \
     --read_workers 10 \
@@ -261,7 +265,7 @@ python learn_image_embeddings.py \
 
 # NAB (fine-tuned)
 python learn_image_embeddings.py \
-    --dataset NAB \
+    --dataset NAB-ilsvrcmean \
     --data_root /path/to/nab/ \
     --embedding embeddings/nab.unitsphere.pickle \
     --architecture resnet-50 \
@@ -286,7 +290,7 @@ python learn_image_embeddings.py \
 - Python 3
 - numpy
 - numexpr
-- keras
+- keras >= 2.2.0
 - tensorflow
 - sklearn
 - scipy
@@ -304,10 +308,23 @@ python learn_image_embeddings.py \
 | CIFAR-100 | [ResNet-110-fc][17]             |   83.29% |            76.60% |
 | CIFAR-100 | [PyramidNet-272-200][18]        |   86.38% |            80.49% |
 | NABirds   | [ResNet-50 (from scratch)][19]  |   73.99% |            59.46% |
-| NABirds   | [ResNet-50 (fine-tuned)][20]    |   81.37% |            69.25% |
+| NABirds   | [ResNet-50 (fine-tuned)][20]    |   81.46% |            69.49% |
 | ILSVRC    | [ResNet-50][21]                 |   82.42% |            69.18% |
 
-### 4.2. Troubleshooting
+### 4.2. Pre-processing
+
+The pre-trained models provided above assume input images to be given in RGB color format and standardized by subtracting a dataset-specific channel-wise mean and dividing by a dataset-specific standard deviation.
+The means and standard deviations for each dataset are provided in the following table.
+
+|            Dataset            |                     Mean                     |            Standard Deviation            |
+|-------------------------------|----------------------------------------------|------------------------------------------|
+| CIFAR-100                     | `[129.30386353, 124.06987, 112.43356323]`    | `[68.17019653, 65.39176178, 70.4180603]` |
+| NABirds (from scratch)        | `[125.30513277, 129.66606421, 118.45121113]` | `[57.0045467, 56.70059436, 68.44430446]` |
+| ILSVRC, NABirds (fine-tuned)  | `[122.65435242, 116.6545058, 103.99789959]`  | `[71.40583196, 69.56888997, 73.0440314]` |
+
+The default input image size of the ILSVRC and NABirds models is `224x224`, cropped from a scaled version of the image, resized so that the smaller side is 256 pixels wide.
+
+### 4.3. Troubleshooting
 
 Sometimes, loading of the pre-trained models fails with the error message "unknown opcode".
 In the case of this or other issues, you can still create the architecture yourself and load the pre-trained weights from the model files provided above.
@@ -329,7 +346,7 @@ model.load_weights('cifar_unitsphere-embed+cls_resnet-110-fc.model.h5')
 ```
 
 
-[1]: https://arxiv.org/pdf/1809.09924v2
+[1]: https://arxiv.org/pdf/1809.09924
 [2]: https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz
 [3]: https://www.cs.toronto.edu/~kriz/cifar.html
 [4]: http://image-net.org/challenges/LSVRC/2012/
