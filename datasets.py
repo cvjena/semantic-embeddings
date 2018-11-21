@@ -22,7 +22,10 @@ except ImportError:
 
 
 
-DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC', 'ILSVRC-caffe', 'NAB']
+DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec', 'ILSVRC', 'ILSVRC-caffe', 'NAB', 'NAB-caffe']
+
+CAFFE_MEAN = [123.68, 116.779, 103.939]
+CAFFE_STD = [1., 1., 1.]
 
 
 
@@ -53,9 +56,12 @@ def get_data_generator(dataset, data_root, classes = None):
     elif dataset == 'ilsvrc':
         return ILSVRCGenerator(data_root, classes)
     elif dataset == 'ilsvrc-caffe':
-        return ILSVRCGenerator(data_root, classes, mean = [123.68, 116.779, 103.939], std = [1., 1., 1.], color_mode = 'bgr')
+        return ILSVRCGenerator(data_root, classes, mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
     elif dataset == 'nab':
         return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480))
+    elif dataset == 'nab-caffe':
+        return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480),
+                            mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
     else:
         raise ValueError('Unknown dataset: {}'.format(dataset))
 
