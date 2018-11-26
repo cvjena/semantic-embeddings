@@ -23,7 +23,8 @@ except ImportError:
 
 
 DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec',
-            'ILSVRC', 'ILSVRC-caffe', 'NAB', 'NAB-ilsvrcmean', 'NAB-caffe']
+            'ILSVRC', 'ILSVRC-caffe',
+            'NAB', 'NAB-ilsvrcmean', 'NAB-caffe', 'NAB-large', 'NAB-large-ilsvrcmean', 'NAB-large-caffe']
 
 CAFFE_MEAN = [123.68, 116.779, 103.939]
 CAFFE_STD = [1., 1., 1.]
@@ -69,6 +70,14 @@ def get_data_generator(dataset, data_root, classes = None):
     elif dataset == 'nab-caffe':
         return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480),
                             mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
+    elif dataset == 'nab-large':
+        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None)
+    elif dataset == 'nab-large-caffe':
+        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None,
+                            mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
+    elif dataset == 'nab-large-ilsvrcmean':
+        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None,
+                            mean = IMAGENET_MEAN, std = IMAGENET_STD)
     else:
         raise ValueError('Unknown dataset: {}'.format(dataset))
 
