@@ -10,7 +10,7 @@ import keras
 from keras import backend as K
 
 import utils
-from datasets import DATASETS, get_data_generator
+from datasets import get_data_generator
 
 
 
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser(description = 'Trains a label embedding network (Sun et al.).', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     arggroup = parser.add_argument_group('Data parameters')
-    arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
+    arggroup.add_argument('--dataset', type = str, required = True, help = 'Training dataset. See README.md for a list of available datasets.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the subset of classes to be used (as first words per line).')
     arggroup = parser.add_argument_group('Label embedding parameters')

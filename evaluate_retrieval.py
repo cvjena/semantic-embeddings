@@ -4,7 +4,7 @@ import numexpr as ne
 import argparse, pickle, os.path
 from collections import OrderedDict
 
-from datasets import DATASETS, get_data_generator
+from datasets import get_data_generator
 from class_hierarchy import ClassHierarchy
 
 try:
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description = 'Evaluates hierarchical precision of nearest neighbour search performed on different image embeddings.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     arggroup = parser.add_argument_group('Dataset')
-    arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
+    arggroup.add_argument('--dataset', type = str, required = True, help = 'Training dataset. See README.md for a list of available datasets.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup.add_argument('--hierarchy', type = str, required = True, help = 'Path to a file containing parent-child relationships (one per line).')
     arggroup.add_argument('--is_a', action = 'store_true', default = False, help = 'If given, --hierarchy is assumed to contain is-a instead of parent-child relationships.')

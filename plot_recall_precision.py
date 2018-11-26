@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import argparse, pickle, os.path
 from collections import OrderedDict
 
-from datasets import DATASETS, get_data_generator
+from datasets import get_data_generator
 from evaluate_retrieval import pairwise_retrieval, str2bool
 
 try:
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description = 'Plots the average recall-precision curve of nearest neighbour search performed on different image embeddings.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     arggroup = parser.add_argument_group('Dataset')
-    arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
+    arggroup.add_argument('--dataset', type = str, required = True, help = 'Training dataset. See README.md for a list of available datasets.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup.add_argument('--classes_from', type = str, default = None, help = 'Optionally, a path to a pickle dump containing a dictionary with item "ind2label" specifying the classes to be considered.')
     arggroup = parser.add_argument_group('Features')

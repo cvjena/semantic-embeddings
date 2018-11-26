@@ -9,7 +9,7 @@ import keras
 from keras import backend as K
 
 import utils
-from datasets import DATASETS, get_data_generator
+from datasets import get_data_generator
 
 
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser(description = 'Learns to map image features onto word embeddings of labels using DeViSE.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     arggroup = parser.add_argument_group('Data parameters')
-    arggroup.add_argument('--dataset', type = str, required = True, choices = DATASETS, help = 'Training dataset.')
+    arggroup.add_argument('--dataset', type = str, required = True, help = 'Training dataset. See README.md for a list of available datasets.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
     arggroup.add_argument('--embedding', type = str, required = True, help = 'Path to a pickle dump of embeddings in the same format as used by compute_class_embeddings.py.')
     arggroup = parser.add_argument_group('Training parameters')

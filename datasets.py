@@ -22,10 +22,6 @@ except ImportError:
 
 
 
-DATASETS = ['CIFAR-10', 'CIFAR-100', 'CIFAR-100-a', 'CIFAR-100-b', 'CIFAR-100-a-consec', 'CIFAR-100-b-consec',
-            'ILSVRC', 'ILSVRC-caffe',
-            'NAB', 'NAB-ilsvrcmean', 'NAB-caffe', 'NAB-large', 'NAB-large-ilsvrcmean', 'NAB-large-caffe']
-
 CAFFE_MEAN = [123.68, 116.779, 103.939]
 CAFFE_STD = [1., 1., 1.]
 
@@ -39,7 +35,20 @@ def get_data_generator(dataset, data_root, classes = None):
 
     # Arguments:
 
-    - dataset: The name of the dataset. Possible values can be found in the `DATASETS` constant.
+    - dataset: The name of the dataset. Possible values are:
+               
+               - "cifar-10"
+               - "cifar-100"
+               - "cifar-100-a" (first 50 classes of cifar-100)
+               - "cifar-100-b" (last 50 classes of cifar-100)
+               - "ilsvrc"
+               - "nab"
+               - "nab-large"
+               
+               To all dataset names except CIFAR, you may append one of the following suffixes:
+
+               - "-ilsvrcmean": use ImageNet statistics for pre-processing
+               - "-caffe": Caffe-style pre-processing (BGR instead of RGB, ImageNet mean, no standard deviation)
 
     - data_root: Root directory of the dataset.
 
@@ -50,35 +59,48 @@ def get_data_generator(dataset, data_root, classes = None):
     """
     
     dataset = dataset.lower()
+
+    kwargs = {}
+    if dataset.endswith('-ilsvrcmean'):
+        kwargs['mean'] = IMAGENET_MEAN
+        kwargs['std'] = IMAGENET_STD
+        dataset = dataset[:-11]
+    elif dataset.endswith('-caffe'):
+        kwargs['mean'] = CAFFE_MEAN
+        kwargs['std'] = CAFFE_STD
+        kwargs['color_mode'] = 'bgr'
+        dataset = dataset[:-6]
+
     if dataset == 'cifar-10':
+    
         return CifarGenerator(data_root, classes, reenumerate = True, cifar10 = True, randzoom_range = 0.25)
+    
     elif dataset == 'cifar-100':
+    
         return CifarGenerator(data_root, classes, reenumerate = True)
+    
     elif dataset.startswith('cifar-100-a'):
+    
         return CifarGenerator(data_root, np.arange(50), reenumerate = dataset.endswith('-consec'))
+    
     elif dataset.startswith('cifar-100-b'):
+    
         return CifarGenerator(data_root, np.arange(50, 100), reenumerate = dataset.endswith('-consec'))
+    
     elif dataset == 'ilsvrc':
-        return ILSVRCGenerator(data_root, classes)
-    elif dataset == 'ilsvrc-caffe':
-        return ILSVRCGenerator(data_root, classes, mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
+    
+        return ILSVRCGenerator(data_root, classes, **kwargs)
+    
     elif dataset == 'nab':
-        return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480))
-    elif dataset == 'nab-ilsvrcmean':
-        return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480),
-                            mean = IMAGENET_MEAN, std = IMAGENET_STD)
-    elif dataset == 'nab-caffe':
-        return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480),
-                            mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
+    
+        return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480), **kwargs)
+    
     elif dataset == 'nab-large':
-        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None)
-    elif dataset == 'nab-large-caffe':
-        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None,
-                            mean = CAFFE_MEAN, std = CAFFE_STD, color_mode = 'bgr')
-    elif dataset == 'nab-large-ilsvrcmean':
-        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None,
-                            mean = IMAGENET_MEAN, std = IMAGENET_STD)
+        
+        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None, **kwargs)
+    
     else:
+        
         raise ValueError('Unknown dataset: {}'.format(dataset))
 
 
