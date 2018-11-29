@@ -16,7 +16,7 @@ from sgdr_callback import SGDR
 
 
 ARCHITECTURES = ['simple', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'wrn-28-10',
-                 'densenet-100-12', 'pyramidnet-272-200', 'pyramidnet-110-270',
+                 'densenet-100-12', 'densenet-100-24', 'densenet-bc-190-40', 'pyramidnet-272-200', 'pyramidnet-110-270',
                  'resnet-50', 'rn18', 'rn34', 'rn50', 'rn101', 'rn152', 'rn200', 'nasnet-a']
 
 LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
