@@ -148,7 +148,17 @@ def build_network(num_outputs, architecture, classification = False, name = None
         
     elif architecture == 'densenet-100-12':
         
-        return densenet.DenseNet(growth_rate = 12, depth = 100, bottleneck = False,
+        return densenet.DenseNet(growth_rate = 12, depth = 100, nb_dense_block = 3, bottleneck = False, nb_filter = 16, reduction = 0.0,
+                                 classes = num_outputs, activation = 'softmax' if classification else None, name = name)
+    
+    elif architecture == 'densenet-100-24':
+        
+        return densenet.DenseNet(growth_rate = 24, depth = 100, nb_dense_block = 3, bottleneck = False, nb_filter = 16, reduction = 0.0,
+                                 classes = num_outputs, activation = 'softmax' if classification else None, name = name)
+    
+    elif architecture == 'densenet-bc-190-40':
+        
+        return densenet.DenseNet(growth_rate = 40, depth = 190, nb_dense_block = 3, bottleneck = True, nb_filter = -1, reduction = 0.5,
                                  classes = num_outputs, activation = 'softmax' if classification else None, name = name)
     
     elif architecture == 'pyramidnet-272-200':
