@@ -33,6 +33,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--lr_schedule', type = str, default = 'SGDR', choices = utils.LR_SCHEDULES, help = 'Type of learning rate schedule.')
     arggroup.add_argument('--clipgrad', type = float, default = 10.0, help = 'Gradient norm clipping.')
     arggroup.add_argument('--max_decay', type = float, default = 0.0, help = 'Learning Rate decay at the end of training.')
+    arggroup.add_argument('--nesterov', action = 'store_true', default = False, help = 'Use Nesterov momentum instead of standard momentum.')
     arggroup.add_argument('--epochs', type = int, default = None, help = 'Number of training epochs.')
     arggroup.add_argument('--batch_size', type = int, default = 100, help = 'Batch size.')
     arggroup.add_argument('--val_batch_size', type = int, default = None, help = 'Validation batch size.')
@@ -102,8 +103,8 @@ if __name__ == '__main__':
             print('Pre-training last layer')
             for layer in model.layers[:-1]:
                 layer.trainable = False
-            par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, clipnorm = args.clipgrad),
-                            loss = 'categorical_crossentropy', metrics = ['accuracy'])
+            par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
+                              loss = 'categorical_crossentropy', metrics = ['accuracy'])
             par_model.fit_generator(
                     data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
                     validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
@@ -128,7 +129,7 @@ if __name__ == '__main__':
         decay = (1.0/args.max_decay - 1) / ((data_generator.num_train // args.batch_size) * (args.epochs if args.epochs else num_epochs))
     else:
         decay = 0.0
-    par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
+    par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
                       loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
 

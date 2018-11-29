@@ -64,6 +64,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--lr_schedule', type = str, default = 'SGDR', choices = utils.LR_SCHEDULES, help = 'Type of learning rate schedule.')
     arggroup.add_argument('--clipgrad', type = float, default = 10.0, help = 'Gradient norm clipping.')
     arggroup.add_argument('--max_decay', type = float, default = 0.0, help = 'Learning Rate decay at the end of training.')
+    arggroup.add_argument('--nesterov', action = 'store_true', default = False, help = 'Use Nesterov momentum instead of standard momentum.')
     arggroup.add_argument('--epochs', type = int, default = None, help = 'Number of training epochs.')
     arggroup.add_argument('--batch_size', type = int, default = 100, help = 'Batch size.')
     arggroup.add_argument('--val_batch_size', type = int, default = None, help = 'Validation batch size.')
@@ -133,7 +134,7 @@ if __name__ == '__main__':
             for layer in model.layers:
                 layer.trainable = (layer.name in ('embedding', 'embedding_bn', 'prob', 'cls_centroids'))
             embed_model.layers[-1].trainable = True
-            par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, clipnorm = args.clipgrad),
+            par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
                             loss = { 'prob' : 'categorical_crossentropy', 'center_loss' : lambda y_true, y_pred: y_pred },
                             loss_weights = { 'prob' : 1.0, 'center_loss' : args.center_loss_weight },
                             metrics = { 'prob' : 'accuracy' })
@@ -158,7 +159,7 @@ if __name__ == '__main__':
         decay = (1.0/args.max_decay - 1) / ((data_generator.num_train // args.batch_size) * (args.epochs if args.epochs else num_epochs))
     else:
         decay = 0.0
-    par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, clipnorm = args.clipgrad),
+    par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
                       loss = { 'prob' : 'categorical_crossentropy', 'center_loss' : lambda y_true, y_pred: y_pred },
                       loss_weights = { 'prob' : 1.0, 'center_loss' : args.center_loss_weight },
                       metrics = { 'prob' : 'accuracy' })
