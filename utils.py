@@ -275,10 +275,11 @@ def get_lr_schedule(schedule, num_samples, batch_size, schedule_args = {}):
                     return cur_lr
                 for i in range(1, len(schedule)):
                     if schedule[i][0] > epoch:
-                        return schedule[i-1][1]
-                return schedule[-1][1]
+                        return schedule[i-1][1] if schedule[i-1][1] is not None else cur_lr
+                return schedule[-1][1] if schedule[-1][1] is not None else cur_lr
             
-            schedule = [(int(point[0]) - 1, float(point[1]) if len(point) > 1 else None) for sched_tuple in schedule_args['sgd_schedule'].split(',') for point in [sched_tuple.split(':')]]
+            schedule = [(int(point[0]) - 1, float(point[1]) if len(point) > 1 else None)
+                        for sched_tuple in schedule_args['sgd_schedule'].split(',') for point in [sched_tuple.split(':')]]
             schedule.sort()
             return [keras.callbacks.LearningRateScheduler(
                 lambda ep, cur_lr: lr_scheduler(schedule, ep, cur_lr)
