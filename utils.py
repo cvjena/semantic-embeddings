@@ -132,7 +132,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
         
     elif architecture == 'resnet-110':
         
-        return cifar_resnet.SmallResNet(18, filters = [16, 32, 64] if classification else [32, 64, num_outputs], activation = activation,
+        return cifar_resnet.SmallResNet(18, filters = [16, 32, 64], activation = activation,
                                         include_top = classification, classes = num_outputs, name = name)
     
     elif architecture == 'resnet-110-fc':
