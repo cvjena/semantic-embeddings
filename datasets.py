@@ -82,7 +82,7 @@ class DataSequence(Sequence):
         # Arguments:
 
         - data_generator: The data generator instance that created this sequence.
-                          Must provide a `compose_batch` method that takes a list image indices as first argument
+                          Must provide a `compose_batch` method that takes a list of image indices as first argument
                           and optionally any additional keyword arguments passed to this constructor and returns
                           a batch of images as numpy array.
         
