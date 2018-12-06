@@ -100,7 +100,7 @@ def l2norm(x):
     return K.tf.nn.l2_normalize(x, -1)
 
 
-def build_network(num_outputs, architecture, classification = False, name = None):
+def build_network(num_outputs, architecture, classification = False, no_softmax = False, name = None):
     """ Constructs a CNN.
     
     # Arguments:
@@ -110,6 +110,9 @@ def build_network(num_outputs, architecture, classification = False, name = None
     - architecture: name of the architecture. See ARCHITECTURES for a list of possible values and README.md for descriptions.
     
     - classification: If `True`, the final layer will have a softmax activation, otherwise no activation at all.
+
+    - no_softmax: Usually, the last layer will have a softmax activation if `classification` is True. However, if `no_softmax` is set
+                  to True as well, the last layer will not have any activation.
     
     - name: The name of the network.
     
@@ -127,55 +130,57 @@ def build_network(num_outputs, architecture, classification = False, name = None
     
     if architecture == 'resnet-32':
         
-        return cifar_resnet.SmallResNet(5, filters = [16, 32, 64] if classification else [32, 64, num_outputs], activation = activation,
-                                        include_top = classification, classes = num_outputs, name = name)
+        return cifar_resnet.SmallResNet(5, filters = [16, 32, 64], activation = activation,
+                                        include_top = classification, top_activation = None if no_softmax else 'softmax',
+                                        classes = num_outputs, name = name)
         
     elif architecture == 'resnet-110':
         
         return cifar_resnet.SmallResNet(18, filters = [16, 32, 64], activation = activation,
-                                        include_top = classification, classes = num_outputs, name = name)
+                                        include_top = classification, top_activation = None if no_softmax else 'softmax',
+                                        classes = num_outputs, name = name)
     
     elif architecture == 'resnet-110-fc':
         
         return cifar_resnet.SmallResNet(18, filters = [32, 64, 128], activation = activation,
-                                        include_top = True, top_activation = 'softmax' if classification else None,
+                                        include_top = True, top_activation = 'softmax' if classification and (not no_softmax) else None,
                                         classes = num_outputs, name = name)
     
     elif architecture == 'wrn-28-10':
         
         return wrn.create_wide_residual_network((32, 32, 3), nb_classes = num_outputs, N = 4, k = 10, verbose = 0,
-                                                final_activation = 'softmax' if classification else None, name = name)
+                                                final_activation = 'softmax' if classification and (not no_softmax) else None, name = name)
         
     elif architecture == 'densenet-100-12':
         
         return densenet.DenseNet(growth_rate = 12, depth = 100, nb_dense_block = 3, bottleneck = False, nb_filter = 16, reduction = 0.0,
-                                 classes = num_outputs, activation = 'softmax' if classification else None, name = name)
+                                 classes = num_outputs, activation = 'softmax' if classification and (not no_softmax) else None, name = name)
     
     elif architecture == 'densenet-100-24':
         
         return densenet.DenseNet(growth_rate = 24, depth = 100, nb_dense_block = 3, bottleneck = False, nb_filter = 16, reduction = 0.0,
-                                 classes = num_outputs, activation = 'softmax' if classification else None, name = name)
+                                 classes = num_outputs, activation = 'softmax' if classification and (not no_softmax) else None, name = name)
     
     elif architecture == 'densenet-bc-190-40':
         
         return densenet.DenseNet(growth_rate = 40, depth = 190, nb_dense_block = 3, bottleneck = True, nb_filter = -1, reduction = 0.5,
-                                 classes = num_outputs, activation = 'softmax' if classification else None, name = name)
+                                 classes = num_outputs, activation = 'softmax' if classification and (not no_softmax) else None, name = name)
     
     elif architecture == 'pyramidnet-272-200':
         
         return cifar_pyramidnet.PyramidNet(272, 200, bottleneck = True, activation = activation,
-                                           classes = num_outputs, top_activation = 'softmax' if classification else None, name = name)
+                                           classes = num_outputs, top_activation = 'softmax' if classification and (not no_softmax) else None, name = name)
     
     elif architecture == 'pyramidnet-110-270':
         
         return cifar_pyramidnet.PyramidNet(110, 270, bottleneck = False, activation = activation,
-                                           classes = num_outputs, top_activation = 'softmax' if classification else None, name = name)
+                                           classes = num_outputs, top_activation = 'softmax' if classification and (not no_softmax) else None, name = name)
         
     elif architecture == 'simple':
         
         return plainnet.PlainNet(num_outputs,
                                  activation = activation,
-                                 final_activation = 'softmax' if classification else None,
+                                 final_activation = 'softmax' if classification and (not no_softmax) else None,
                                  name = name)
     
     # ImageNet architectures
@@ -185,7 +190,7 @@ def build_network(num_outputs, architecture, classification = False, name = None
         rn50 = keras.applications.ResNet50(include_top=False, weights=None)
         rn50_out = rn50.layers[-2].output if isinstance(rn50.layers[-1], keras.layers.AveragePooling2D) else rn50.layers[-1].output
         x = keras.layers.GlobalAvgPool2D(name='avg_pool')(rn50_out)
-        x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification else None, name = 'prob' if classification else 'embedding')(x)
+        x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification and (not no_softmax) else None, name = 'prob' if classification else 'embedding')(x)
         return keras.models.Model(rn50.inputs, x, name=name)
     
     elif architecture.startswith('rn'):
@@ -200,17 +205,17 @@ def build_network(num_outputs, architecture, classification = False, name = None
             'rn200' : keras_resnet.models.ResNet200
         }
         input_ = keras.layers.Input((3, None, None)) if K.image_data_format() == 'channels_first' else keras.layers.Input((None, None, 3))
-        rn = factories[architecture](input_, include_top = classification, classes = num_outputs, freeze_bn = False, name = name)
-        if not classification:
+        rn = factories[architecture](input_, include_top = classification and (not no_softmax), classes = num_outputs, freeze_bn = False, name = name)
+        if (not classification) or no_softmax:
             x = keras.layers.GlobalAvgPool2D(name = 'avg_pool')(rn.outputs[-1])
-            x = keras.layers.Dense(num_outputs, name = 'embedding')(x)
+            x = keras.layers.Dense(num_outputs, name = 'prob' if classification else 'embedding', activation = None if no_softmax else 'softmax')(x)
             rn = keras.models.Model(input_, x, name = name)
         return rn
     
     elif architecture == 'nasnet-a':
         
         nasnet = keras.applications.NASNetLarge(include_top=False, input_shape=(224,224,3), weights=None, pooling='avg')
-        x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification else None, name = 'prob' if classification else 'embedding')(nasnet.output)
+        x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification and (not no_softmax) else None, name = 'prob' if classification else 'embedding')(nasnet.output)
         return keras.models.Model(nasnet.inputs, x, name=name)
     
     else:
