@@ -16,8 +16,8 @@ class SGDR(Callback):
     
     # Example
         ```python
-            sgdr = CyclicLR(min_lr=0.0, max_lr=0.05,
-                                base_epochs=10, mul_epochs=2)
+            sgdr = SGDR(min_lr=0.0, max_lr=0.05,
+                        base_epochs=10, mul_epochs=2)
             model.compile(optimizer=keras.optimizers.SGD(decay=1e-4, momentum=0.9),
                           loss=loss)
             model.fit(X_train, Y_train, callbacks=[sgdr])
