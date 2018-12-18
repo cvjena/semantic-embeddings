@@ -13,7 +13,7 @@ import warnings
 from keras import layers, regularizers
 from keras import backend as K
 from keras.layers import Input
-from keras.layers import Dense, Activation, Flatten, Conv2D, AveragePooling2D, GlobalAveragePooling2D, BatchNormalization
+from keras.layers import Dense, Activation, Flatten, Conv2D, AveragePooling2D, GlobalAveragePooling2D, GlobalMaxPooling2D, BatchNormalization
 from keras.models import Model
 from keras.engine import Layer, InputSpec
 from keras.engine.topology import get_source_inputs
@@ -198,9 +198,9 @@ def SmallResNet(n = 9, filters = [16, 32, 64],
     # Determine proper input shape
     if input_shape is None:
         if K.image_data_format() == 'channels_first':
-            input_shape = (3, 32, 32) if include_top else (3, None, None)
+            input_shape = (3, 32, 32) if include_top and pooling is None else (3, None, None)
         else:
-            input_shape = (32, 32, 3) if include_top else (None, None, 3)
+            input_shape = (32, 32, 3) if include_top and pooling is None else (None, None, 3)
 
     # Build network
     if input_tensor is None:

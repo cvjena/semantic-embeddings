@@ -7,7 +7,7 @@ def PlainNet(output_dim,
              activation = 'relu',
              regularizer = keras.regularizers.l2(0.0005),
              final_activation = None,
-             input_shape = (32, 32, 3),
+             input_shape = (None, None, 3),
              pool_size = (2,2),
              name = None):
     """ Creates the Plain-11 network architecture.
