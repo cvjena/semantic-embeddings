@@ -105,7 +105,7 @@ python learn_image_embeddings.py \
     --dataset CIFAR-100 \
     --data_root /path/to/your/cifar/directory \
     --embedding embeddings/cifar100.unitsphere.pickle \
-    --architecture resnet-110-fc \
+    --architecture resnet-110-wfc \
     --cls_weight 0.1 \
     --model_dump cifar100-embedding.model.h5 \
     --feature_dump cifar100-features.pickle
@@ -206,7 +206,8 @@ For CIFAR:
   For training this network architecture, we used `--max_decay 0.1` in addition to the other arguments provided above for the ResNet.
   This causes a continuous decay of the learning rate so that the final learning rate will be 10 times less than the initial one.
 - **resnet-110**: The standard [ResNet-110][8].
-- **resnet-110-fc**: A variant of [ResNet-110][8] with twice the number of channels per block. In contrast to the standard ResNet-110, it will always have a fully-connected layer after the global average pooling, even when used for learning embeddings.
+- **resnet-110-fc**: Like `resnet-110`, but always with a fully-connected layer after the global average pooling, even when used for learning embeddings.
+- **resnet-110-wfc**: A variant of `resnet-110-fc` with twice the number of channels per block.
 - **wrn-28-10**: A [Wide Residual Network][9] with depth 28 and width 10.
 - **pyramidnet-272-200**: A [Deep Pyramidal Residual Network][10]. Provides better performance than ResNet, but is also much slower.
 
@@ -311,7 +312,7 @@ python learn_image_embeddings.py \
 |  Dataset  |              Model              | mAHP@250 | Balanced Accuracy |
 |-----------|---------------------------------|---------:|------------------:|
 | CIFAR-100 | [Plain-11][16]                  |   82.05% |            74.10% |
-| CIFAR-100 | [ResNet-110-fc][17]             |   83.29% |            76.60% |
+| CIFAR-100 | [ResNet-110-wfc][17]            |   83.29% |            76.60% |
 | CIFAR-100 | [PyramidNet-272-200][18]        |   86.38% |            80.49% |
 | NABirds   | [ResNet-50 (from scratch)][19]  |   73.99% |            59.46% |
 | NABirds   | [ResNet-50 (fine-tuned)][20]    |   81.46% |            69.49% |
@@ -334,21 +335,21 @@ The default input image size of the ILSVRC and NABirds models is `224x224`, crop
 
 Sometimes, loading of the pre-trained models fails with the error message "unknown opcode".
 In the case of this or other issues, you can still create the architecture yourself and load the pre-trained weights from the model files provided above.
-For CIFAR-100 and the resnet-110-fc architecture, for example, this can be done as follows:
+For CIFAR-100 and the `resnet-110-wfc` architecture, for example, this can be done as follows:
 
 ```python
 import keras
 import utils
 from learn_image_embeddings import cls_model
 
-model = utils.build_network(100, 'resnet-110-fc')
+model = utils.build_network(100, 'resnet-110-wfc')
 model = keras.models.Model(
     model.inputs,
     keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output)
 )
 model = cls_model(model, 100)
 
-model.load_weights('cifar_unitsphere-embed+cls_resnet-110-fc.model.h5')
+model.load_weights('cifar_unitsphere-embed+cls_resnet-110-wfc.model.h5')
 ```
 
 

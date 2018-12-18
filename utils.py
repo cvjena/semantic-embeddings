@@ -15,7 +15,7 @@ from sgdr_callback import SGDR
 
 
 
-ARCHITECTURES = ['simple', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'wrn-28-10',
+ARCHITECTURES = ['simple', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'resnet-110-wfc', 'wrn-28-10',
                  'densenet-100-12', 'densenet-100-24', 'densenet-bc-190-40', 'pyramidnet-272-200', 'pyramidnet-110-270',
                  'resnet-50', 'rn18', 'rn34', 'rn50', 'rn101', 'rn152', 'rn200', 'nasnet-a']
 
@@ -142,6 +142,12 @@ def build_network(num_outputs, architecture, classification = False, no_softmax 
     
     elif architecture == 'resnet-110-fc':
         
+        return cifar_resnet.SmallResNet(18, filters = [16, 32, 64], activation = activation,
+                                        include_top = True, top_activation = 'softmax' if classification and (not no_softmax) else None,
+                                        classes = num_outputs, name = name)
+    
+    elif architecture == 'resnet-110-wfc':
+        
         return cifar_resnet.SmallResNet(18, filters = [32, 64, 128], activation = activation,
                                         include_top = True, top_activation = 'softmax' if classification and (not no_softmax) else None,
                                         classes = num_outputs, name = name)
@@ -226,7 +232,7 @@ def build_network(num_outputs, architecture, classification = False, no_softmax 
 def get_custom_objects(architecture):
     """ Provides a dictionary with custom objects required for loading a certain model architecture using `keras.models.load_model`. """
     
-    if architecture in ('resnet-32', 'resnet-110', 'resnet-110-fc', 'pyramidnet-272-200', 'pyramidnet-110-270'):
+    if architecture in ('resnet-32', 'resnet-110', 'resnet-110-fc', 'resnet-110-wfc', 'pyramidnet-272-200', 'pyramidnet-110-270'):
         return { 'ChannelPadding' : cifar_resnet.ChannelPadding }
     else:
         return {}
