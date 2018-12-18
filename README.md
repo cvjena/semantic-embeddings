@@ -293,7 +293,7 @@ python learn_image_embeddings.py \
 
 ## 3. Requirements
 
-- Python 3
+- Python >= 3.5
 - numpy
 - numexpr
 - keras >= 2.2.0

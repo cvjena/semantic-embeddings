@@ -4,10 +4,10 @@ import warnings
 from collections import Counter
 
 try:
-    from keras.preprocessing.image import load_img, img_to_array
+    from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 except ImportError:
     import keras
-    from keras_preprocessing.image import load_img, img_to_array
+    from keras_preprocessing.image import ImageDataGenerator, load_img, img_to_array
 
 from keras import backend as K
 from keras.utils import Sequence
@@ -532,3 +532,209 @@ class FileDatasetGenerator(object):
         """ Number of test images in the dataset. """
         
         return len(self.test_img_files)
+
+
+
+class TinyDatasetGenerator(object):
+    """ Abstract base class for datasets with low-resolution images that fit entirely into memory (e.g., CIFAR). """
+
+    def __init__(self, X_train, X_test, y_train, y_test,
+                 generator_kwargs = { 'featurewise_center' : True, 'featurewise_std_normalization' : True },
+                 train_generator_kwargs = { 'horizontal_flip' : True, 'width_shift_range' : 0.15, 'height_shift_range' : 0.15 }):
+        """ Abstract base class for interfaces to datasets with low-resolution images that fit entirely into memory (e.g., CIFAR).
+
+        # Arguments:
+
+        - X_train: 4-D numpy array with the training images.
+
+        - X_test: 4-D numpy array with the test images.
+
+        - y_train: list with numeric labels for the training images.
+
+        - y_test: list with numeric labels for the test images.
+
+        - generator_kwargs: Dictionary with keyword arguments passed to Keras' ImageDataGenerator for both training and test.
+
+        - train_generator_kwargs: Dictionary with keyword arguments passed to Keras' ImageDataGenerator for the training set.
+        """
+        
+        super(TinyDatasetGenerator, self).__init__()
+
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+
+        # Set up pre-processing
+        self.image_generator = ImageDataGenerator(**generator_kwargs, **train_generator_kwargs)
+        self.image_generator.fit(self.X_train)
+
+        self.test_image_generator = ImageDataGenerator(**generator_kwargs)
+        self.test_image_generator.fit(self.X_train)
+    
+    
+    def flow_train(self, batch_size = 32, include_labels = True, shuffle = True, augment = True):
+        """ A generator yielding batches of pre-processed and augmented training images.
+
+        # Arguments:
+
+        - batch_size: Number of images per batch.
+
+        - include_labels: If true, target labels will be yielded as well.
+
+        - shuffle: If True, the order of images will be shuffled after each epoch.
+        
+        - augment: Whether data augmentation should be applied or not.
+
+        # Yields:
+            If `include_labels` is True, a tuple of inputs and targets for each batch.
+            Otherwise, only inputs will be yielded.
+        """
+        
+        image_generator = self.image_generator if augment else self.test_image_generator
+        return image_generator.flow(self.X_train, self.y_train if include_labels else None,
+                                    batch_size=batch_size, shuffle=shuffle)
+    
+    
+    def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, augment = False):
+        """ A generator yielding batches of pre-processed and augmented test images.
+
+        # Arguments:
+
+        - batch_size: Number of images per batch.
+
+        - include_labels: If true, target labels will be yielded as well.
+
+        - shuffle: If True, the order of images will be shuffled after each epoch.
+        
+        - augment: Whether data augmentation should be applied or not.
+
+        # Yields:
+            If `include_labels` is True, a tuple of inputs and targets for each batch.
+            Otherwise, only inputs will be yielded.
+        """
+        
+        image_generator = self.image_generator if augment else self.test_image_generator
+        return image_generator.flow(self.X_test, self.y_test if include_labels else None,
+                                    batch_size=batch_size, shuffle=shuffle)
+
+
+    def train_sequence(self, batch_size = 32, shuffle = True, augment = True, batch_transform = None, batch_transform_kwargs = {}):
+        """ Creates a `DataSequence` with pre-processed and augmented training images that can be passed to the Keras methods expecting a generator for efficient and safe multi-processing.
+
+        # Arguments:
+
+        - batch_size: Number of images per batch.
+
+        - shuffle: If True, the order of images will be shuffled after each epoch.
+        
+        - augment: Whether data augmentation should be applied or not.
+
+        - batch_transform: Optionally, a function that takes the inputs and targets of a batch and returns
+                           transformed inputs and targets that will be provided by the sequence instead of
+                           the original ones.
+        
+        - batch_transform_kwargs: Additional keyword arguments passed to `batch_transform`.
+
+        # Returns:
+            a DataSequence instance
+        """
+        
+        return DataSequence(self, np.arange(len(self.X_train)), self.y_train,
+                            train=True, augment=augment,
+                            batch_size=batch_size, shuffle=shuffle, batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
+    
+    
+    def test_sequence(self, batch_size = 32, shuffle = False, augment = False, batch_transform = None, batch_transform_kwargs = {}):
+        """ Creates a `DataSequence` with pre-processed and augmented test images that can be passed to the Keras methods expecting a generator for efficient and safe multi-processing.
+
+        # Arguments:
+
+        - batch_size: Number of images per batch.
+
+        - shuffle: If True, the order of images will be shuffled after each epoch.
+        
+        - augment: Whether data augmentation should be applied or not.
+
+        - batch_transform: Optionally, a function that takes the inputs and targets of a batch and returns
+                           transformed inputs and targets that will be provided by the sequence instead of
+                           the original ones.
+        
+        - batch_transform_kwargs: Additional keyword arguments passed to `batch_transform`.
+
+        # Returns:
+            a DataSequence instance
+        """
+        
+        return DataSequence(self, np.arange(len(self.X_test)), self.y_test,
+                            train=False, augment=augment,
+                            batch_size=batch_size, shuffle=shuffle, batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
+    
+
+    def compose_batch(self, indices, train, augment = False):
+        """ Composes a batch of augmented images given by their indices.
+
+        # Arguments:
+
+        - indices: List with image indices to be contained in the batch.
+
+        - train: If True, images will be taken from the training data matrix, otherwise from the test data.
+
+        - augment: Whether data augmentation should be applied or not.
+
+        # Returns:
+            a batch of images as 4-dimensional numpy array.
+        """
+
+        X = self.X_train if train else self.X_test
+        image_generator = self.image_generator if augment else self.test_image_generator
+
+        batch = np.zeros((len(indices),) + tuple(X.shape[1:]), dtype=K.floatx())
+        for i, j in enumerate(indices):
+            x = X[j]
+            x = image_generator.random_transform(x.astype(K.floatx()))
+            x = image_generator.standardize(x)
+            batch[i] = x
+        
+        return batch
+    
+
+    @property
+    def labels_train(self):
+        """ List with labels corresponding to the training files in `self.X_train`.
+        
+        This is an alias for `self.y_train` for compatibility with other data generators.
+        """
+        
+        return self.y_train
+    
+    
+    @property
+    def labels_test(self):
+        """ List with labels corresponding to the test files in `self.X_test`.
+        
+        This is an alias for `self.y_test` for compatibility with other data generators.
+        """
+        
+        return self.y_test
+    
+    
+    @property
+    def num_classes(self):
+        """ Number of unique classes in the dataset. """
+        
+        return max(self.y_train) + 1
+    
+    
+    @property
+    def num_train(self):
+        """ Number of training images in the dataset. """
+        
+        return len(self.X_train)
+    
+    
+    @property
+    def num_test(self):
+        """ Number of test images in the dataset. """
+        
+        return len(self.X_test)
