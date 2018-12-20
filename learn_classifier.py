@@ -14,9 +14,12 @@ from datasets import get_data_generator
 
 
 
-def transform_inputs(X, y, num_classes):
+def transform_inputs(X, y, num_classes, label_smoothing = 0):
     
-    return X, keras.utils.to_categorical(y, num_classes)
+    Y = keras.utils.to_categorical(y, num_classes)
+    if (label_smoothing > 0) and (label_smoothing < 1):
+        Y = Y * (1 - label_smoothing) + (1 - Y) * (label_smoothing / (num_classes - 1))
+    return X, Y
 
 
 
@@ -30,6 +33,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--class_list', type = str, default = None, help = 'Path to a file containing the IDs of the subset of classes to be used (as first words per line).')
     arggroup = parser.add_argument_group('Training parameters')
     arggroup.add_argument('--architecture', type = str, default = 'simple', choices = utils.ARCHITECTURES, help = 'Type of network architecture.')
+    arggroup.add_argument('--label_smoothing', type = float, default = 0.0, help = 'Smooth the target distribution by subtracting this value from the target probability of the ground-truth class.')
     arggroup.add_argument('--lr_schedule', type = str, default = 'SGDR', choices = utils.LR_SCHEDULES, help = 'Type of learning rate schedule.')
     arggroup.add_argument('--clipgrad', type = float, default = 10.0, help = 'Gradient norm clipping.')
     arggroup.add_argument('--max_decay', type = float, default = 0.0, help = 'Learning Rate decay at the end of training.')
@@ -93,7 +97,7 @@ if __name__ == '__main__':
     if not args.no_progress:
         model.summary()
     
-    batch_transform_kwargs = { 'num_classes' : data_generator.num_classes }
+    batch_transform_kwargs = { 'num_classes' : data_generator.num_classes, 'label_smoothing' : args.label_smoothing }
     
     # Load pre-trained weights and train last layer for a few epochs
     if args.finetune:
