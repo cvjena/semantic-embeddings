@@ -63,8 +63,8 @@ class CifarGenerator(TinyDatasetGenerator):
             self.classes = classes
             if reenumerate:
                 self.class_indices = dict(zip(self.classes, range(len(self.classes))))
-                y_train = [self.class_indices[lbl] for lbl in self.y_train]
-                y_test = [self.class_indices[lbl] for lbl in self.y_test]
+                y_train = [self.class_indices[lbl] for lbl in y_train]
+                y_test = [self.class_indices[lbl] for lbl in y_test]
         
         else:
 
