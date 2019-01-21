@@ -131,6 +131,11 @@ class FileDatasetGenerator(object):
         
         - cropsize: Tuple with width and height of crops extracted from the images.
 
+        - default_target_size: Int or tuple of ints. Specifies the default target size which images will be resized to (before cropping)
+                               if not specified differently in calls to `flow_train/test` or `train/test_sequence`.
+                               If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
+                               If set to -1, the image won't be resized.
+
         - randzoom_range: Tuple with minimum and maximum size of the smaller image dimension for random scale augmentation.
                           May either be given as integer specifying absolute pixel values or float specifying the relative scale of the image.
                           If set to `None`, no scale augmentation will be performed.
