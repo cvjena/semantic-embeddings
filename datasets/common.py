@@ -24,7 +24,8 @@ except ImportError:
 class DataSequence(Sequence):
     """ Helper class representing a sequence that can be passed to Keras functions expecting a generator. """
 
-    def __init__(self, data_generator, ids, labels, batch_size = 32, shuffle = False, oversample = False, batch_transform = None, batch_transform_kwargs = {}, **kwargs):
+    def __init__(self, data_generator, ids, labels, batch_size = 32, shuffle = False, oversample = False, repeats = 1,
+                 batch_transform = None, batch_transform_kwargs = {}, **kwargs):
         """
         # Arguments:
 
@@ -43,6 +44,9 @@ class DataSequence(Sequence):
 
         - oversample: Whether to oversample smaller classes to the size of the largest one.
 
+        - repeats: Number of repeats per epoch. If this was set to 3, for example, a single epoch would actually
+                   comprise 3 epochs.
+
         - batch_transform: Optionally, a function that takes the inputs and targets of a batch and returns
                            transformed inputs and targets that will be provided by this sequence instead of
                            the original ones.
@@ -57,6 +61,7 @@ class DataSequence(Sequence):
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.oversample = oversample
+        self.repeats = repeats
         self.batch_transform = batch_transform
         self.batch_transform_kwargs = batch_transform_kwargs
         self.kwargs = kwargs
@@ -65,12 +70,14 @@ class DataSequence(Sequence):
             self.class_sizes = Counter(labels)
             self.max_class_size = max(self.class_sizes.values())
             self.class_members = { lbl : np.where(np.asarray(labels) == lbl)[0] for lbl in self.class_sizes.keys() }
-            self.ind = np.concatenate([
+            self.permutations = [np.concatenate([
                 np.repeat(members, int(np.ceil(self.max_class_size / len(members))))[:self.max_class_size]
                 for lbl, members in self.class_members.items()
-            ])
+            ]) for i in range(self.repeats)]
+            self.epoch_len = int(np.ceil((len(self.class_sizes) * self.max_class_size) / self.batch_size))
         else:
-            self.ind = np.arange(len(self.ids))
+            self.permutations = [np.arange(len(self.ids)) for i in range(self.repeats)]
+            self.epoch_len = int(np.ceil(len(self.ids) / self.batch_size))
         
         self.on_epoch_end()
 
@@ -78,16 +85,15 @@ class DataSequence(Sequence):
     def __len__(self):
         """ Returns the number of batches per epoch. """
 
-        if self.oversample:
-            return int(np.ceil((len(self.class_sizes) * self.max_class_size) / self.batch_size))
-        else:
-            return int(np.ceil(len(self.ids) / self.batch_size))
+        return self.repeats * self.epoch_len
 
 
     def __getitem__(self, idx):
         """ Returns the batch with the given index. """
         
-        batch_ind = self.ind[idx*self.batch_size:(idx+1)*self.batch_size]
+        subepoch = idx // self.epoch_len
+        idx = idx % self.epoch_len
+        batch_ind = self.permutations[subepoch][idx*self.batch_size:(idx+1)*self.batch_size]
         X = self.data_generator.compose_batch([self.ids[i] for i in batch_ind], **self.kwargs)
         y = self.labels[batch_ind]
         if self.batch_transform is not None:
@@ -102,22 +108,23 @@ class DataSequence(Sequence):
         if self.shuffle:
             
             if self.oversample:
-                self.ind = np.concatenate([
+                self.permutations = [np.concatenate([
                     np.concatenate([
                         np.random.choice(members, len(members), replace = False)
                         for _ in range(int(np.ceil(self.max_class_size / len(members))))
                     ])[:self.max_class_size]
                     for lbl, members in self.class_members.items()
-                ])
+                ]) for i in range(self.repeats)]
             
-            np.random.shuffle(self.ind)
+            for i in range(self.repeats):
+                np.random.shuffle(self.permutations[i])
 
 
 
 class FileDatasetGenerator(object):
     """ Abstract base class for image generators. """
 
-    def __init__(self, root_dir, classes = None, cropsize = (224, 224), default_target_size = -1,
+    def __init__(self, root_dir, cropsize = (224, 224), default_target_size = -1,
                  randzoom_range = None, randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 },
                  color_mode = 'rgb'):
         """ Abstract base class for image generators.
@@ -125,9 +132,6 @@ class FileDatasetGenerator(object):
         # Arguments:
 
         - root_dir: Root directory of the dataset.
-
-        - classes: List of classes to restrict the dataset to. Numeric labels will be assigned to these classes in ascending order.
-                   If set to `None`, all available classes will be used.
         
         - cropsize: Tuple with width and height of crops extracted from the images.
 

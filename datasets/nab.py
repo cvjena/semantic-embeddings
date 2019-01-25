@@ -8,7 +8,7 @@ class NABGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, img_dir = 'images', img_list_file = 'images.txt', split_file = 'train_test_split.txt', label_file = 'image_class_labels.txt',
                  cropsize = (224, 224), default_target_size = 256, randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
-                 mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446], color_mode = "rgb"):
+                 mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446], color_mode = "rgb", train_repeats = 1):
         """ NABirds and CUB-200-2011 data generator.
 
         # Arguments:
@@ -48,14 +48,18 @@ class NABGenerator(FileDatasetGenerator):
         - std: Channel-wise standard deviation for normalization (in "RGB" order). If set to `None`, standard deviation will be computed from the images.
 
         - color_mode: Image color mode, either "rgb" or "bgr".
+
+        - train_repeats: Number of repeats of the training data per epoch. If this was set to 3, for example, a single epoch would actually comprise 3 epochs.
+                         Works only with `train_sequence()`, not with `flow_train()`.
         """
         
-        super(NABGenerator, self).__init__(root_dir, classes = classes, cropsize = cropsize, default_target_size = default_target_size, randzoom_range = randzoom_range,
+        super(NABGenerator, self).__init__(root_dir, cropsize = cropsize, default_target_size = default_target_size, randzoom_range = randzoom_range,
                                            randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
         self.imgs_dir = os.path.join(root_dir, img_dir)
         self.img_list_file = os.path.join(root_dir, img_list_file)
         self.label_file = os.path.join(root_dir, label_file)
         self.split_file = os.path.join(root_dir, split_file)
+        self.train_repeats = train_repeats
         
         # Read train/test split information
         with open(self.split_file) as f:
@@ -83,3 +87,13 @@ class NABGenerator(FileDatasetGenerator):
         
         # Compute mean and standard deviation
         self._compute_stats(mean, std)
+
+
+    def train_sequence(self, batch_size = 32, shuffle = True, target_size = None, augment = True, batch_transform = None, batch_transform_kwargs = {}):
+        
+        return DataSequence(self, self.train_img_files, self._train_labels,
+                            batch_size=batch_size, shuffle=shuffle,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            repeats=self.train_repeats,
+                            batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)

@@ -31,7 +31,7 @@ class ILSVRCGenerator(FileDatasetGenerator):
         - color_mode: Image color mode, either "rgb" or "bgr".
         """
         
-        super(ILSVRCGenerator, self).__init__(root_dir, classes, default_target_size = 256, randzoom_range = (256, 480), color_mode = color_mode)
+        super(ILSVRCGenerator, self).__init__(root_dir, default_target_size = 256, randzoom_range = (256, 480), color_mode = color_mode)
         self.train_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_train')
         self.test_dir = os.path.join(self.root_dir, 'ILSVRC2012_img_val')
         
