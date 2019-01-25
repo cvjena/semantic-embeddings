@@ -159,7 +159,7 @@ if __name__ == '__main__':
     }
     if args.loss.endswith('_corr'):
         loss = utils.inv_correlation
-        metric = 'accuracy' if args.loss == 'softmax_corr' else utils.nn_accuracy(embedding, dot_prod_sim = True)
+        metric = 'accuracy' if (args.loss == 'softmax_corr') or (args.embedding == 'onehot') else utils.nn_accuracy(embedding, dot_prod_sim = True)
     else:
         loss = utils.squared_distance
         metric = utils.nn_accuracy(embedding, dot_prod_sim = False)
