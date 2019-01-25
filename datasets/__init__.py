@@ -28,6 +28,7 @@ def get_data_generator(dataset, data_root, classes = None):
                - "ilsvrc"
                - "nab"
                - "nab-large"
+               - "cub"
                
                To all dataset names except CIFAR, you may append one of the following suffixes:
 
@@ -81,6 +82,18 @@ def get_data_generator(dataset, data_root, classes = None):
     
     elif dataset == 'nab-large':
         
+        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None, **kwargs)
+    
+    elif (dataset == 'cub') or dataset.startswith('cub-sub'):
+        
+        if 'mean' not in kwargs:
+            kwargs['mean'] = [123.82988033, 127.35116805, 110.25606303]
+        if 'std' not in kwargs:
+            kwargs['std'] = [59.2230949, 58.0736071, 67.80251684]
+        if dataset.startswith('cub-sub'):
+            samples_per_class = int(dataset[7:])
+            kwargs['split_file'] = 'train_test_split_{}.txt'.format(samples_per_class)
+            kwargs['train_repeats'] = 30 // samples_per_class
         return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None, **kwargs)
     
     else:

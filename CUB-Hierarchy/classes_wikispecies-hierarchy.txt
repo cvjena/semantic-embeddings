@@ -1,0 +1,383 @@
+1 Phoebastria nigripes
+2 Phoebastria immutabilis
+3 Phoebetria fusca
+4 Crotophaga sulcirostris
+5 Aethia cristatella
+6 Aethia pusilla
+7 Aethia psittacula
+8 Cerorhinca monocerata
+9 Euphagus cyanocephalus
+10 Agelaius phoeniceus
+11 Euphagus carolinus
+12 Xanthocephalus xanthocephalus
+13 Dolichonyx oryzivorus
+14 Passerina cyanea
+15 Passerina amoena
+16 Passerina ciris
+17 Cardinalis cardinalis
+18 Ailuroedus melanotis
+19 Dumetella carolinensis
+20 Icteria virens
+21 Pipilo erythrophthalmus
+22 Caprimulgus carolinensis
+23 Phalacrocorax penicillatus
+24 Phalacrocorax urile
+25 Phalacrocorax pelagicus
+26 Molothrus aeneus
+27 Molothrus bonariensis
+28 Certhia americana
+29 Corvus brachyrhynchos
+30 Corvus ossifragus
+31 Coccyzus erythropthalmus
+32 Coccyzus minor
+33 Coccyzus americanus
+34 Leucosticte tephrocotis
+35 Haemorhous purpureus
+36 Colaptes auratus
+37 Empidonax virescens
+38 Myiarchus crinitus
+39 Empidonax minimus
+40 Contopus cooperi
+41 Tyrannus forficatus
+42 Pyrocephalus obscurus
+43 Empidonax flaviventris
+44 Fregata
+45 Fulmarus glacialis
+46 Anas strepera
+47 Spinus tristis
+48 Carduelis carduelis
+49 Quiscalus major
+50 Podiceps nigricollis
+51 Podiceps auritus
+52 Podilymbus podiceps
+53 Aechmophorus occidentalis
+54 Passerina caerulea
+55 Hesperiphona vespertina
+56 Pinicola enucleator
+57 Pheucticus ludovicianus
+58 Cepphus columba
+59 Larus californicus
+60 Larus glaucescens
+61 Larus heermanni
+62 Larus argentatus
+63 Pagophila eburnea
+64 Larus delawarensis
+65 Larus schistisagus
+66 Larus occidentalis
+67 Calypte anna
+68 Archilochus colubris
+69 Selasphorus rufus
+70 Colibri thalassinus
+71 Stercorarius longicaudus
+72 Stercorarius pomarinus
+73 Cyanocitta cristata
+74 Aphelocoma coerulescens
+75 Cyanocorax luxuosus
+76 Junco hyemalis
+77 Tyrannus melancholicus
+78 Tyrannus dominicensis
+79 Megaceryle alcyon
+80 Chloroceryle americana
+81 Ceryle rudis
+82 Megaceryle torquata
+83 Halcyon smyrnensis
+84 Rissa brevirostris
+85 Eremophila alpestris
+86 Gavia pacifica
+87 Anas platyrhynchos
+88 Sturnella neglecta
+89 Lophodytes cucullatus
+90 Mergus serrator
+91 Mimus polyglottos
+92 Chordeiles
+93 Nucifraga columbiana
+94 Sitta carolinensis
+95 Icterus galbula
+96 Icterus cucullatus
+97 Icterus spurius
+98 Icterus parisorum
+99 Seiurus aurocapilla
+100 Pelecanus occidentalis
+101 Pelecanus onocrotalus
+102 Contopus sordidulus
+103 Sayornis
+104 Anthus rubescens
+105 Caprimulgus vociferus
+106 Fratercula corniculata
+107 Corvus corax
+108 Corvus albicollis
+109 Setophaga ruticilla
+110 Geococcyx
+111 Lanius ludovicianus
+112 Lanius excubitor
+113 Ammodramus bairdii
+114 Amphispiza bilineata
+115 Spizella breweri
+116 Spizella passerina
+117 Spizella pallida
+118 Passer domesticus
+119 Spizella pusilla
+120 Passerella iliaca
+121 Ammodramus savannarum
+122 Zonotrichia querula
+123 Ammodramus henslowii
+124 Ammodramus leconteii
+125 Melospiza lincolnii
+126 Ammodramus nelsoni
+127 Passerculus sandwichensis
+128 Ammodramus maritimus
+129 Melospiza melodia
+130 Spizelloides arborea
+131 Pooecetes gramineus
+132 Zonotrichia leucophrys
+133 Zonotrichia albicollis
+134 Lamprotornis nitens
+135 Riparia riparia
+136 Hirundo rustica
+137 Petrochelidon pyrrhonota
+138 Tachycineta bicolor
+139 Piranga olivacea
+140 Piranga rubra
+141 Sterna paradisaea
+142 Chlidonias niger
+143 Hydroprogne caspia
+144 Sterna hirundo
+145 Thalasseus elegans
+146 Sterna forsteri
+147 Sternula antillarum
+148 Pipilo chlorurus
+149 Toxostoma rufum
+150 Oreoscoptes montanus
+151 Vireo atricapilla
+152 Vireo solitarius
+153 Vireo philadelphicus
+154 Vireo olivaceus
+155 Vireo gilvus
+156 Vireo griseus
+157 Vireo flavifrons
+158 Setophaga castanea
+159 Mniotilta varia
+160 Setophaga caerulescens
+161 Vermivora cyanoptera
+162 Cardellina canadensis
+163 Setophaga tigrina
+164 Setophaga cerulea
+165 Setophaga pensylvanica
+166 Vermivora chrysoptera
+167 Setophaga citrina
+168 Geothlypis formosa
+169 Setophaga magnolia
+170 Geothlypis philadelphia
+171 Setophaga coronata
+172 Leiothlypis ruficapilla
+173 Leiothlypis celata
+174 Setophaga palmarum
+175 Setophaga pinus
+176 Setophaga discolor
+177 Protonotaria citrea
+178 Limnothlypis swainsonii
+179 Leiothlypis peregrina
+180 Cardellina pusilla
+181 Helmitheros vermivorum
+182 Setophaga aestiva
+183 Parkesia noveboracensis
+184 Parkesia motacilla
+185 Bombycilla garrulus
+186 Bombycilla cedrorum
+187 Picoides dorsalis
+188 Dryocopus pileatus
+189 Melanerpes carolinus
+190 Leuconotopicus borealis
+191 Melanerpes erythrocephalus
+192 Dryobates pubescens
+193 Thryomanes bewickii
+194 Campylorhynchus brunneicapillus
+195 Thryothorus ludovicianus
+196 Troglodytes aedon
+197 Cistothorus palustris
+198 Salpinctes obsoletus
+199 Troglodytes hiemalis
+200 Geothlypis trichas
+201 Cuculiformes
+202 Cuculidae
+203 Tyrannidae
+204 Pyrocephalus
+205 Tyrannus
+206 Empidonax
+207 Contopus
+208 Myiarchus
+209 Campylorhynchus
+210 Gaviidae
+211 Gavia
+212 Colibri
+213 Dolichonyx
+214 Cardellina
+215 Sturnella
+216 Picoides
+217 Certhia
+218 Vermivora
+219 Diomedeidae
+220 Phoebastria
+221 Phoebetria
+222 Ptilonorhynchidae
+223 Ailuroedus
+224 Podicipediformes
+225 Podicipedidae
+226 Vireonidae
+227 Vireo
+228 Coraciiformes
+229 Alcedinidae
+230 Halcyon
+231 Pelecanidae
+232 Pelecanus
+233 Motacillidae
+234 Anthus
+235 Sittidae
+236 Sitta
+237 Corvoidea
+238 Laniidae
+239 Corvidae
+240 Molothrus
+241 Passerina
+242 Fratercula
+243 Aves
+244 Procellariiformes
+245 Passeriformes
+246 Anseriformes
+247 Caprimulgiformes
+248 Charadriiformes
+249 Trochiliformes
+250 Piciformes
+251 Gaviiformes
+252 Suliformes
+253 Pelecaniformes
+254 Passeroidea
+255 Cardinalidae
+256 Alaudidae
+257 Parulidae
+258 Passeridae
+259 Icteridae
+260 Fringillidae
+261 Icteriidae
+262 Passerellidae
+263 Carduelis
+264 Rissa
+265 Riparia
+266 Coccyzus
+267 Calypte
+268 Trochilidae
+269 Fregatidae
+270 Phalacrocoracidae
+271 Thalasseus
+272 Cepphus
+273 Picidae
+274 Euphagus
+275 Troglodytes
+276 Salpinctes
+277 Corvus
+278 Nucifraga
+279 Cyanocorax
+280 Cyanocitta
+281 Aphelocoma
+282 Podiceps
+283 Pagophila
+284 Amphispiza
+285 Ceryle
+286 Hesperiphona
+287 Chloroceryle
+288 Cistothorus
+289 Caprimulginae
+290 Caprimulgus
+291 Crotophaga
+292 Passer
+293 Icteria
+294 Hydroprogne
+295 Pinicola
+296 Megaceryle
+297 Spizelloides
+298 Melospiza
+299 Passerella
+300 Ammodramus
+301 Junco
+302 Passerculus
+303 Spizella
+304 Pooecetes
+305 Pipilo
+306 Zonotrichia
+307 Setophaga
+308 Menuroidea
+309 Passeri
+310 Sylvioidea
+311 Certhioidea 
+312 Muscicapoidea
+313 Laridae
+314 Larinae
+315 Sterninae
+316 Helmitheros
+317 Seiurus
+318 Aethia
+319 Hirundinidae
+320 Alcae
+321 Alcidae
+322 Troglodytidae
+323 Thryothorus
+324 Thryomanes
+325 Petrochelidon
+326 Podilymbus
+327 Dryocopus
+328 Sterna
+329 Anatidae
+330 Protonotaria
+331 Xanthocephalus
+332 Certhiidae
+333 Colaptes
+334 Tyranni
+335 Halcyoninae
+336 Eremophila
+337 Piranga
+338 Cardinalis
+339 Pheucticus
+340 Mniotilta
+341 Bombycillidae
+342 Bombycilla
+343 Larus
+344 Toxostoma
+345 Procellariidae
+346 Fulmarus
+347 Lamprotornis
+348 Stercorariidae
+349 Stercorarius
+350 Tachycineta
+351 Chlidonias
+352 Sternula
+353 Cerylinae
+354 Sturnidae
+355 Limnothlypis
+356 Geothlypis
+357 Parkesia
+358 Leiothlypis
+359 Agelaius
+360 Icterus
+361 Quiscalus
+362 Leucosticte
+363 Lanius
+364 Spinus
+365 Caprimulgidae
+366 Phalacrocorax
+367 Anas
+368 Dumetella
+369 Oreoscoptes
+370 Cerorhinca
+371 Lari
+372 Melanerpes
+373 Dryobates
+374 Leuconotopicus
+375 Archilochus
+376 Selasphorus
+377 Hirundo
+378 Merginae
+379 Lophodytes
+380 Aechmophorus
+381 Mimus
+382 Haemorhous
+383 Mimidae

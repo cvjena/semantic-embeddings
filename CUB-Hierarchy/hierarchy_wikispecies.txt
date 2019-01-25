@@ -1,0 +1,396 @@
+Aves
+
+-- Procellariiformes
+---- Procellariidae
+------ Fulmarus
+-------- Fulmarus glacialis
+---- Diomedeidae
+------ Phoebastria
+-------- Phoebastria nigripes
+-------- Phoebastria immutabilis
+------ Phoebetria
+-------- Phoebetria fusca
+
+-- Cuculiformes
+---- Cuculidae
+------ Crotophaga
+-------- Crotophaga sulcirostris
+------ Coccyzus
+-------- Coccyzus erythropthalmus
+-------- Coccyzus minor
+-------- Coccyzus americanus
+------ Geococcyx
+
+-- Charadriiformes
+---- Alcae (subord)
+------ Alcidae
+-------- Aethia
+---------- Aethia cristatella
+---------- Aethia pusilla
+---------- Aethia psittacula
+-------- Cerorhinca
+---------- Cerorhinca monocerata
+-------- Cepphus
+---------- Cepphus columba
+-------- Fratercula
+---------- Fratercula corniculata
+---- Lari (subord)
+------ Laridae
+-------- Larinae (subfam)
+---------- Larus
+------------ Larus californicus
+------------ Larus glaucescens
+------------ Larus heermanni
+------------ Larus argentatus
+------------ Larus delawarensis
+------------ Larus schistisagus
+------------ Larus occidentalis
+---------- Pagophila
+------------ Pagophila eburnea
+---------- Rissa
+------------ Rissa brevirostris
+-------- Sterninae (subfam)
+---------- Sterna
+------------ Sterna paradisaea
+------------ Sterna hirundo
+------------ Sterna forsteri
+---------- Sternula
+------------ Sternula antillarum
+---------- Chlidonias
+------------ Chlidonias niger
+---------- Hydroprogne
+------------ Hydroprogne caspia
+---------- Thalasseus
+------------ Thalasseus elegans
+------ Stercorariidae
+-------- Stercorarius
+---------- Stercorarius longicaudus
+---------- Stercorarius pomarinus
+
+-- Suliformes
+---- Phalacrocoracidae
+------ Phalacrocorax
+-------- Phalacrocorax penicillatus
+-------- Phalacrocorax urile
+-------- Phalacrocorax pelagicus
+---- Fregatidae
+------ Fregata
+
+-- Piciformes
+---- Picidae
+------ Colaptes
+-------- Colaptes auratus
+------ Picoides
+-------- Picoides dorsalis
+------ Dryocopus
+-------- Dryocopus pileatus
+------ Dryobates
+-------- Dryobates pubescens
+------ Melanerpes
+-------- Melanerpes carolinus
+-------- Melanerpes erythrocephalus
+------ Leuconotopicus
+-------- Leuconotopicus borealis
+
+-- Anseriformes
+---- Anatidae
+------ Anas
+-------- Anas strepera
+-------- Anas platyrhynchos
+------ Lophodytes
+-------- Lophodytes cucullatus
+------ Merginae
+-------- Mergus serrator
+
+-- Podicipediformes
+---- Podicipedidae
+------ Podiceps
+-------- Podiceps nigricollis
+-------- Podiceps auritus
+------ Podilymbus
+-------- Podilymbus podiceps
+------ Aechmophorus
+-------- Aechmophorus occidentalis
+
+-- Trochiliformes
+---- Trochilidae
+------ Calypte
+-------- Calypte anna
+------ Archilochus
+-------- Archilochus colubris
+------ Selasphorus
+-------- Selasphorus rufus
+------ Colibri
+-------- Colibri thalassinus
+
+-- Coraciiformes
+---- Alcedinidae
+------ Cerylinae (subfam)
+-------- Megaceryle
+---------- Megaceryle alcyon
+---------- Megaceryle torquata
+-------- Chloroceryle
+---------- Chloroceryle americana
+-------- Ceryle
+---------- Ceryle rudis
+------ Halcyoninae (subfam)
+-------- Halcyon
+---------- Halcyon smyrnensis
+
+-- Gaviiformes
+---- Gaviidae
+------ Gavia
+-------- Gavia pacifica
+
+-- Pelecaniformes
+---- Pelecanidae
+------ Pelecanus
+-------- Pelecanus occidentalis
+-------- Pelecanus onocrotalus
+
+-- Passeriformes
+---- Passeri (subord)
+------ Passeroidea (superfam)
+-------- Icteridae
+---------- Euphagus
+------------ Euphagus cyanocephalus
+------------ Euphagus carolinus
+---------- Agelaius
+------------ Agelaius phoeniceus
+---------- Xanthocephalus
+------------ Xanthocephalus xanthocephalus
+---------- Dolichonyx
+------------ Dolichonyx oryzivorus
+---------- Molothrus
+------------ Molothrus aeneus
+------------ Molothrus bonariensis
+---------- Quiscalus
+------------ Quiscalus major
+---------- Sturnella
+------------ Sturnella neglecta
+---------- Icterus
+------------ Icterus galbula
+------------ Icterus cucullatus
+------------ Icterus spurius
+------------ Icterus parisorum
+-------- Icteriidae
+---------- Icteria
+------------ Icteria virens
+-------- Cardinalidae
+---------- Passerina
+------------ Passerina cyanea
+------------ Passerina amoena
+------------ Passerina ciris
+------------ Passerina caerulea
+---------- Cardinalis
+------------ Cardinalis cardinalis
+---------- Pheucticus
+------------ Pheucticus ludovicianus
+---------- Piranga
+------------ Piranga olivacea
+------------ Piranga rubra
+-------- Passerellidae
+---------- Passerella
+------------ Passerella iliaca
+---------- Passerculus
+------------ Passerculus sandwichensis
+---------- Pipilo
+------------ Pipilo erythrophthalmus
+------------ Pipilo chlorurus
+---------- Junco
+------------ Junco hyemalis
+---------- Ammodramus
+------------ Ammodramus bairdii
+------------ Ammodramus savannarum
+------------ Ammodramus henslowii
+------------ Ammodramus leconteii
+------------ Ammodramus nelsoni
+------------ Ammodramus maritimus
+---------- Amphispiza
+------------ Amphispiza bilineata
+---------- Spizella
+------------ Spizella breweri
+------------ Spizella passerina
+------------ Spizella pallida
+------------ Spizella pusilla
+---------- Spizelloides
+------------ Spizelloides arborea
+---------- Melospiza
+------------ Melospiza lincolnii
+------------ Melospiza melodia
+---------- Zonotrichia
+------------ Zonotrichia querula
+------------ Zonotrichia leucophrys
+------------ Zonotrichia albicollis
+---------- Pooecetes
+------------ Pooecetes gramineus
+-------- Passeridae
+---------- Passer
+------------ Passer domesticus
+-------- Fringillidae
+---------- Leucosticte
+------------ Leucosticte tephrocotis
+---------- Haemorhous
+------------ Haemorhous purpureus
+---------- Spinus
+------------ Spinus tristis
+---------- Carduelis
+------------ Carduelis carduelis
+---------- Hesperiphona
+------------ Hesperiphona vespertina
+---------- Pinicola
+------------ Pinicola enucleator
+-------- Alaudidae
+---------- Eremophila
+------------ Eremophila alpestris
+-------- Sittidae
+---------- Sitta
+------------ Sitta carolinensis
+-------- Parulidae
+---------- Seiurus
+------------ Seiurus aurocapilla
+---------- Setophaga
+------------ Setophaga ruticilla
+------------ Setophaga castanea
+------------ Setophaga caerulescens
+------------ Setophaga tigrina
+------------ Setophaga cerulea
+------------ Setophaga pensylvanica
+------------ Setophaga citrina
+------------ Setophaga magnolia
+------------ Setophaga coronata
+------------ Setophaga palmarum
+------------ Setophaga discolor
+------------ Setophaga aestiva
+------------ Setophaga pinus
+---------- Mniotilta
+------------ Mniotilta varia
+---------- Vermivora
+------------ Vermivora cyanoptera
+------------ Vermivora chrysoptera
+---------- Cardellina
+------------ Cardellina canadensis
+------------ Cardellina pusilla
+---------- Geothlypis
+------------ Geothlypis formosa
+------------ Geothlypis philadelphia
+------------ Geothlypis trichas
+---------- Leiothlypis
+------------ Leiothlypis ruficapilla
+------------ Leiothlypis celata
+------------ Leiothlypis peregrina
+---------- Protonotaria
+------------ Protonotaria citrea
+---------- Limnothlypis
+------------ Limnothlypis swainsonii
+---------- Helmitheros
+------------ Helmitheros vermivorum
+---------- Parkesia
+------------ Parkesia noveboracensis
+------------ Parkesia motacilla
+-------- Motacillidae
+---------- Anthus
+------------ Anthus rubescens
+------ Menuroidea (superfam)
+-------- Ptilonorhynchidae
+---------- Ailuroedus
+------------ Ailuroedus melanotis
+------ Muscicapoidea (superfam)
+-------- Mimidae
+---------- Mimus
+------------ Mimus polyglottos
+---------- Dumetella
+------------ Dumetella carolinensis
+---------- Toxostoma
+------------ Toxostoma rufum
+---------- Oreoscoptes
+------------ Oreoscoptes montanus
+-------- Sturnidae
+---------- Lamprotornis
+------------ Lamprotornis nitens
+-------- Bombycillidae
+---------- Bombycilla
+------------ Bombycilla garrulus
+------------ Bombycilla cedrorum
+------ Certhioidea  (superfam)
+-------- Certhiidae
+---------- Certhia
+------------ Certhia americana
+-------- Troglodytidae
+---------- Thryomanes
+------------ Thryomanes bewickii
+---------- Campylorhynchus
+------------ Campylorhynchus brunneicapillus
+---------- Thryothorus
+------------ Thryothorus ludovicianus
+---------- Troglodytes
+------------ Troglodytes aedon
+------------ Troglodytes hiemalis
+---------- Cistothorus
+------------ Cistothorus palustris
+---------- Salpinctes
+------------ Salpinctes obsoletus
+------ Corvoidea (superfam)
+-------- Corvidae
+---------- Corvus
+------------ Corvus brachyrhynchos
+------------ Corvus ossifragus
+------------ Corvus corax
+------------ Corvus albicollis
+---------- Cyanocitta
+------------ Cyanocitta cristata
+---------- Cyanocorax
+------------ Cyanocorax luxuosus
+---------- Aphelocoma
+------------ Aphelocoma coerulescens
+---------- Nucifraga
+------------ Nucifraga columbiana
+-------- Laniidae
+---------- Lanius
+------------ Lanius ludovicianus
+------------ Lanius excubitor
+-------- Vireonidae
+---------- Vireo
+------------ Vireo atricapilla
+------------ Vireo solitarius
+------------ Vireo philadelphicus
+------------ Vireo olivaceus
+------------ Vireo gilvus
+------------ Vireo griseus
+------------ Vireo flavifrons
+------ Sylvioidea (superfam)
+-------- Hirundinidae
+---------- Hirundo
+------------ Hirundo rustica
+---------- Riparia
+------------ Riparia riparia
+---------- Petrochelidon
+------------ Petrochelidon pyrrhonota
+---------- Tachycineta
+------------ Tachycineta bicolor
+---- Tyranni (subord)
+------ Tyrannidae
+-------- Empidonax
+---------- Empidonax virescens
+---------- Empidonax minimus
+---------- Empidonax flaviventris
+-------- Myiarchus
+---------- Myiarchus crinitus
+-------- Contopus
+---------- Contopus cooperi
+---------- Contopus sordidulus
+-------- Tyrannus
+---------- Tyrannus forficatus
+---------- Tyrannus melancholicus
+---------- Tyrannus dominicensis
+-------- Pyrocephalus
+---------- Pyrocephalus obscurus
+-------- Sayornis
+
+-- Caprimulgiformes
+---- Caprimulgidae
+------ Caprimulginae (subfam)
+-------- Caprimulgus
+---------- Caprimulgus carolinensis
+---------- Caprimulgus vociferus
+-------- Chordeiles
