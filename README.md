@@ -1,12 +1,18 @@
 # Hierarchy-based Image Embeddings for Semantic Image Retrieval
 
-This repository contains the official source code used to produce the results reported in the following paper:
+This repository contains the official source code used to produce the results reported in the following papers:
 
 > [**Hierarchy-based Image Embeddings for Semantic Image Retrieval.**][1]  
 > Björn Barz and Joachim Denzler.  
 > IEEE Winter Conference on Applications of Computer Vision (WACV), 2019.
 
-If you use this code, please cite that paper.
+> [**Deep Learning on Small Datasets without Pre-Training usine Cosine Loss.**][23]  
+> Björn Barz and Joachim Denzler.  
+
+If you use this code, please cite one of those papers (the more appropriate one, depending on your application).
+
+The remainder of this ReadMe will focus on learning hierarchy-based semantic image embeddings (the first of the papers mentioned above).
+If you came here for more information on how we obtained the results reported in the paper about using the cosine loss for classification on small datasets (the second one), you can find those [here][24].
 
 
 <details><summary><strong>Table of Contents</strong></summary>
@@ -183,9 +189,11 @@ The following values can be specified for `--dataset`:
 - **CIFAR-100-b**: The second 50 classes of [CIFAR-100][3].
 - **CIFAR-100-b-consec**: The second 50 classes of [CIFAR-100][3], but numbered from 0-49 instead of 50-99.
 - **ILSVRC**: Interface to the [ILSVRC 2012][4] dataset.
-- **ILSVRC-caffe**: [ILSVRC 2012][4] dataset with Caffe-style pre-processing (i.e., BGR channel ordering and no normalization of standard deviation).
 - **NAB**: Interface to the [NABirds][5] dataset, expecting images in the sub-directory `images`.
 - **NAB-large**: The NABirds dataset with the default image size being twice as large (512 pixels instead of 256, cropped to 448x448).
+- **CUB**: Interface to the [Caltech-UCSD Birds][22] dataset, expecting images in the sub-directory `images`. Despite the lack of any suffix, this dataset interface is equivalent to `NAB-large`, just with the CUB data. That means, the input image size is 448x448.
+- **Cars**: Interface to the [Stanford Cars][29] dataset with an input image size of 448x448.
+- **Flowers**: Interface to the [Oxford Flowers-102][30] dataset with an input image size of 448x448.
 
 To all datasets except CIFAR, one of the following suffixes may be appended:
 
@@ -194,7 +202,7 @@ To all datasets except CIFAR, one of the following suffixes may be appended:
 
 For ILSVRC, you need to move the test images into sub-directories for each class. [This script][6] could be used for this, for example.
 
-Own dataset interfaces can be defined in [datasets.py](datasets.py).
+Own dataset interfaces can be defined by creating a new module in the [`datasets`](datasets/) package, defining a class derived from [`FileDatasetGenerator`](datasets/common.py), importing it in [`datasets/__init__.py`](datasets/__init__.py), and adding a branch for it in the `get_data_generator` function defined there.
 
 ### 2.5. Available network architectures
 
@@ -221,6 +229,8 @@ For CIFAR:
 
 - **resnet-32**: The standard [ResNet-32][8].
 - **densenet-100-12**: A [Densely Connected Convolutional Network][12] with depth 100 and growth-rate 12.
+- **densenet-100-24**: A [Densely Connected Convolutional Network][12] with depth 100 and growth-rate 24.
+- **densenet-bc-190-40**: A [Densely Connected Convolutional Network][12] with bottleneck blocks and compression (depth 190 and growth-rate 40).
 
 For ImageNet and NABirds:
 
@@ -298,7 +308,7 @@ python learn_image_embeddings.py \
 - numpy
 - numexpr
 - keras >= 2.2.0
-- tensorflow
+- tensorflow (we used v1.8)
 - sklearn
 - scipy
 - pillow
@@ -309,27 +319,30 @@ python learn_image_embeddings.py \
 
 ### 4.1. Download links
 
-|  Dataset  |              Model              | mAHP@250 | Balanced Accuracy |
-|-----------|---------------------------------|---------:|------------------:|
-| CIFAR-100 | [Plain-11][16]                  |   82.05% |            74.10% |
-| CIFAR-100 | [ResNet-110-wfc][17]            |   83.29% |            76.60% |
-| CIFAR-100 | [PyramidNet-272-200][18]        |   86.38% |            80.49% |
-| NABirds   | [ResNet-50 (from scratch)][19]  |   73.99% |            59.46% |
-| NABirds   | [ResNet-50 (fine-tuned)][20]    |   81.46% |            69.49% |
-| ILSVRC    | [ResNet-50][21]                 |   82.42% |            69.18% |
+|  Dataset  |              Model              | Input Size | mAHP@250 | Balanced Accuracy |
+|-----------|---------------------------------|:----------:|---------:|------------------:|
+| CIFAR-100 | [Plain-11][16]                  |    32x32   |   82.05% |            74.10% |
+| CIFAR-100 | [ResNet-110-wfc][17]            |    32x32   |   83.29% |            76.60% |
+| CIFAR-100 | [PyramidNet-272-200][18]        |    32x32   |   86.38% |            80.49% |
+| NABirds   | [ResNet-50 (from scratch)][19]  |   224x224  |   73.99% |            59.46% |
+| NABirds   | [ResNet-50 (fine-tuned)][20]    |   224x224  |   81.46% |            69.49% |
+| NABirds   | [ResNet-50 (from scratch)][27]  |   448x448  |   82.33% |            70.43% |
+| NABirds   | [ResNet-50 (fine-tuned)][28]    |   448x448  |   88.11% |            76.79% |
+| CUB       | [ResNet-50 (from scratch)][25]  |   448x448  |   83.33% |            70.14% |
+| CUB       | [ResNet-50 (fine-tuned)][26]    |   448x448  |   92.24% |            80.23% |
+| ILSVRC    | [ResNet-50][21]                 |   224x224  |   82.42% |            69.18% |
 
 ### 4.2. Pre-processing
 
 The pre-trained models provided above assume input images to be given in RGB color format and standardized by subtracting a dataset-specific channel-wise mean and dividing by a dataset-specific standard deviation.
 The means and standard deviations for each dataset are provided in the following table.
 
-|            Dataset            |                     Mean                     |            Standard Deviation            |
-|-------------------------------|----------------------------------------------|------------------------------------------|
-| CIFAR-100                     | `[129.30386353, 124.06987, 112.43356323]`    | `[68.17019653, 65.39176178, 70.4180603]` |
-| NABirds (from scratch)        | `[125.30513277, 129.66606421, 118.45121113]` | `[57.0045467, 56.70059436, 68.44430446]` |
-| ILSVRC, NABirds (fine-tuned)  | `[122.65435242, 116.6545058, 103.99789959]`  | `[71.40583196, 69.56888997, 73.0440314]` |
-
-The default input image size of the ILSVRC and NABirds models is `224x224`, cropped from a scaled version of the image, resized so that the smaller side is 256 pixels wide.
+|            Dataset                 |                     Mean                     |            Standard Deviation            |
+|------------------------------------|----------------------------------------------|------------------------------------------|
+| CIFAR-100                          | `[129.30386353, 124.06987, 112.43356323]`    | `[68.17019653, 65.39176178, 70.4180603]` |
+| NABirds (from scratch)             | `[125.30513277, 129.66606421, 118.45121113]` | `[57.0045467, 56.70059436, 68.44430446]` |
+| CUB (from scratch)                 | `[123.82988033, 127.35116805, 110.25606303]` | `[59.2230949, 58.0736071, 67.80251684]`  |
+| ILSVRC, NABirds, CUB (fine-tuned)  | `[122.65435242, 116.6545058, 103.99789959]`  | `[71.40583196, 69.56888997, 73.0440314]` |
 
 ### 4.3. Troubleshooting
 
@@ -374,3 +387,12 @@ model.load_weights('cifar_unitsphere-embed+cls_resnet-110-wfc.model.h5')
 [19]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/nab_unitsphere-embed+cls_rn50.model.h5
 [20]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/nab_unitsphere-embed+cls_rn50_finetuned.model.h5
 [21]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/imagenet_unitsphere-embed+cls_rn50.model.h5
+[22]: http://www.vision.caltech.edu/visipedia/CUB-200-2011.html
+[23]: https://arxiv.org/pdf/1901.09054
+[24]: CosineLoss.md
+[25]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.1.0/cub_unitsphere-embed+cls_deep-hierarchy_rn50.model.h5
+[26]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.1.0/cub_unitsphere-embed+cls_deep-hierarchy_rn50_finetuned.model.h5
+[27]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.1.0/nab-large_unitsphere-embed+cls_rn50.model.h5
+[28]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.1.0/nab-large_unitsphere-embed+cls_rn50_finetuned.model.h5
+[29]: https://ai.stanford.edu/~jkrause/cars/car_dataset.html
+[30]: http://www.robots.ox.ac.uk/~vgg/data/flowers/102/index.html
