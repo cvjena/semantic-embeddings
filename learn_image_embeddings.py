@@ -116,7 +116,6 @@ if __name__ == '__main__':
         embedding = np.eye(data_generator.num_classes)
 
     # Construct and train model
-    embedding_layer_name = 'embedding'
     if (args.gpus <= 1) or args.gpu_merge:
         if args.snapshot and os.path.exists(args.snapshot):
             print('Resuming from snapshot {}'.format(args.snapshot))
@@ -126,10 +125,8 @@ if __name__ == '__main__':
             model = embed_model
             if args.loss == 'inv_corr':
                 model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
-                embedding_layer_name = 'l2norm'
             elif args.loss == 'softmax_corr':
                 model = keras.models.Model(model.inputs, keras.layers.Activation('softmax', name = 'softmax')(model.output))
-                embedding_layer_name = 'softmax'
             if args.cls_weight > 0:
                 model = cls_model(model, data_generator.num_classes, args.cls_base)
         par_model = model if args.gpus <= 1 else keras.utils.multi_gpu_model(model, gpus = args.gpus, cpu_merge = False)
@@ -143,13 +140,18 @@ if __name__ == '__main__':
                 model = embed_model
                 if args.loss == 'inv_corr':
                     model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
-                    embedding_layer_name = 'l2norm'
                 elif args.loss == 'softmax_corr':
                     model = keras.models.Model(model.inputs, keras.layers.Activation('softmax', name = 'softmax')(model.output))
-                    embedding_layer_name = 'softmax'
                 if args.cls_weight > 0:
                     model = cls_model(model, data_generator.num_classes, args.cls_base)
         par_model = keras.utils.multi_gpu_model(model, gpus = args.gpus)
+    
+    if args.loss == 'inv_corr':
+        embedding_layer_name = 'l2norm'
+    elif args.loss == 'softmax_corr':
+        embedding_layer_name = 'softmax'
+    else:
+        embedding_layer_name = 'embedding'
     
     if not args.no_progress:
         model.summary()
