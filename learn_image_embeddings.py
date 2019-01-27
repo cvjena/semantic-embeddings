@@ -76,6 +76,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--batch_size', type = int, default = 100, help = 'Batch size.')
     arggroup.add_argument('--val_batch_size', type = int, default = None, help = 'Validation batch size.')
     arggroup.add_argument('--snapshot', type = str, default = None, help = 'Path where snapshots should be stored after every epoch. If existing, it will be used to resume training.')
+    arggroup.add_argument('--snapshot_best', type = str, nargs = '?', default = None, const = 'val_loss', help = 'Only store best-performing model as checkpoint, identified by monitoring the specified metric.')
     arggroup.add_argument('--initial_epoch', type = int, default = 0, help = 'Initial epoch for resuming training from snapshot.')
     arggroup.add_argument('--finetune', type = str, default = None, help = 'Path to pre-trained weights to be fine-tuned (will be loaded by layer name).')
     arggroup.add_argument('--finetune_init', type = int, default = 8, help = 'Number of initial epochs for training just the new layers before fine-tuning.')
@@ -200,7 +201,11 @@ if __name__ == '__main__':
         callbacks.append(keras.callbacks.TensorBoard(log_dir = args.log_dir, write_graph = False))
     
     if args.snapshot:
-        callbacks.append(keras.callbacks.ModelCheckpoint(args.snapshot) if args.gpus <= 1 else utils.TemplateModelCheckpoint(model, args.snapshot))
+        snapshot_kwargs = {}
+        if args.snapshot_best:
+            snapshot_kwargs['save_best_only'] = True
+            snapshot_kwargs['monitor'] = args.snapshot_best
+        callbacks.append(keras.callbacks.ModelCheckpoint(args.snapshot, **snapshot_kwargs) if args.gpus <= 1 else utils.TemplateModelCheckpoint(model, args.snapshot, **snapshot_kwargs))
 
     if args.max_decay > 0:
         decay = (1.0/args.max_decay - 1) / ((data_generator.num_train // args.batch_size) * (args.epochs if args.epochs else num_epochs))
