@@ -35,19 +35,24 @@ class CifarGenerator(TinyDatasetGenerator):
             for i in range(1, 6):
                 with open(os.path.join(self.root_dir, 'data_batch_{}'.format(i)), 'rb') as pf:
                     dump = pickle.load(pf, encoding='bytes')
-                    X_train.append(dump[b'data'].astype(np.float32))
-                    y_train += dump[b'labels']
+                    X_train.append(dump[b'data' if b'data' in dump else 'data'].astype(np.float32))
+                    y_train += dump[b'labels' if b'labels' in dump else 'labels']
                     del dump
             X_train = np.concatenate(X_train)
         else:
             with open(os.path.join(self.root_dir, 'train'), 'rb') as pf:
                 dump = pickle.load(pf, encoding='bytes')
-                X_train, y_train = dump[b'data'].astype(np.float32), dump[b'fine_labels']
+                X_train = dump[b'data' if b'data' in dump else 'data'].astype(np.float32)
+                y_train = dump[b'fine_labels' if b'fine_labels' in dump else 'fine_labels']
                 del dump
 
         with open(os.path.join(self.root_dir, 'test_batch' if cifar10 else 'test'), 'rb') as pf:
             dump = pickle.load(pf, encoding='bytes')
-            X_test, y_test = dump[b'data'].astype(np.float32), dump[b'labels' if cifar10 else b'fine_labels']
+            X_test = dump[b'data' if b'data' in dump else 'data'].astype(np.float32)
+            if cifar10:
+                y_test = dump[b'labels' if b'labels' in dump else 'labels']
+            else:
+                y_test = dump[b'fine_labels' if b'fine_labels' in dump else 'fine_labels']
             del dump
         
         # Restrict labels to the given classes and re-enumerate them
