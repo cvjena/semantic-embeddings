@@ -337,12 +337,12 @@ python learn_image_embeddings.py \
 The pre-trained models provided above assume input images to be given in RGB color format and standardized by subtracting a dataset-specific channel-wise mean and dividing by a dataset-specific standard deviation.
 The means and standard deviations for each dataset are provided in the following table.
 
-|            Dataset                 |                     Mean                     |            Standard Deviation            |
-|------------------------------------|----------------------------------------------|------------------------------------------|
-| CIFAR-100                          | `[129.30386353, 124.06987, 112.43356323]`    | `[68.17019653, 65.39176178, 70.4180603]` |
-| NABirds (from scratch)             | `[125.30513277, 129.66606421, 118.45121113]` | `[57.0045467, 56.70059436, 68.44430446]` |
-| CUB (from scratch)                 | `[123.82988033, 127.35116805, 110.25606303]` | `[59.2230949, 58.0736071, 67.80251684]`  |
-| ILSVRC, NABirds, CUB (fine-tuned)  | `[122.65435242, 116.6545058, 103.99789959]`  | `[71.40583196, 69.56888997, 73.0440314]` |
+|            Dataset          |                     Mean                     |            Standard Deviation            |
+|-----------------------------|----------------------------------------------|------------------------------------------|
+| CIFAR-100                   | `[129.30386353, 124.06987, 112.43356323]`    | `[68.17019653, 65.39176178, 70.4180603]` |
+| NABirds (from scratch)      | `[125.30513277, 129.66606421, 118.45121113]` | `[57.0045467, 56.70059436, 68.44430446]` |
+| CUB (from scratch)          | `[123.82988033, 127.35116805, 110.25606303]` | `[59.2230949, 58.0736071, 67.80251684]`  |
+| ILSVRC & fine-tuned models  | `[122.65435242, 116.6545058, 103.99789959]`  | `[71.40583196, 69.56888997, 73.0440314]` |
 
 ### 4.3. Troubleshooting
 
