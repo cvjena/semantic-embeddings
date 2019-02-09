@@ -17,7 +17,7 @@ from sgdr_callback import SGDR
 
 ARCHITECTURES = ['simple', 'resnet-32', 'resnet-110', 'resnet-110-fc', 'resnet-110-wfc', 'wrn-28-10',
                  'densenet-100-12', 'densenet-100-24', 'densenet-bc-190-40', 'pyramidnet-272-200', 'pyramidnet-110-270',
-                 'resnet-50', 'rn18', 'rn34', 'rn50', 'rn101', 'rn152', 'rn200', 'nasnet-a']
+                 'resnet-50', 'resnet-101', 'resnet-152', 'rn18', 'rn34', 'rn50', 'rn101', 'rn152', 'rn200', 'nasnet-a']
 
 LR_SCHEDULES = ['SGD', 'SGDR', 'CLR', 'ResNet-Schedule']
 
@@ -191,13 +191,22 @@ def build_network(num_outputs, architecture, classification = False, no_softmax 
     
     # ImageNet architectures
     
-    elif architecture == 'resnet-50':
+    elif architecture in ('resnet-50', 'resnet-101', 'resnet-152'):
         
-        rn50 = keras.applications.ResNet50(include_top=False, weights=None)
-        rn50_out = rn50.layers[-2].output if isinstance(rn50.layers[-1], keras.layers.AveragePooling2D) else rn50.layers[-1].output
-        x = keras.layers.GlobalAvgPool2D(name='avg_pool')(rn50_out)
+        if architecture == 'resnet-101':
+            factory = keras.applications.resnet.ResNet101
+        elif architecture == 'resnet-152':
+            factory = keras.applications.resnet.ResNet152
+        else:
+            # ResNet50 has been available from the beginning, while the other two were added in keras-applications 1.0.7.
+            # Thus, we use the initial implementation of ResNet50 for compatibility's sake.
+            factory = keras.applications.ResNet50
+        rn = factory(include_top=False, weights=None)
+        # Depending on the Keras version, the ResNet50 model may or may not contain a final average pooling layer.
+        rn_out = rn.layers[-2].output if isinstance(rn.layers[-1], keras.layers.AveragePooling2D) else rn.layers[-1].output
+        x = keras.layers.GlobalAvgPool2D(name='avg_pool')(rn_out)
         x = keras.layers.Dense(num_outputs, activation = 'softmax' if classification and (not no_softmax) else None, name = 'prob' if classification else 'embedding')(x)
-        return keras.models.Model(rn50.inputs, x, name=name)
+        return keras.models.Model(rn.inputs, x, name=name)
     
     elif architecture.startswith('rn'):
 

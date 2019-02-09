@@ -234,6 +234,7 @@ For CIFAR:
 
 For ImageNet and NABirds:
 
+- **resnet-101** and **resnet-152**: The standard implementaions of [ResNet-101 and ResNet-152][8] introduced in `keras-applications >= 1.0.7`.
 - **rn18**, **rn34**, **rn50**, **rn101**, **rn152**, **rn200**: [ResNets][8] with different depths.
   Requires the [keras-resnet][13] package, but be aware that batch normalization is broken in version 0.1.0.
   Thus, you need to either use an earlier or later version or merge [this pull request][14].
