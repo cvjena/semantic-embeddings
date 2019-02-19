@@ -331,7 +331,12 @@ python learn_image_embeddings.py \
 | NABirds   | [ResNet-50 (fine-tuned)][28]    |   448x448  |   88.11% |            76.79% |
 | CUB       | [ResNet-50 (from scratch)][25]  |   448x448  |   83.33% |            70.14% |
 | CUB       | [ResNet-50 (fine-tuned)][26]    |   448x448  |   92.24% |            80.23% |
-| ILSVRC    | [ResNet-50][21]                 |   224x224  |   82.42% |            69.18% |
+| ILSVRC    | [ResNet-50][21] *               |   224x224  |   83.15% |            70.42% |
+
+<p style="font-size: 0.8em">
+* This is an updated model with slightly better performance than reported in the paper (~1 percent point).
+The original model can be obtained <a href="https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/imagenet_unitsphere-embed+cls_rn50.model.h5">here</a>.
+</p>
 
 ### 4.2. Pre-processing
 
@@ -387,7 +392,7 @@ model.load_weights('cifar_unitsphere-embed+cls_resnet-110-wfc.model.h5')
 [18]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/cifar_unitsphere-embed+cls_pyramidnet-272-200.model.h5
 [19]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/nab_unitsphere-embed+cls_rn50.model.h5
 [20]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/nab_unitsphere-embed+cls_rn50_finetuned.model.h5
-[21]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.0.0/imagenet_unitsphere-embed+cls_rn50.model.h5
+[21]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.1.0/imagenet_unitsphere-embed+cls_rn50.model.h5
 [22]: http://www.vision.caltech.edu/visipedia/CUB-200-2011.html
 [23]: https://arxiv.org/pdf/1901.09054
 [24]: CosineLoss.md
