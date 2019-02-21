@@ -7,6 +7,12 @@ import keras
 from keras import backend as K
 try:
     import keras_applications
+    keras_applications.set_keras_submodules(
+        backend=keras.backend,
+        layers=keras.layers,
+        models=keras.models,
+        utils=keras.utils
+    )
 except ImportError:
     pass
 
