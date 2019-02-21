@@ -5,6 +5,10 @@ import numpy as np
 
 import keras
 from keras import backend as K
+try:
+    import keras_applications
+except ImportError:
+    pass
 
 import warnings
 
@@ -194,9 +198,9 @@ def build_network(num_outputs, architecture, classification = False, no_softmax 
     elif architecture in ('resnet-50', 'resnet-101', 'resnet-152'):
         
         if architecture == 'resnet-101':
-            factory = keras.applications.resnet.ResNet101
+            factory = keras_applications.resnet.ResNet101
         elif architecture == 'resnet-152':
-            factory = keras.applications.resnet.ResNet152
+            factory = keras_applications.resnet.ResNet152
         else:
             # ResNet50 has been available from the beginning, while the other two were added in keras-applications 1.0.7.
             # Thus, we use the initial implementation of ResNet50 for compatibility's sake.
