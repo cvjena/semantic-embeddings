@@ -165,7 +165,7 @@ if __name__ == '__main__':
         metric = 'accuracy' if (args.loss == 'softmax_corr') or (args.embedding == 'onehot') else utils.nn_accuracy(embedding, dot_prod_sim = True)
     else:
         loss = utils.squared_distance
-        metric = utils.nn_accuracy(embedding, dot_prod_sim = False)
+        metric = 'accuracy' if args.embedding == 'onehot' else utils.nn_accuracy(embedding, dot_prod_sim = False)
     
     # Load pre-trained weights and train last layer for a few epochs
     if args.finetune:
