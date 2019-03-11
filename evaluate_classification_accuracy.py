@@ -98,10 +98,11 @@ def evaluate(y_pred, data_generator, hierarchy):
     class_freq = np.bincount(y_true)
     perf['Avg. Accuracy'] = ((y_pred == y_true).astype(np.float) / class_freq[y_true]).sum() / len(class_freq)
     
-    perf['Hierarchical Accuracy'] = 0.0
-    for yp, yt in zip(y_pred, y_true):
-        perf['Hierarchical Accuracy'] += 1.0 - hierarchy.lcs_height(data_generator.classes[int(yp)], data_generator.classes[int(yt)])
-    perf['Hierarchical Accuracy'] /= len(y_true)
+    if hierarchy is not None:
+        perf['Hierarchical Accuracy'] = 0.0
+        for yp, yt in zip(y_pred, y_true):
+            perf['Hierarchical Accuracy'] += 1.0 - hierarchy.lcs_height(data_generator.classes[int(yp)], data_generator.classes[int(yt)])
+        perf['Hierarchical Accuracy'] /= len(y_true)
     
     return perf
 
@@ -139,7 +140,7 @@ if __name__ == '__main__':
     arggroup = parser.add_argument_group('Dataset')
     arggroup.add_argument('--dataset', type = str, required = True, help = 'Training dataset. See README.md for a list of available datasets.')
     arggroup.add_argument('--data_root', type = str, required = True, help = 'Root directory of the dataset.')
-    arggroup.add_argument('--hierarchy', type = str, required = True, help = 'Path to a file containing parent-child relationships (one per line).')
+    arggroup.add_argument('--hierarchy', type = str, default = None, help = 'Path to a file containing parent-child relationships (one per line). Used for evaluating hierarchical accuracy.')
     arggroup.add_argument('--is_a', action = 'store_true', default = False, help = 'If given, --hierarchy is assumed to contain is-a instead of parent-child relationships.')
     arggroup.add_argument('--str_ids', action = 'store_true', default = False, help = 'If given, class IDs are treated as strings instead of integers.')
     arggroup.add_argument('--classes_from', type = str, default = None, help = 'Optionally, a path to a pickle dump containing a dictionary with item "ind2label" specifying the classes to be considered. These should be in the same order as the classes predicted by the model.')
@@ -166,7 +167,7 @@ if __name__ == '__main__':
     
     # Load class hierarchy
     id_type = str if args.str_ids else int
-    hierarchy = ClassHierarchy.from_file(args.hierarchy, is_a_relations = args.is_a, id_type = id_type)
+    hierarchy = ClassHierarchy.from_file(args.hierarchy, is_a_relations = args.is_a, id_type = id_type) if args.hierarchy else None
     
     # Learn SVM classifier on training data and evaluate on test data
     custom_objects = utils.get_custom_objects(args.architecture)
