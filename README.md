@@ -194,6 +194,8 @@ The following values can be specified for `--dataset`:
 - **CUB**: Interface to the [Caltech-UCSD Birds][22] dataset, expecting images in the sub-directory `images`. Despite the lack of any suffix, this dataset interface is equivalent to `NAB-large`, just with the CUB data. That means, the input image size is 448x448.
 - **Cars**: Interface to the [Stanford Cars][29] dataset with an input image size of 448x448.
 - **Flowers**: Interface to the [Oxford Flowers-102][30] dataset with an input image size of 448x448.
+- **iNat**: Interface to the [iNaturalist 2018][31] dataset with 224x224 crops from images resized to 256 pixels. An underscore followed by the name of a super-category might be appended to restrict the dataset to that supercategory (e.g., "iNat_Aves").
+- **iNat-large**: Like iNat but with the default image size being twice as large (512 pixels instead of 256, cropped to 448x448). For restricting the dataset to a certain super-category, append its name before the "-large" suffix (e.g., "iNat_Aves-large").
 
 To all datasets except CIFAR, one of the following suffixes may be appended:
 
@@ -402,3 +404,4 @@ model.load_weights('cifar_unitsphere-embed+cls_resnet-110-wfc.model.h5')
 [28]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.1.0/nab-large_unitsphere-embed+cls_rn50_finetuned.model.h5
 [29]: https://ai.stanford.edu/~jkrause/cars/car_dataset.html
 [30]: http://www.robots.ox.ac.uk/~vgg/data/flowers/102/index.html
+[31]: https://github.com/visipedia/inat_comp

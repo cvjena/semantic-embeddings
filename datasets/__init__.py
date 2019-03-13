@@ -13,6 +13,7 @@ from .ilsvrc import ILSVRCGenerator
 from .nab import NABGenerator
 from .cars import CarsGenerator
 from .flowers import FlowersGenerator
+from .inat import INatGenerator
 
 
 
@@ -33,11 +34,15 @@ def get_data_generator(dataset, data_root, classes = None):
                - "cub"
                - "cars"
                - "flowers"
+               - "inat" (optionally followed by an underscore and the name of a super-category)
                
                To all dataset names except CIFAR, you may append one of the following suffixes:
 
                - "-ilsvrcmean": use ImageNet statistics for pre-processing
                - "-caffe": Caffe-style pre-processing (BGR instead of RGB, ImageNet mean, no standard deviation)
+
+               For NAB and iNaturalist, the suffix "-large" may be appended to set the default image size to 512 pixels
+               and the crop size to 448x448.
 
     - data_root: Root directory of the dataset.
 
@@ -58,6 +63,10 @@ def get_data_generator(dataset, data_root, classes = None):
         kwargs['mean'] = CAFFE_MEAN
         kwargs['std'] = CAFFE_STD
         kwargs['color_mode'] = 'bgr'
+        dataset = dataset[:-6]
+    if dataset.endswith('-large'):
+        kwargs['cropsize'] = (448, 448)
+        kwargs['default_target_size'] = 512
         dataset = dataset[:-6]
 
     if dataset == 'cifar-10':
@@ -83,11 +92,9 @@ def get_data_generator(dataset, data_root, classes = None):
     
     elif dataset == 'nab':
     
-        return NABGenerator(data_root, classes, 'images', randzoom_range = (256, 480), **kwargs)
-    
-    elif dataset == 'nab-large':
-        
-        return NABGenerator(data_root, classes, 'images', cropsize = (448, 448), default_target_size = 512, randzoom_range = None, **kwargs)
+        if ('default_target_size' not in kwargs) and ('randzoom_range' not in kwargs):
+            kwargs['randzoom_range'] = (256, 480)
+        return NABGenerator(data_root, classes, 'images', **kwargs)
     
     elif (dataset == 'cub') or dataset.startswith('cub-sub'):
         
@@ -108,6 +115,13 @@ def get_data_generator(dataset, data_root, classes = None):
     elif dataset == 'flowers':
         
         return FlowersGenerator(data_root, classes, **kwargs)
+
+    elif (dataset == 'inat') or dataset.startswith('inat_'):
+
+        supercategory = dataset[5:] if dataset.startswith('inat_') else None
+        if ('default_target_size' not in kwargs) and ('randzoom_range' not in kwargs):
+            kwargs['randzoom_range'] = (256, 480)
+        return INatGenerator(data_root, supercategory, **kwargs)
     
     else:
         
