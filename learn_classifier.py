@@ -55,6 +55,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--weight_dump', type = str, default = None, help = 'Filename where the learned model weights should be written to (without model definition).')
     arggroup.add_argument('--feature_dump', type = str, default = None, help = 'Filename where learned features for test images should be written to.')
     arggroup.add_argument('--log_dir', type = str, default = None, help = 'Tensorboard log directory.')
+    arggroup.add_argument('--top_k_acc', type = int, nargs = '+', default = [], help = 'If given, top k accuracy will be reported in addition to top 1 accuracy.')
     arggroup.add_argument('--no_progress', action = 'store_true', default = False, help = 'Do not display training progress, but just the final performance.')
     utils.add_lr_schedule_arguments(parser)
     
@@ -99,6 +100,10 @@ if __name__ == '__main__':
         model.summary()
     
     batch_transform_kwargs = { 'num_classes' : data_generator.num_classes, 'label_smoothing' : args.label_smoothing }
+    metrics = ['accuracy']
+    if len(args.top_k_acc) > 0:
+        for k in args.top_k_acc:
+            metrics.append(utils.top_k_acc(k))
     
     # Load pre-trained weights and train last layer for a few epochs
     if args.finetune:
@@ -109,7 +114,7 @@ if __name__ == '__main__':
             for layer in model.layers[:-1]:
                 layer.trainable = False
             par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
-                              loss = 'categorical_crossentropy', metrics = ['accuracy'])
+                              loss = 'categorical_crossentropy', metrics = metrics)
             par_model.fit_generator(
                     data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
                     validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
@@ -139,7 +144,7 @@ if __name__ == '__main__':
     else:
         decay = 0.0
     par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
-                      loss = 'categorical_crossentropy', metrics = ['accuracy'])
+                      loss = 'categorical_crossentropy', metrics = metrics)
 
 
     par_model.fit_generator(

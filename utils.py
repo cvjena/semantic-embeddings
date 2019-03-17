@@ -48,7 +48,15 @@ def inv_correlation(y_true, y_pred):
     return 1. - K.sum(y_true * y_pred, axis = -1)
 
 
-def nn_accuracy(embedding, dot_prod_sim = False):
+def top_k_acc(k):
+    """ Returns a Keras metric function for measuring top-k accuracy. """
+
+    acc = lambda y_true, y_pred: keras.metrics.top_k_categorical_accuracy(y_true, y_pred, k=k)
+    acc.name = 'acc{}'.format(k)
+    return acc
+
+
+def nn_accuracy(embedding, dot_prod_sim = False, k = 1):
     """ Metric computing classification accuracy by assigning samples to the class with the nearest embedding in feature space.
 
     # Arguments:
@@ -57,6 +65,8 @@ def nn_accuracy(embedding, dot_prod_sim = False):
 
     - dot_prod_sim: If True, the dot product will be used to find the most similar embedding (assumes L2-normalized embeddings and features).
                     Otherwise, Euclidean distance will be used.
+    
+    - k: Compute top-k accuracy.
     
     # Returns:
         a Keras metric function taking y_true and y_pred as inputs and returning a tensor of sample-wise accuracies.
@@ -71,16 +81,25 @@ def nn_accuracy(embedding, dot_prod_sim = False):
 
         true_dist = K.sum(K.square(y_pred - y_true), axis = -1)
 
-        return K.cast(K.less(K.abs(true_dist - K.min(dist, axis = -1)), 1e-6), K.floatx())
+        if k <= 1:
+            return K.cast(K.less(K.abs(true_dist - K.min(dist, axis = -1)), 1e-6), K.floatx())
+        else:
+            return K.cast(K.any(K.less(K.abs(-1 * K.tf.nn.top_k(-1 * dist, k, sorted=False)[0] - true_dist[:,None]), 1e-6), axis=-1), K.floatx())
     
     def max_sim_acc(y_true, y_pred):
 
         centroids = K.constant(embedding.T)
         sim = K.dot(y_pred, centroids)
         true_sim = K.sum(y_pred * y_true, axis = -1)
-        return K.cast(K.less(K.abs(K.max(sim, axis = -1) - true_sim), 1e-6), K.floatx())
+        if k <= 1:
+            return K.cast(K.less(K.abs(K.max(sim, axis = -1) - true_sim), 1e-6), K.floatx())
+        else:
+            return K.cast(K.any(K.less(K.abs(K.tf.nn.top_k(sim, k, sorted=False)[0] - true_sim[:,None]), 1e-6), axis=-1), K.floatx())
     
-    return max_sim_acc if dot_prod_sim else nn_accuracy
+    metric = max_sim_acc if dot_prod_sim else nn_accuracy
+    if k > 1:
+        metric.name = '{}{}'.format(metric.__name__, k)
+    return metric
 
 
 def devise_ranking_loss(embedding, margin = 0.1):

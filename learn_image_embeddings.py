@@ -90,6 +90,7 @@ if __name__ == '__main__':
     arggroup.add_argument('--feature_dump', type = str, default = None, help = 'Filename where learned embeddings for test images should be written to.')
     arggroup.add_argument('--log_dir', type = str, default = None, help = 'Tensorboard log directory.')
     arggroup.add_argument('--no_progress', action = 'store_true', default = False, help = 'Do not display training progress, but just the final performance.')
+    arggroup.add_argument('--top_k_acc', type = int, nargs = '+', default = [], help = 'If given, top k accuracy will be reported in addition to top 1 accuracy.')
     utils.add_lr_schedule_arguments(parser)
 
     args = parser.parse_args()
@@ -162,10 +163,21 @@ if __name__ == '__main__':
     }
     if args.loss.endswith('_corr'):
         loss = utils.inv_correlation
-        metric = 'accuracy' if (args.loss == 'softmax_corr') or (args.embedding == 'onehot') else utils.nn_accuracy(embedding, dot_prod_sim = True)
+        metrics = ['accuracy' if (args.loss == 'softmax_corr') or (args.embedding == 'onehot') else utils.nn_accuracy(embedding, dot_prod_sim = True)]
+        if len(args.top_k_acc) > 0:
+            for k in args.top_k_acc:
+                metrics.append(utils.top_k_acc(k) if (args.loss == 'softmax_corr') or (args.embedding == 'onehot') else utils.nn_accuracy(embedding, dot_prod_sim = True, k = k))
     else:
         loss = utils.squared_distance
-        metric = 'accuracy' if args.embedding == 'onehot' else utils.nn_accuracy(embedding, dot_prod_sim = False)
+        metrics = ['accuracy' if args.embedding == 'onehot' else utils.nn_accuracy(embedding, dot_prod_sim = False)]
+        if len(args.top_k_acc) > 0:
+            for k in args.top_k_acc:
+                metrics.append(utils.top_k_acc(k) if args.embedding == 'onehot' else utils.nn_accuracy(embedding, dot_prod_sim = False, k = k))
+    
+    cls_metrics = ['accuracy']
+    if len(args.top_k_acc) > 0:
+        for k in args.top_k_acc:
+            cls_metrics.append(utils.top_k_acc(k))
     
     # Load pre-trained weights and train last layer for a few epochs
     if args.finetune:
@@ -180,11 +192,11 @@ if __name__ == '__main__':
                 par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
                                 loss = { embedding_layer_name : loss, 'prob' : 'categorical_crossentropy' },
                                 loss_weights = { embedding_layer_name : 1.0, 'prob' : args.cls_weight },
-                                metrics = { embedding_layer_name : metric, 'prob' : 'accuracy' })
+                                metrics = { embedding_layer_name : metrics, 'prob' : cls_metrics })
             else:
                 par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
                                 loss = loss,
-                                metrics = [metric])
+                                metrics = metrics)
             par_model.fit_generator(
                     data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
                     validation_data = data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
@@ -217,11 +229,11 @@ if __name__ == '__main__':
         par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
                           loss = { embedding_layer_name : loss, 'prob' : 'categorical_crossentropy' },
                           loss_weights = { embedding_layer_name : 1.0, 'prob' : args.cls_weight },
-                          metrics = { embedding_layer_name : metric, 'prob' : 'accuracy' })
+                          metrics = { embedding_layer_name : metrics, 'prob' : cls_metrics })
     else:
         par_model.compile(optimizer = keras.optimizers.SGD(lr=args.sgd_lr, decay=decay, momentum=0.9, nesterov=args.nesterov, clipnorm = args.clipgrad),
                           loss = loss,
-                          metrics = [metric])
+                          metrics = metrics)
 
     par_model.fit_generator(
               data_generator.train_sequence(args.batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs),
