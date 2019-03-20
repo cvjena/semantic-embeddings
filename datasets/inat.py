@@ -30,6 +30,32 @@ class INatGenerator(FileDatasetGenerator):
                  cropsize = (224, 224), default_target_size = 256,
                  mean=None, std=None,
                  *args, **kwargs):
+        """ Data generator for iNaturalist 2018.
+
+        The data can be obtained here:
+        https://github.com/visipedia/inat_comp/tree/2018
+
+        # Arguments:
+
+        - root_dir: Root directory of the iNaturalist 2018 dataset, containing the files `train2018.json` and `val2018.json`.
+
+        - supercategory: Can be used to restrict the dataset to classes from a given super-category. Available super-categories are:
+                         'actinopterygii', 'amphibia', 'animalia', 'arachnida', 'aves', 'bacteria', 'chromista', 'fungi', 'insecta',
+                         'mammalia', 'mollusca', 'plantae', 'protozoa', 'reptilia'.
+
+        - cropsize: Tuple with width and height of crops extracted from the images.
+
+        - default_target_size: Int or tuple of ints. Specifies the default target size which images will be resized to (before cropping)
+                               if not specified differently in calls to `flow_train/test` or `train/test_sequence`.
+                               If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
+                               If set to -1, the image won't be resized.
+        
+        - mean: Channel-wise image mean for normalization (in "RGB" order). If set to `None`, mean and standard deviation will be computed from the images.
+
+        - std: Channel-wise standard deviation for normalization (in "RGB" order). If set to `None`, standard deviation will be computed from the images.
+        
+        Remaining arguments will be passed through to the constructor of `FileDatasetGenerator`.
+        """
         
         super(INatGenerator, self).__init__(root_dir, cropsize=cropsize, default_target_size=default_target_size, *args, **kwargs)
 

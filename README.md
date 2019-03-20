@@ -404,4 +404,4 @@ model.load_weights('cifar_unitsphere-embed+cls_resnet-110-wfc.model.h5')
 [28]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.1.0/nab-large_unitsphere-embed+cls_rn50_finetuned.model.h5
 [29]: https://ai.stanford.edu/~jkrause/cars/car_dataset.html
 [30]: http://www.robots.ox.ac.uk/~vgg/data/flowers/102/index.html
-[31]: https://github.com/visipedia/inat_comp
+[31]: https://github.com/visipedia/inat_comp/tree/2018
