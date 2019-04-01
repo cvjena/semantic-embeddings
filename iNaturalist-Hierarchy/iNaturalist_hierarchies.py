@@ -10,7 +10,7 @@ def generate_parent_child_pairs(path, supercategory=None):
         "order",
         "family",
         "genus",
-        "name"
+        "id"
     ]
 
     with open(path, "r") as f:
@@ -19,7 +19,7 @@ def generate_parent_child_pairs(path, supercategory=None):
     parent_child_pairs = set()
 
     for category in data["categories"]:
-        if supercategory is None or category["supercategory"] == supercategory:
+        if (supercategory is None) or (category["supercategory"] == supercategory):
 
             # Super-super category to connect all kingdoms into a tree
             parent_child_pairs.add(("__NULL__", category["kingdom"]))
@@ -37,11 +37,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="This tool generates a parent-child file for semantic embeddings for "
                                                  "the iNaturalist dataset and possibly a selected supercategory.")
 
-    parser.add_argument("dataset_path", type=str, help="The path to the training file of the iNaturalist 2018 dataset.")
+    parser.add_argument("dataset_path", type=str, help="The path to the training file of the iNaturalist dataset.")
     parser.add_argument("--supercategory", type=str, default=None,
-                        help="The name of the supercategory the hierarchy will be based on.")
+                        help="The name of the supercategory the hierarchy will be based on (for iNaturalist 2018).")
 
     args = parser.parse_args()
 
-    # dataset_path = "/home/datasets1/inat/2018/train2018.json"
     generate_parent_child_pairs(args.dataset_path, supercategory=args.supercategory)

@@ -34,7 +34,8 @@ def get_data_generator(dataset, data_root, classes = None):
                - "cub"
                - "cars"
                - "flowers"
-               - "inat" (optionally followed by an underscore and the name of a super-category)
+               - "inat" / "inat2018" (optionally followed by an underscore and the name of a super-category)
+               - "inat2019"
                
                To all dataset names except CIFAR, you may append one of the following suffixes:
 
@@ -53,6 +54,9 @@ def get_data_generator(dataset, data_root, classes = None):
     """
     
     dataset = dataset.lower()
+    
+    if dataset.startswith('inat2018'):
+        dataset = 'inat' + dataset[8:]
 
     kwargs = {}
     if dataset.endswith('-ilsvrcmean'):
@@ -121,7 +125,13 @@ def get_data_generator(dataset, data_root, classes = None):
         supercategory = dataset[5:] if dataset.startswith('inat_') else None
         if ('default_target_size' not in kwargs) and ('randzoom_range' not in kwargs):
             kwargs['randzoom_range'] = (256, 480)
-        return INatGenerator(data_root, supercategory, **kwargs)
+        return INatGenerator(data_root, supercategory=supercategory, **kwargs)
+    
+    elif dataset == 'inat2019':
+
+        if ('default_target_size' not in kwargs) and ('randzoom_range' not in kwargs):
+            kwargs['randzoom_range'] = (256, 480)
+        return INatGenerator(data_root, 'train2019.json', 'val2019.json', mean=[115.77492586, 120.84414891, 93.51744386], std=[60.46127213, 58.63136496, 63.5872299], **kwargs)
     
     else:
         

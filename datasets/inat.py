@@ -26,11 +26,11 @@ SUPERCATEGORY_STATS = {
 
 class INatGenerator(FileDatasetGenerator):
 
-    def __init__(self, root_dir, supercategory=None,
+    def __init__(self, root_dir, train_file='train2018.json', val_file='val2018.json', supercategory=None,
                  cropsize = (224, 224), default_target_size = 256,
                  mean=None, std=None,
                  *args, **kwargs):
-        """ Data generator for iNaturalist 2018.
+        """ Data generator for iNaturalist.
 
         The data can be obtained here:
         https://github.com/visipedia/inat_comp/tree/2018
@@ -39,7 +39,12 @@ class INatGenerator(FileDatasetGenerator):
 
         - root_dir: Root directory of the iNaturalist 2018 dataset, containing the files `train2018.json` and `val2018.json`.
 
-        - supercategory: Can be used to restrict the dataset to classes from a given super-category. Available super-categories are:
+        - train_file: Name of the JSON file containing training image metadata (relative to `root_dir`).
+
+        - val_file: Name of the JSON file containing validation image metadata (relative to `root_dir`).
+
+        - supercategory: Can be used to restrict the dataset to classes from a given super-category (for iNaturalist 2018 only).
+                         Available super-categories are:
                          'actinopterygii', 'amphibia', 'animalia', 'arachnida', 'aves', 'bacteria', 'chromista', 'fungi', 'insecta',
                          'mammalia', 'mollusca', 'plantae', 'protozoa', 'reptilia'.
 
@@ -59,8 +64,8 @@ class INatGenerator(FileDatasetGenerator):
         
         super(INatGenerator, self).__init__(root_dir, cropsize=cropsize, default_target_size=default_target_size, *args, **kwargs)
 
-        train_file = os.path.join(root_dir, "train2018.json")
-        test_file = os.path.join(root_dir, "val2018.json")
+        train_file = train_file if os.path.isabs(train_file) else os.path.join(root_dir, train_file)
+        test_file = val_file if os.path.isabs(val_file) else os.path.join(root_dir, val_file)
 
         self.train_tuples, class_count, class_mapping = self.get_tuples_for_supercategory(
             train_file,
@@ -107,7 +112,7 @@ class INatGenerator(FileDatasetGenerator):
             data = json.loads(f.read())
 
         id_to_image = { image["id"]: image for image in data["images"] }
-        id_to_category = { category["id"]: category for category in data["categories"] if (category["supercategory"].lower() == supercategory) or (supercategory is None) }
+        id_to_category = { category["id"]: category for category in data["categories"] if (supercategory is None) or (category["supercategory"].lower() == supercategory) }
 
         # Create a mapping from the old category ids to new ones that start at 0
         category_id_old_to_new = {id_old: id_new for id_new, id_old in enumerate(sorted(id_to_category.keys()))}
