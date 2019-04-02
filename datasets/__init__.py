@@ -129,9 +129,12 @@ def get_data_generator(dataset, data_root, classes = None):
     
     elif dataset == 'inat2019':
 
+        if ('mean' not in kwargs) and ('std' not in kwargs):
+            kwargs['mean'] = [115.77492586, 120.84414891, 93.51744386]
+            kwargs['std'] = [60.46127213, 58.63136496, 63.5872299]
         if ('default_target_size' not in kwargs) and ('randzoom_range' not in kwargs):
             kwargs['randzoom_range'] = (256, 480)
-        return INatGenerator(data_root, 'train2019.json', 'val2019.json', mean=[115.77492586, 120.84414891, 93.51744386], std=[60.46127213, 58.63136496, 63.5872299], **kwargs)
+        return INatGenerator(data_root, 'train2019.json', 'val2019.json', **kwargs)
     
     else:
         
