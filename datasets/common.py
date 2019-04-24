@@ -125,7 +125,7 @@ class FileDatasetGenerator(object):
     """ Abstract base class for image generators. """
 
     def __init__(self, root_dir, cropsize = (224, 224), default_target_size = -1,
-                 randzoom_range = None, randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 },
+                 randzoom_range = None, randrot_max = 0, randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 },
                  color_mode = 'rgb'):
         """ Abstract base class for image generators.
 
@@ -144,6 +144,8 @@ class FileDatasetGenerator(object):
                           May either be given as integer specifying absolute pixel values or float specifying the relative scale of the image.
                           If set to `None`, no scale augmentation will be performed.
         
+        - randrot_max: Maximum number of degrees for random rotations.
+        
         - randerase_prob: Probability for random erasing.
 
         - randerase_params: Random erasing parameters (see Zhong et al. (2017): "Random erasing data augmentation.").
@@ -157,6 +159,7 @@ class FileDatasetGenerator(object):
         self.cropsize = cropsize
         self.default_target_size = default_target_size
         self.randzoom_range = randzoom_range
+        self.randrot_max = randrot_max
         self.randerase_prob = randerase_prob
         self.randerase_params = randerase_params
         self.color_mode = color_mode.lower()
@@ -219,7 +222,7 @@ class FileDatasetGenerator(object):
         
         return self._flow(self.train_img_files, self._train_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
+                          normalize=True, hflip=augment, vflip=False, randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
     
     
     def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = None, augment = False):
@@ -247,7 +250,7 @@ class FileDatasetGenerator(object):
         
         return self._flow(self.test_img_files, self._test_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
+                          normalize=True, hflip=augment, vflip=False, randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
     
 
     def train_sequence(self, batch_size = 32, shuffle = True, target_size = None, augment = True, batch_transform = None, batch_transform_kwargs = {}):
@@ -279,7 +282,7 @@ class FileDatasetGenerator(object):
         return DataSequence(self, self.train_img_files, self._train_labels,
                             batch_size=batch_size, shuffle=shuffle,
                             target_size=target_size, normalize=True, hflip=augment, vflip=False,
-                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
                             batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
     
     
@@ -312,7 +315,7 @@ class FileDatasetGenerator(object):
         return DataSequence(self, self.test_img_files, self._test_labels,
                             batch_size=batch_size, shuffle=shuffle,
                             target_size=target_size, normalize=True, hflip=augment, vflip=False,
-                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
                             batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
     
     
@@ -417,7 +420,7 @@ class FileDatasetGenerator(object):
         return np.stack(X)
 
 
-    def _load_and_transform(self, filename, target_size = None, normalize = True, hflip = False, vflip = False, randzoom = False, randerase = False, data_format = None):
+    def _load_and_transform(self, filename, target_size = None, normalize = True, hflip = False, vflip = False, randzoom = False, randrot = False, randerase = False, data_format = None):
         """ Loads an image file and applies normalization and data augmentation.
         
         # Arguments:
@@ -466,6 +469,13 @@ class FileDatasetGenerator(object):
             if isinstance(target_size, int):
                 target_size = (target_size, round(img.size[1] * (target_size / img.size[0]))) if img.size[0] < img.size[1] else (round(img.size[0] * (target_size / img.size[1])), target_size)
             img = img.resize(target_size, PIL.Image.BILINEAR)
+        
+        # Rotate image
+        if randrot and (self.randrot_max > 0):
+            angle = np.random.uniform(-self.randrot_max, self.randrot_max)
+            img = img.rotate(angle, PIL.Image.BILINEAR)
+
+        # Convert PIL image to array
         img = img_to_array(img, data_format=data_format)
         
         # Normalize image

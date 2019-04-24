@@ -94,6 +94,6 @@ class NABGenerator(FileDatasetGenerator):
         return DataSequence(self, self.train_img_files, self._train_labels,
                             batch_size=batch_size, shuffle=shuffle,
                             target_size=target_size, normalize=True, hflip=augment, vflip=False,
-                            randzoom=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
+                            randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
                             repeats=self.train_repeats,
                             batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
