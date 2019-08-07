@@ -14,6 +14,7 @@ from .nab import NABGenerator
 from .cars import CarsGenerator
 from .flowers import FlowersGenerator
 from .inat import INatGenerator
+from .subdirectory import SubDirectoryGenerator
 
 
 
@@ -36,6 +37,8 @@ def get_data_generator(dataset, data_root, classes = None):
                - "flowers"
                - "inat" / "inat2018" (optionally followed by an underscore and the name of a super-category)
                - "inat2019"
+               - "UCMLU"
+               - "RESISC45"
                
                To all dataset names except CIFAR, you may append one of the following suffixes:
 
@@ -135,6 +138,27 @@ def get_data_generator(dataset, data_root, classes = None):
         if ('default_target_size' not in kwargs) and ('randzoom_range' not in kwargs):
             kwargs['randzoom_range'] = (256, 480)
         return INatGenerator(data_root, 'train2019.json', 'val2019.json', **kwargs)
+
+    elif dataset == 'mit67scenes':
+
+        if ('mean' not in kwargs) and ('std' not in kwargs):
+            kwargs['mean'] = [124.62788179, 110.01028625, 94.95780545]
+            kwargs['std'] = [68.56923599, 66.86607736, 67.35944349]
+        return SubDirectoryGenerator(data_root, classes, img_dir='Images', train_list='TrainImages.txt', test_list='TestImages.txt', **kwargs)
+
+    elif dataset == 'ucmlu':
+
+        if ('mean' not in kwargs) and ('std' not in kwargs):
+            kwargs['mean'] = [122.65409223, 124.40230701, 114.25659171]
+            kwargs['std'] = [55.74499679, 51.65585669, 50.16527551]
+        return SubDirectoryGenerator(data_root, classes, **kwargs)
+
+    elif dataset == 'resisc45':
+
+        if ('mean' not in kwargs) and ('std' not in kwargs):
+            kwargs['mean'] = [94.17769482, 97.40967803, 87.80359702]
+            kwargs['std'] = [51.92246172, 47.22081475, 47.07685676]
+        return SubDirectoryGenerator(data_root, classes, **kwargs)
     
     else:
         
