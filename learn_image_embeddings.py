@@ -244,8 +244,11 @@ if __name__ == '__main__':
 
     # Evaluate final performance
     print(par_model.evaluate_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs)))
-    if args.cls_weight > 0:
-        test_pred = par_model.predict_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs))[1].argmax(axis=-1)
+    if (args.cls_weight > 0) or (args.embedding == 'onehot'):
+        test_pred = par_model.predict_generator(data_generator.test_sequence(args.val_batch_size, batch_transform = transform_inputs, batch_transform_kwargs = batch_transform_kwargs))
+        if args.cls_weight > 0:
+            test_pred = test_pred[1]
+        test_pred = test_pred.argmax(axis=-1)
         class_freq = np.bincount(data_generator.labels_test)
         print('Average Accuracy: {:.4f}'.format(
             ((test_pred == np.asarray(data_generator.labels_test)).astype(np.float) / class_freq[np.asarray(data_generator.labels_test)]).sum() / len(class_freq)
