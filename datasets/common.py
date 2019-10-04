@@ -569,6 +569,13 @@ class FileDatasetGenerator(object):
         """ Number of test images in the dataset. """
         
         return len(self.test_img_files)
+    
+
+    @property
+    def num_channels(self):
+        """ Number of channels (e.g., 3 for RGB, 1 for grayscale). """
+
+        return 3
 
 
 
@@ -775,6 +782,13 @@ class TinyDatasetGenerator(object):
         """ Number of test images in the dataset. """
         
         return len(self.X_test)
+    
+
+    @property
+    def num_channels(self):
+        """ Number of channels (e.g., 3 for RGB, 1 for grayscale). """
+
+        return self.X_train.shape[-1]
 
 
 

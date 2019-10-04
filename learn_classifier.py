@@ -85,7 +85,7 @@ if __name__ == '__main__':
             print('Resuming from snapshot {}'.format(args.snapshot))
             model = keras.models.load_model(args.snapshot, custom_objects = utils.get_custom_objects(args.architecture), compile = False)
         else:
-            model = utils.build_network(data_generator.num_classes, args.architecture, True)
+            model = utils.build_network(data_generator.num_classes, args.architecture, True, input_channels=data_generator.num_channels)
         par_model = model if args.gpus <= 1 else keras.utils.multi_gpu_model(model, gpus = args.gpus, cpu_merge = False)
     else:
         with K.tf.device('/cpu:0'):
@@ -93,7 +93,7 @@ if __name__ == '__main__':
                 print('Resuming from snapshot {}'.format(args.snapshot))
                 model = keras.models.load_model(args.snapshot, custom_objects = utils.get_custom_objects(args.architecture), compile = False)
             else:
-                model = utils.build_network(data_generator.num_classes, args.architecture, True)
+                model = utils.build_network(data_generator.num_classes, args.architecture, True, input_channels=data_generator.num_channels)
         par_model = keras.utils.multi_gpu_model(model, gpus = args.gpus)
     
     if not args.no_progress:

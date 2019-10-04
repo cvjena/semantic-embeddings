@@ -122,7 +122,7 @@ if __name__ == '__main__':
             print('Resuming from snapshot {}'.format(args.snapshot))
             model = keras.models.load_model(args.snapshot, custom_objects = utils.get_custom_objects(args.architecture), compile = False)
         else:
-            embed_model = utils.build_network(embedding.shape[1], args.architecture)
+            embed_model = utils.build_network(embedding.shape[1], args.architecture, input_channels=data_generator.num_channels)
             model = embed_model
             if args.loss == 'inv_corr':
                 model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
@@ -137,7 +137,7 @@ if __name__ == '__main__':
                 print('Resuming from snapshot {}'.format(args.snapshot))
                 model = keras.models.load_model(args.snapshot, custom_objects = utils.get_custom_objects(args.architecture), compile = False)
             else:
-                embed_model = utils.build_network(embedding.shape[1], args.architecture)
+                embed_model = utils.build_network(embedding.shape[1], args.architecture, input_channels=data_generator.num_channels)
                 model = embed_model
                 if args.loss == 'inv_corr':
                     model = keras.models.Model(model.inputs, keras.layers.Lambda(utils.l2norm, name = 'l2norm')(model.output))
