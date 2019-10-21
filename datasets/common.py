@@ -432,11 +432,9 @@ class FileDatasetGenerator(object):
         return np.stack(X)
 
 
-    def _load_and_transform(self, filename, target_size = None, normalize = True,
-                            hflip = False, vflip = False, randzoom = False, randrot = False, colordistort = False, randerase = False,
-                            data_format = None):
-        """ Loads an image file and applies normalization and data augmentation.
-        
+    def _load_image(self, filename, target_size = None, randzoom = False):
+        """ Loads an image file.
+
         # Arguments:
 
         - filename: The path of the image file.
@@ -447,31 +445,18 @@ class FileDatasetGenerator(object):
                        If set to None, the default_target_size passed to the constructor will be used.
                        The actual size may be modified further is `randzoom` is True.
         
-        - normalize: If True, the image will be normalized by subtracting the channel-wise mean and dividing by the channel-wise standard deviation.
-
-        - hflip: If True, the image will be flipped horizontally with a chance of 50%.
-
-        - vflip: If True, the image will be flipped vertically with a chance of 50%.
-
         - randzoom: If True and `self.randzoom_range` is not None, random zooming will be applied.
                     If `self.randzoom_range` is given as floats defining a range relative to the image size,
                     `target_size` will be used as reference if it is not None, otherwise the original image size.
         
-        - randerase: If True, random erasing will be applied with probability `self.randerase_prob`.
-
-        - data_format: The image data format (either 'channels_first' or 'channels_last'). Set to None for the default value.
-
         # Returns:
-            the image as 3-dimensional numpy array.
+            the image as PIL image.
         """
-        
-        if data_format is None:
-            data_format = K.image_data_format()
-        
-        # Load and resize image
+
         img = load_img(filename)
         if target_size is None:
             target_size = self.default_target_size
+        
         if (target_size > 0) or (randzoom and (self.randzoom_range is not None)):
             if target_size <= 0:
                 target_size = img.size
@@ -483,6 +468,35 @@ class FileDatasetGenerator(object):
             if isinstance(target_size, int):
                 target_size = (target_size, round(img.size[1] * (target_size / img.size[0]))) if img.size[0] < img.size[1] else (round(img.size[0] * (target_size / img.size[1])), target_size)
             img = img.resize(target_size, PIL.Image.BILINEAR)
+        
+        return img
+
+
+    def _transform(self, img, normalize = True,
+                   hflip = False, vflip = False, randrot = False, colordistort = False, randerase = False,
+                   data_format = None):
+        """ Loads an image file and applies normalization and data augmentation.
+        
+        # Arguments:
+
+        - img: the unnormalized and untransformed image as PIL image.
+
+        - normalize: If True, the image will be normalized by subtracting the channel-wise mean and dividing by the channel-wise standard deviation.
+
+        - hflip: If True, the image will be flipped horizontally with a chance of 50%.
+
+        - vflip: If True, the image will be flipped vertically with a chance of 50%.
+
+        - randerase: If True, random erasing will be applied with probability `self.randerase_prob`.
+
+        - data_format: The image data format (either 'channels_first' or 'channels_last'). Set to None for the default value.
+
+        # Returns:
+            the transformed image as 3-dimensional numpy array.
+        """
+        
+        if data_format is None:
+            data_format = K.image_data_format()
         
         # Rotate image
         if randrot and (self.randrot_max > 0):
@@ -526,6 +540,45 @@ class FileDatasetGenerator(object):
                                        / (self.std[:,None,None] if data_format == 'channels_first' else self.std[None,None,:])
         
         return img
+
+
+    def _load_and_transform(self, filename, target_size = None, normalize = True,
+                            hflip = False, vflip = False, randzoom = False, randrot = False, colordistort = False, randerase = False,
+                            data_format = None):
+        """ Loads an image file and applies normalization and data augmentation.
+        
+        # Arguments:
+
+        - filename: The path of the image file.
+
+        - target_size: Int or tuple of ints. Specifies the target size which the image will be resized to.
+                       If a single int is given, it specifies the size of the smaller side of the image and the aspect ratio will be retained.
+                       If set to -1, the image won't be resized.
+                       If set to None, the default_target_size passed to the constructor will be used.
+                       The actual size may be modified further is `randzoom` is True.
+
+        - normalize: If True, the image will be normalized by subtracting the channel-wise mean and dividing by the channel-wise standard deviation.
+
+        - hflip: If True, the image will be flipped horizontally with a chance of 50%.
+
+        - vflip: If True, the image will be flipped vertically with a chance of 50%.
+
+        - randzoom: If True and `self.randzoom_range` is not None, random zooming will be applied.
+                    If `self.randzoom_range` is given as floats defining a range relative to the image size,
+                    `target_size` will be used as reference if it is not None, otherwise the original image size.
+
+        - randerase: If True, random erasing will be applied with probability `self.randerase_prob`.
+
+        - data_format: The image data format (either 'channels_first' or 'channels_last'). Set to None for the default value.
+
+        # Returns:
+            the image as 3-dimensional numpy array.
+        """
+        
+        return self._transform(
+            self._load_image(filename, target_size=target_size, randzoom=randzoom),
+            normalize=normalize, hflip=hflip, vflip=vflip, randrot=randrot, colordistort=colordistort, randerase=randerase, data_format=data_format
+        )
     
     
     @property
