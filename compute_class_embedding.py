@@ -62,15 +62,12 @@ def sim_approx(class_sim, num_dim = None):
     L, Q = np.linalg.eigh(class_sim)
     if np.any(L < 0):
         raise RuntimeError('Given class_sim is not positive semi-definite.')
-    min_dim = len(np.unique(L.round(8)))
     embeddings = Q * np.sqrt(L)[None,:]
 
     # Approximation using the eigenvectors corresponding to the largest eigenvalues
     if (num_dim is not None) and (num_dim < embeddings.shape[1]):
         embeddings = embeddings[:,-num_dim:]  # pylint: disable=invalid-unary-operand-type
     
-    print('Minimum embedding dimensionality for exact reconstruction: {}'.format(min_dim))
-
     return embeddings
 
 
