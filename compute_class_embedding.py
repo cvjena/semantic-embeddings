@@ -190,6 +190,7 @@ if __name__ == '__main__':
     - "mds": Compute embeddings of arbitrary dimensionality so that Euclidean distances of class embeddings correspond to their semantic dissimilarity using classical multidimensional scaling.
 Default: "unitsphere"''')
     parser.add_argument('--num_dim', type = int, default = None, help = 'Number of embedding dimensions when using the "mds" or "approx_sim" method.')
+    parser.add_argument('--norm', action = 'store_true', default = False, help = 'Force L2-normalization of computed embeddings (most useful in combination with the approx_sim method).')
     args = parser.parse_args()
     id_type = str if args.str_ids else int
     
@@ -236,6 +237,9 @@ Default: "unitsphere"''')
         dist_error = np.abs(scipy.spatial.distance.squareform(scipy.spatial.distance.pdist(embedding)) - sem_class_dist)
         print('Maximum deviation from target distances: {}'.format(dist_error.max()))
         print('Average deviation from target distances: {}'.format(dist_error.mean()))
+    
+    if args.norm:
+        embedding /= np.linalg.norm(embedding, axis=-1, keepdims=True)
     
     # Store results
     with open(args.out, 'wb') as dump_file:
