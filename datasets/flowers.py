@@ -9,7 +9,8 @@ class FlowersGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, img_dir = 'jpg', label_file = 'imagelabels.mat', split_file = 'setid.mat',
                  train_splits = ['trnid', 'valid'], test_splits = ['tstid'],
-                 cropsize = (448, 448), default_target_size = 512, randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
+                 cropsize = (448, 448), default_target_size = 512, randzoom_range = None, distort_colors = False,
+                 randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
                  mean = [110.7799141, 97.65648664, 75.32889973], std = [74.90387818, 62.70218863, 69.7656359], color_mode = "rgb"):
         """ Flowers-102 data generator.
 
@@ -48,6 +49,8 @@ class FlowersGenerator(FileDatasetGenerator):
                           May either be given as integer specifying absolute pixel values or float specifying the relative scale of the image.
                           If set to `None`, no scale augmentation will be performed.
         
+        - distort_colors: Boolean specifying whether to apply color distortions as data augmentation.
+        
         - randerase_prob: Probability for random erasing.
 
         - randerase_params: Random erasing parameters (see Zhong et al. (2017): "Random erasing data augmentation.").
@@ -60,6 +63,7 @@ class FlowersGenerator(FileDatasetGenerator):
         """
         
         super(FlowersGenerator, self).__init__(root_dir, cropsize = cropsize, default_target_size = default_target_size, randzoom_range = randzoom_range,
+                                               distort_colors=distort_colors, colordistort_params={ 'hue_delta' : 0.0, 'saturation_range' : (0.8, 1.2) },
                                                randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
         self.img_dir = img_dir if os.path.isabs(img_dir) else os.path.join(self.root_dir, img_dir)
         self.label_file = label_file if os.path.isabs(label_file) else os.path.join(self.root_dir, label_file)

@@ -8,7 +8,8 @@ from .common import FileDatasetGenerator
 class CarsGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, annotation_file = 'cars_annos.mat',
-                 cropsize = (448, 448), default_target_size = 512, randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
+                 cropsize = (448, 448), default_target_size = 512, randzoom_range = None, distort_colors = False,
+                 randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
                  mean = [120.03730636, 117.33780928, 116.0130335], std = [75.40415763, 75.15394251, 77.28286728], color_mode = "rgb"):
         """ Stanford-Cars data generator.
 
@@ -44,6 +45,8 @@ class CarsGenerator(FileDatasetGenerator):
                           May either be given as integer specifying absolute pixel values or float specifying the relative scale of the image.
                           If set to `None`, no scale augmentation will be performed.
         
+        - distort_colors: Boolean specifying whether to apply color distortions as data augmentation.
+        
         - randerase_prob: Probability for random erasing.
 
         - randerase_params: Random erasing parameters (see Zhong et al. (2017): "Random erasing data augmentation.").
@@ -56,7 +59,7 @@ class CarsGenerator(FileDatasetGenerator):
         """
         
         super(CarsGenerator, self).__init__(root_dir, cropsize = cropsize, default_target_size = default_target_size, randzoom_range = randzoom_range,
-                                            randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
+                                            distort_colors = distort_colors, randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
         
         # Read annotations
         self.annotation_file = annotation_file if os.path.isabs(annotation_file) else os.path.join(self.root_dir, annotation_file)

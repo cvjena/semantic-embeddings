@@ -12,6 +12,8 @@ except ImportError:
 from keras import backend as K
 from keras.utils import Sequence
 
+from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
+
 try:
     from tqdm import tqdm
 except ImportError:
@@ -125,7 +127,9 @@ class FileDatasetGenerator(object):
     """ Abstract base class for image generators. """
 
     def __init__(self, root_dir, cropsize = (224, 224), default_target_size = -1,
-                 randzoom_range = None, randrot_max = 0, randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 },
+                 randzoom_range = None, randrot_max = 0,
+                 distort_colors = False, colordistort_params = {},
+                 randerase_prob = 0.0, randerase_params = { 'sl' : 0.02, 'sh' : 0.4, 'r1' : 0.3, 'r2' : 1./0.3 },
                  color_mode = 'rgb'):
         """ Abstract base class for image generators.
 
@@ -145,6 +149,10 @@ class FileDatasetGenerator(object):
                           If set to `None`, no scale augmentation will be performed.
         
         - randrot_max: Maximum number of degrees for random rotations.
+
+        - distort_colors: Boolean specifying whether to apply color distortions as data augmentation.
+
+        - colordistort_params: Parameters for color distortions, passed as keyword arguments to `distort_colors()`.
         
         - randerase_prob: Probability for random erasing.
 
@@ -160,6 +168,8 @@ class FileDatasetGenerator(object):
         self.default_target_size = default_target_size
         self.randzoom_range = randzoom_range
         self.randrot_max = randrot_max
+        self.distort_colors = distort_colors
+        self.colordistort_params = colordistort_params
         self.randerase_prob = randerase_prob
         self.randerase_params = randerase_params
         self.color_mode = color_mode.lower()
@@ -222,7 +232,8 @@ class FileDatasetGenerator(object):
         
         return self._flow(self.train_img_files, self._train_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
+                          normalize=True, hflip=augment, vflip=False, colordistort=self.distort_colors and augment,
+                          randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
     
     
     def flow_test(self, batch_size = 32, include_labels = True, shuffle = False, target_size = None, augment = False):
@@ -250,7 +261,8 @@ class FileDatasetGenerator(object):
         
         return self._flow(self.test_img_files, self._test_labels if include_labels else None,
                           batch_size=batch_size, shuffle=shuffle, target_size=target_size,
-                          normalize=True, hflip=augment, vflip=False, randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
+                          normalize=True, hflip=augment, vflip=False, colordistort=False,
+                          randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment)
     
 
     def train_sequence(self, batch_size = 32, shuffle = True, target_size = None, augment = True, batch_transform = None, batch_transform_kwargs = {}):
@@ -281,7 +293,7 @@ class FileDatasetGenerator(object):
         
         return DataSequence(self, self.train_img_files, self._train_labels,
                             batch_size=batch_size, shuffle=shuffle,
-                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False, colordistort=self.distort_colors and augment,
                             randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
                             batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
     
@@ -314,7 +326,7 @@ class FileDatasetGenerator(object):
 
         return DataSequence(self, self.test_img_files, self._test_labels,
                             batch_size=batch_size, shuffle=shuffle,
-                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False, colordistort=False,
                             randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
                             batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
     
@@ -420,7 +432,9 @@ class FileDatasetGenerator(object):
         return np.stack(X)
 
 
-    def _load_and_transform(self, filename, target_size = None, normalize = True, hflip = False, vflip = False, randzoom = False, randrot = False, randerase = False, data_format = None):
+    def _load_and_transform(self, filename, target_size = None, normalize = True,
+                            hflip = False, vflip = False, randzoom = False, randrot = False, colordistort = False, randerase = False,
+                            data_format = None):
         """ Loads an image file and applies normalization and data augmentation.
         
         # Arguments:
@@ -477,6 +491,10 @@ class FileDatasetGenerator(object):
 
         # Convert PIL image to array
         img = img_to_array(img, data_format=data_format)
+
+        # Color distortions
+        if colordistort:
+            img = distort_color(img, data_format=data_format, **self.colordistort_params)
         
         # Normalize image
         if normalize:
@@ -725,7 +743,7 @@ class TinyDatasetGenerator(object):
         This is an alias for `self.y_train` for compatibility with other data generators.
         """
         
-        return self.y_train
+        return self.y_train 
     
     
     @property
@@ -757,3 +775,105 @@ class TinyDatasetGenerator(object):
         """ Number of test images in the dataset. """
         
         return len(self.X_test)
+
+
+
+def distort_color(img, fast_mode=True,
+                  brightness_delta=32./255., hue_delta=0.2, saturation_range=(0.5, 1.5), contrast_range=(0.5, 1.5),
+                  data_format='channels_last'):
+    
+    nonnormalized = (img.max() > 2.0)
+    if nonnormalized:
+        img = img.astype(np.float32) / 255.
+    if data_format == 'channels_first':
+        img = np.transpose(img, (1, 2, 0))
+    if (not nonnormalized) and (data_format == 'channels_last'):
+        img = img.copy()
+
+    noop = lambda x: x
+    brightness_hsv = (lambda x: random_brightness_hsv(x, max_delta=brightness_delta)) if brightness_delta > 0 else noop
+    saturation = (lambda x: random_saturation(x, *saturation_range)) if (saturation_range[0] <= saturation_range[1]) and ((saturation_range[0] != 1) or (saturation_range[1] != 1)) else noop
+    
+    if fast_mode:
+
+        ordering = np.random.choice(2)
+        if ordering == 0:
+            img = hsv_to_rgb(saturation(brightness_hsv(rgb_to_hsv(img))))
+        else:
+            img = hsv_to_rgb(brightness_hsv(saturation(rgb_to_hsv(img))))
+
+    else:
+
+        brightness = (lambda x: random_brightness(x, max_delta=brightness_delta)) if brightness_delta > 0 else noop
+        hue = (lambda x: random_hue(x, max_delta=hue_delta)) if hue_delta > 0 else noop
+        contrast = (lambda x: random_contrast(x, *contrast_range)) if (contrast_range[0] <= contrast_range[1]) and ((contrast_range[0] != 1) or (contrast_range[1] != 1)) else noop
+
+        ordering = np.random.choice(4)
+        if ordering == 0:
+            img = contrast(hsv_to_rgb(hue(saturation(rgb_to_hsv(brightness(img))))))
+        elif ordering == 1:
+            img = hsv_to_rgb(hue(rgb_to_hsv(contrast(brightness(hsv_to_rgb(saturation(rgb_to_hsv(img))))))))
+        elif ordering == 2:
+            img = hsv_to_rgb(saturation(brightness_hsv(hue(rgb_to_hsv(contrast(img))))))
+        elif ordering == 3:
+            img = brightness(contrast(hsv_to_rgb(saturation(hue(rgb_to_hsv(img))))))
+
+    if data_format == 'channels_first':
+        img = np.transpose(img, (2, 0, 1))
+    if nonnormalized:
+        img = img * 255.
+    
+    return img
+
+
+def random_brightness(img, max_delta=32./255.):
+    """ Randomly adjusts the brightness of a given RGB image. """
+    
+    img += np.random.uniform(-max_delta, max_delta)
+    img[img > 1] = 1
+    img[img < 0] = 0
+    return img
+
+
+def random_brightness_hsv(img, max_delta=32./255.):
+    """ Randomly adjusts the brightness of a given HSV image. """
+    
+    val = img[:,:,2]
+    val += np.random.uniform(-max_delta, max_delta)
+    val[val > 1] = 1
+    val[val < 0] = 0
+    return img
+
+
+def random_hue(img, max_delta=0.2):
+    """ Randomly shifts the hue of a given HSV image. """
+    
+    delta = np.random.uniform(-max_delta, max_delta)
+    hue = img[:,:,0]
+    hue += delta
+    hue[hue > 1.0] -= 1.0
+    hue[hue < 0.0] += 1.0
+    return img
+
+
+def random_saturation(img, low=0.5, high=1.5):
+    """ Randomly scales the saturation of a given HSV image. """
+    
+    sat = img[:,:,1]
+    sat *= np.random.uniform(low, high)
+    sat[sat > 1] = 1
+    sat[sat < 0] = 0
+    return img
+
+
+def random_contrast(img, low=0.5, high=1.5):
+    """ Randomly scales the contrast of a given RGB image. """
+    
+    mean = img.mean(axis=(0,1), keepdims=True)
+    cf = np.random.uniform(low, high, mean.shape)
+    img -= mean
+    img *= cf
+    img += mean
+    img[img > 1] = 1
+    img[img < 0] = 0
+    return img

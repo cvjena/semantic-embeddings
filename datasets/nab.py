@@ -7,7 +7,8 @@ from .common import FileDatasetGenerator, DataSequence
 class NABGenerator(FileDatasetGenerator):
 
     def __init__(self, root_dir, classes = None, img_dir = 'images', img_list_file = 'images.txt', split_file = 'train_test_split.txt', label_file = 'image_class_labels.txt',
-                 cropsize = (224, 224), default_target_size = 256, randzoom_range = None, randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
+                 cropsize = (224, 224), default_target_size = 256, randzoom_range = None, distort_colors = False,
+                 randerase_prob = 0.5, randerase_params = { 'sl' : 0.02, 'sh' : 0.3, 'r1' : 0.3, 'r2' : 1./0.3 },
                  mean = [125.30513277, 129.66606421, 118.45121113], std = [57.0045467, 56.70059436, 68.44430446], color_mode = "rgb", train_repeats = 1):
         """ NABirds and CUB-200-2011 data generator.
 
@@ -38,6 +39,8 @@ class NABGenerator(FileDatasetGenerator):
         - randzoom_range: Tuple with minimum and maximum size of the smaller image dimension for random scale augmentation.
                           May either be given as integer specifying absolute pixel values or float specifying the relative scale of the image.
                           If set to `None`, no scale augmentation will be performed.
+
+        - distort_colors: Boolean specifying whether to apply color distortions as data augmentation.
         
         - randerase_prob: Probability for random erasing.
 
@@ -54,6 +57,7 @@ class NABGenerator(FileDatasetGenerator):
         """
         
         super(NABGenerator, self).__init__(root_dir, cropsize = cropsize, default_target_size = default_target_size, randzoom_range = randzoom_range,
+                                           distort_colors=distort_colors, colordistort_params={ 'hue_delta' : 0.0, 'saturation_range' : (0.8, 1.2) },
                                            randerase_prob = randerase_prob, randerase_params = randerase_params, color_mode = color_mode)
         self.imgs_dir = os.path.join(root_dir, img_dir)
         self.img_list_file = os.path.join(root_dir, img_list_file)
@@ -93,7 +97,7 @@ class NABGenerator(FileDatasetGenerator):
         
         return DataSequence(self, self.train_img_files, self._train_labels,
                             batch_size=batch_size, shuffle=shuffle,
-                            target_size=target_size, normalize=True, hflip=augment, vflip=False,
+                            target_size=target_size, normalize=True, hflip=augment, vflip=False, colordistort=self.distort_colors and augment,
                             randzoom=augment, randrot=augment, cropsize=self.cropsize, randcrop=augment, randerase=augment,
                             repeats=self.train_repeats,
                             batch_transform=batch_transform, batch_transform_kwargs=batch_transform_kwargs)
