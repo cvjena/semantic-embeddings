@@ -8,8 +8,9 @@ This repository contains the official source code used to produce the results re
 
 > [**Deep Learning on Small Datasets without Pre-Training usine Cosine Loss.**][23]  
 > Björn Barz and Joachim Denzler.  
+> IEEE Winter Conference on Applications of Computer Vision (WACV), 2020.
 
-If you use this code, please cite one of those papers (the more appropriate one, depending on your application).
+If you use this code, please cite one of those papers (the first one when you work with hierarchy-based semantic embeddings, the second one when you use the cosine loss for classification).
 
 The remainder of this ReadMe will focus on learning hierarchy-based semantic image embeddings (the first of the papers mentioned above).
 If you came here for more information on how we obtained the results reported in the paper about using the cosine loss for classification on small datasets (the second one), you can find those [here][24].

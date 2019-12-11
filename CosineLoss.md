@@ -4,18 +4,19 @@ This document explains how the code in this repository can be used to produce th
 
 > [**Deep Learning on Small Datasets without Pre-Training using Cosine Loss.**][1]  
 > Björn Barz and Joachim Denzler.  
+> IEEE Winter Conference on Applications of Computer Vision (WACV), 2020.
 
 
 ## 1. Results
 
 According to Table 2 in the paper:
 
-|          Loss Function          |    CUB    |    NAB    |   Cars    |  Flowers  | CIFAR-100 |
-|---------------------------------|----------:|----------:|----------:|----------:|----------:|
-| cross entropy                   |   51.9%   |   59.4%   |   78.2%   |   67.3%   |   77.0%   |
-| cross entropy + label smoothing |   55.9%   |   68.3%   |   78.1%   |   66.8%   | **77.5%** |
-| cosine loss                     |   67.6%   |   71.7%   |   84.3%   | **71.1%** |   75.3%   |
-| cosine loss + cross entropy     | **68.0%** | **71.9%** | **85.0%** |   70.6%   |   76.4%   |
+|          Loss Function          |    CUB    |    NAB    |   Cars    |  Flowers  | MIT 67 Scenes | CIFAR-100 |
+|---------------------------------|----------:|----------:|----------:|----------:|--------------:|----------:|
+| cross entropy                   |   51.9%   |   59.4%   |   78.2%   |   67.3%   |     44.3%     |   77.0%   |
+| cross entropy + label smoothing |   55.9%   |   68.3%   |   78.1%   |   66.8%   |     38.7%     | **77.5%** |
+| cosine loss                     |   67.6%   |   71.7%   |   84.3%   | **71.1%** |     51.5%     |   75.3%   |
+| cosine loss + cross entropy     | **68.0%** | **71.9%** | **85.0%** |   70.6%   |   **52.7%**   |   76.4%   |
 
 
 ## 2. Requirements
@@ -38,6 +39,7 @@ The following datasets have been used in the paper:
 - [North American Birds][3] (NAB-large)
 - [Stanford Cars][5] (Cars)
 - [Oxford Flowers-102][6] (Flowers)
+- [MIT 67 Indoor Scenes][7] (MIT67Scenes)
 - [CIFAR-100][2] (CIFAR-100)
 
 The names in parentheses specify the dataset names that can be passed to the scripts mentioned below.
@@ -104,17 +106,18 @@ done
 
 The following table lists the values for `--sgdr_max_lr` that led to the best results.
 
-|                  Loss                  |  CUB  |  NAB  | Cars | Flowers | CIFAR-100 |
-|----------------------------------------|------:|------:|-----:|--------:|----------:|
-| cross entropy                          |  0.05 |  0.05 |  1.0 |     1.0 |       0.1 |
-| cross entropy + label smoothing        |  0.05 |   0.1 |  1.0 |     0.1 |       0.1 |
-| cosine loss (one-hot)                  |   0.5 |   0.5 |  1.0 |     0.5 |      0.05 |
-| cosine loss + cross entropy (one-hot)  |   0.5 |   0.5 |  0.5 |     0.5 |       0.1 |
+|                  Loss                  |  CUB  |  NAB  | Cars | Flowers | MIT 67 Scenes | CIFAR-100 |
+|----------------------------------------|------:|------:|-----:|--------:|--------------:|----------:|
+| cross entropy                          |  0.05 |  0.05 |  1.0 |     1.0 |          0.05 |       0.1 |
+| cross entropy + label smoothing        |  0.05 |   0.1 |  1.0 |     0.1 |           1.0 |       0.1 |
+| cosine loss (one-hot)                  |   0.5 |   0.5 |  1.0 |     0.5 |           2.5 |      0.05 |
+| cosine loss + cross entropy (one-hot)  |   0.5 |   0.5 |  0.5 |     0.5 |           2.5 |       0.1 |
 
 
 ## 5. Sub-sampling CUB
 
-To experiment with differently sized variants of the CUB dataset, copy the image list files from the directory [`CUB-splits`](CUB-splits/) into the root directory of your CUB dataset and specify the dataset name as `CUB-subX`, where `X` is the number of samples per class.
+To experiment with differently sized variants of the CUB dataset, download the [modified image list files][8] and unzip the obtained archive into the root directory of your CUB dataset.
+For training, specify the dataset name as `CUB-subX`, where `X` is the number of samples per class.
 
 ![Performance comparison for differently sub-sampled variants of the CUB dataset](https://user-images.githubusercontent.com/7915048/51765373-d67bb600-20d7-11e9-85a9-ec6f28cef39b.png)
 
@@ -126,3 +129,5 @@ To experiment with differently sized variants of the CUB dataset, copy the image
 [4]: http://www.vision.caltech.edu/visipedia/CUB-200-2011.html
 [5]: https://ai.stanford.edu/~jkrause/cars/car_dataset.html
 [6]: http://www.robots.ox.ac.uk/~vgg/data/flowers/102/index.html
+[7]: http://web.mit.edu/torralba/www/indoor.html
+[8]: https://github.com/cvjena/semantic-embeddings/releases/download/v1.2.0/cub-subsampled-splits.zip

@@ -35,6 +35,7 @@ def get_data_generator(dataset, data_root, classes = None):
                - "cub"
                - "cars"
                - "flowers"
+               - "mit67scenes"
                - "inat" / "inat2018" (optionally followed by an underscore and the name of a super-category)
                - "inat2019"
                - "UCMLU"

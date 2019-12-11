@@ -55,8 +55,19 @@ Known Issues
     - Class 110 (***Geococcyx***) is at the *genus* level, but there are only 2 possible species with minor visual differences.
 
 
+Citation
+--------
+
+If you use this hierarchy for the CUB dataset in your work, please cite the following paper:
+
+> [**Deep Learning on Small Datasets without Pre-Training usine Cosine Loss.**][6]  
+> Björn Barz and Joachim Denzler.  
+> IEEE Winter Conference on Applications of Computer Vision (WACV), 2020.
+
+
 [1]: http://www.vision.caltech.edu/visipedia/CUB-200-2011.html
 [2]: https://species.wikimedia.org/
 [3]: https://www.wikidata.org/
 [4]: https://en.wikipedia.org/
 [5]: https://tree.opentreeoflife.org/
+[6]: https://arxiv.org/pdf/1901.09054
