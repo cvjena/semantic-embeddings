@@ -326,16 +326,16 @@ python learn_image_embeddings.py \
 
 |  Dataset  |              Model              | Input Size | mAHP@250 | Balanced Accuracy |
 |-----------|---------------------------------|:----------:|---------:|------------------:|
-| CIFAR-100 | [Plain-11][16]                  |    32x32   |   82.05% |            74.10% |
-| CIFAR-100 | [ResNet-110-wfc][17]            |    32x32   |   83.29% |            76.60% |
-| CIFAR-100 | [PyramidNet-272-200][18]        |    32x32   |   86.38% |            80.49% |
-| NABirds   | [ResNet-50 (from scratch)][19]  |   224x224  |   73.99% |            59.46% |
-| NABirds   | [ResNet-50 (fine-tuned)][20]    |   224x224  |   81.46% |            69.49% |
-| NABirds   | [ResNet-50 (from scratch)][27]  |   448x448  |   82.33% |            70.43% |
-| NABirds   | [ResNet-50 (fine-tuned)][28]    |   448x448  |   88.11% |            76.79% |
-| CUB       | [ResNet-50 (from scratch)][25]  |   448x448  |   83.33% |            70.14% |
-| CUB       | [ResNet-50 (fine-tuned)][26]    |   448x448  |   92.24% |            80.23% |
-| ILSVRC    | [ResNet-50][21] *               |   224x224  |   83.15% |            70.42% |
+| CIFAR-100 | [Plain-11][16]                  |    32x32   |   81.89% |            74.10% |
+| CIFAR-100 | [ResNet-110-wfc][17]            |    32x32   |   83.12% |            76.60% |
+| CIFAR-100 | [PyramidNet-272-200][18]        |    32x32   |   86.21% |            80.49% |
+| NABirds   | [ResNet-50 (from scratch)][19]  |   224x224  |   73.84% |            59.46% |
+| NABirds   | [ResNet-50 (fine-tuned)][20]    |   224x224  |   81.29% |            69.49% |
+| NABirds   | [ResNet-50 (from scratch)][27]  |   448x448  |   82.16% |            70.43% |
+| NABirds   | [ResNet-50 (fine-tuned)][28]    |   448x448  |   87.93% |            76.79% |
+| CUB       | [ResNet-50 (from scratch)][25]  |   448x448  |   83.16% |            70.14% |
+| CUB       | [ResNet-50 (fine-tuned)][26]    |   448x448  |   92.06% |            80.23% |
+| ILSVRC    | [ResNet-50][21] *               |   224x224  |   82.98% |            70.42% |
 
 <p style="font-size: 0.8em">
 * This is an updated model with slightly better performance than reported in the paper (~1 percent point).

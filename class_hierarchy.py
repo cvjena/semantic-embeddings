@@ -302,11 +302,11 @@ class ClassHierarchy(object):
                 prec['P@{} (LCS_HEIGHT)'.format(k)][qid] = sum(lcs[:k]) / cum_best_lcs[k-1]
             if compute_ahp:
                 if isinstance(compute_ahp, bool):
-                    prec['AHP (WUP)'][qid]        = np.mean(np.cumsum(wup) / cum_best_wup) - (wup[0] / cum_best_wup[0] + wup[-1] / cum_best_wup[-1]) / (2 * len(wup))
-                    prec['AHP (LCS_HEIGHT)'][qid] = np.mean(np.cumsum(lcs) / cum_best_lcs) - (lcs[0] / cum_best_lcs[0] + lcs[-1] / cum_best_lcs[-1]) / (2 * len(lcs))
+                    prec['AHP (WUP)'][qid]        = np.trapz(np.cumsum(wup) / cum_best_wup, dx=1./len(wup))
+                    prec['AHP (LCS_HEIGHT)'][qid] = np.trapz(np.cumsum(lcs) / cum_best_lcs, dx=1./len(lcs))
                 else:
-                    prec['AHP{} (WUP)'.format(ahp_suffix)][qid]        = np.mean(np.cumsum(wup[:compute_ahp]) / cum_best_wup[:compute_ahp]) - (wup[0] / cum_best_wup[0] + wup[compute_ahp-1] / cum_best_wup[compute_ahp-1]) / (2 * compute_ahp)
-                    prec['AHP{} (LCS_HEIGHT)'.format(ahp_suffix)][qid] = np.mean(np.cumsum(lcs[:compute_ahp]) / cum_best_lcs[:compute_ahp]) - (lcs[0] / cum_best_lcs[0] + lcs[compute_ahp-1] / cum_best_lcs[compute_ahp-1]) / (2 * compute_ahp)
+                    prec['AHP{} (WUP)'.format(ahp_suffix)][qid] = np.trapz(np.cumsum(wup[:compute_ahp]) / cum_best_wup[:compute_ahp], dx=1./compute_ahp)
+                    prec['AHP{} (LCS_HEIGHT)'.format(ahp_suffix)][qid] = np.trapz(np.cumsum(lcs[:compute_ahp]) / cum_best_lcs[:compute_ahp], dx=1./compute_ahp)
             if compute_ap:
                 prec['AP'][qid] = average_precision_score(
                     [labels[r] == lbl for r in ret if (not ignore_qids) or (r != qid)],
