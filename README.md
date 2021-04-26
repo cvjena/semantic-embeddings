@@ -312,8 +312,8 @@ python learn_image_embeddings.py \
 - Python >= 3.5
 - numpy
 - numexpr
-- keras >= 2.2.0
-- tensorflow (we used v1.8)
+- keras == 2.2
+- tensorflow >= 1.8, < 2.0
 - sklearn
 - scipy
 - pillow
